@@ -67,9 +67,10 @@ public class Table implements Serializable {
 					if (tuple.id == foundID) {
 						table.insertElementAt(newtuple, idx + 1);
 					
-						if (GenericCompare(foundpage.records.lastElement().pk,(Object)pk) <= 0) {
-
+						if (GenericCompare(foundpage.records.lastElement().pk,(Object)pk) == 0) {
+							newPage.insert(pk, colNameValue);
 						}
+						
 						// lesa we need to know which record will be inserted in new page & we need to
 						// call foundpage.insert()
 						
@@ -164,12 +165,16 @@ public class Table implements Serializable {
 
 	public Page BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo) / 2;
+		
+		if(hi<=lo) {
+			return table.get(hi).page;
+		}
+		
+		if (GenericCompare(table.get(mid).min, searchkey) > 0)
+			return BinarySearch(searchkey, hi, mid-1);
 
-		if (GenericCompare(table.get(mid).max, searchkey) > 0)
-			return BinarySearch(searchkey, hi, mid);
-
-		else if (GenericCompare(table.get(mid).min, searchkey) < 0)
-			return BinarySearch(searchkey, mid, lo);
+		else if (GenericCompare(table.get(mid).max, searchkey) < 0)
+			return BinarySearch(searchkey, mid+1, lo);
 
 		else
 			return table.get(mid).page;

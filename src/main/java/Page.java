@@ -16,7 +16,11 @@ public class Page implements Serializable {
 	}
 
 	public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) throws DBAppException {
-		
+		if(this.isEmpty()) {
+			records.add(new Pair(pkvalue,colNameValue));
+		}else {
+			//linear search
+		}
 		// TODO if full then delete from vector last and return it
 		// else return null
 
