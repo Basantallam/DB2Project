@@ -53,41 +53,38 @@ public class Table implements Serializable {
 
 			table.add(firstpage);
 			DBApp.serialize(tableName + "_0", firstpage.page);
+
 		} else {
 			Page foundpage = BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
-
+			tuple4 foundTuple = null;// correspomding lel page
 			if (foundpage.isFull()) {
 				double foundID = foundpage.id;
-				double newID = CreateID(foundID);
-				Page newPage = new Page(newID);
-				tuple4 newtuple = new tuple4(newID, newPage, pk, pk);
-
-				for (int idx = 0; idx < table.size(); idx++) {
-					tuple4 tuple = table.get(idx);
-					if (tuple.id == foundID) {
-						table.insertElementAt(newtuple, idx + 1);
-					
-						if (GenericCompare(foundpage.records.lastElement().pk,(Object)pk) == 0) {
-							newPage.insert(pk, colNameValue);
-						}
-						
-						// lesa we need to know which record will be inserted in new page & we need to
-						// call foundpage.insert()
-						
+				int foundIdx = 0;
+				for (foundIdx = 0; foundIdx < table.size(); foundIdx++) {
+					foundTuple = table.get(foundIdx);
+					if (foundTuple.id == foundID) {
 						break;
 					}
 				}
-			} else {
+				if (GenericCompare((Object) pk, foundTuple.max) > 0) {
+					foundTuple.max = (Object) pk;
+				}
 
-				foundpage.insert(colNameValue.get(pk), colNameValue);// TODO
-				DBApp.serialize(tableName + "_0", foundpage.id);
+				Page.Pair returned = foundpage.insert(pk, colNameValue);
+				double newID = CreateID(foundID); // TODO
+				Page newPage = new Page(newID);
+				newPage.insert(returned.pk, returned.row);
+				tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
+				table.insertElementAt(newtuple, foundIdx + 1);
+
+			} else
+
+			{
+				// ??? mesh 3arfa eih da
+				// foundpage.insert(colNameValue.get(pk), colNameValue);// TODO
+				// DBApp.serialize(tableName + "_0", foundpage.id);
 			}
 		}
-
-		// TODO now we search for correct location then we insert
-		// shift records if necessary
-		// create a new page if necessary and if you'll create new page create a new
-		// range too
 
 	}
 
@@ -165,16 +162,16 @@ public class Table implements Serializable {
 
 	public Page BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo) / 2;
-		
-		if(hi<=lo) {
+
+		if (hi <= lo) {
 			return table.get(hi).page;
 		}
-		
+
 		if (GenericCompare(table.get(mid).min, searchkey) > 0)
-			return BinarySearch(searchkey, hi, mid-1);
+			return BinarySearch(searchkey, hi, mid - 1);
 
 		else if (GenericCompare(table.get(mid).max, searchkey) < 0)
-			return BinarySearch(searchkey, mid+1, lo);
+			return BinarySearch(searchkey, mid + 1, lo);
 
 		else
 			return table.get(mid).page;
@@ -203,7 +200,7 @@ public class Table implements Serializable {
 
 	}
 
-	private class tuple4 {
+	public static class tuple4 {
 		double id;
 		Page page;
 		Object min;
@@ -215,5 +212,7 @@ public class Table implements Serializable {
 			this.max = max;
 			this.min = min;
 		}
+
 	}
+
 }

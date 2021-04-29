@@ -16,16 +16,38 @@ public class Page implements Serializable {
 	}
 
 	public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) throws DBAppException {
-		if(this.isEmpty()) {
-			records.add(new Pair(pkvalue,colNameValue));
-		}else {
-			//linear search
-		}
-		// TODO if full then delete from vector last and return it
-		// else return null
+		Pair newPair = new Pair(pkvalue, colNameValue);
+		
+		if (this.isEmpty()) {
+			records.add(new Pair(pkvalue, colNameValue));
+			return null;
+			
+		} else if (this.isFull()) {
+			if (Table.GenericCompare(records.lastElement().pk, pkvalue) < 0) 
+				return newPair;
+			 else {
+				int i = 0;
 
-		// TODO binary search on pk
-		return null;
+				for (i = 0; i < DBApp.capacity; i++)
+					if (Table.GenericCompare(records.get(i).pk, pkvalue) >= 0)
+						break;
+
+				records.insertElementAt(newPair, i);
+				
+				return records.remove(records.size() - 1);
+
+			}
+
+		} else {
+			int i = 0;
+			for (i = 0; i < records.size(); i++)
+				if (Table.GenericCompare(records.get(i).pk, pkvalue) >= 0)
+					break;
+
+			records.insertElementAt(newPair, i);
+			return null;
+		}
+
 	}
 
 	public void update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
