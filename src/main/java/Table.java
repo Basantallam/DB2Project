@@ -8,11 +8,11 @@ import java.util.Map.Entry;
 
 public class Table implements Serializable {
 	String tableName;
-	transient String pk;
-	transient Hashtable<String, String> htblColNameType;
-	transient Hashtable<String, String> htblColNameMin;
-	transient Hashtable<String, String> htblColNameMax;
-	Vector<Page> Pages;
+//	transient String pk;
+//	transient Hashtable<String, String> htblColNameType;
+//	transient Hashtable<String, String> htblColNameMin;
+//	transient Hashtable<String, String> htblColNameMax;
+	Vector<Page> Pages; //todo page ranges and ids
 	transient Vector<Pair> range; // every element corresponds to a page
 
 	public Table(String strTableName, String strClusteringKeyColumn, Hashtable<String, String> htblColNameType,
@@ -53,6 +53,7 @@ public class Table implements Serializable {
 		else {
 			// Set<String> original = this.htblColNameType.keySet();
 			Set<String> input = colNameValue.keySet();
+			// todo all checks will be in AppDB
 			for (String key : input) {
 				if (!(this.htblColNameType.containsKey(key)))
 
@@ -154,7 +155,7 @@ public class Table implements Serializable {
 		int hi = Pages.size(); // idx
 		int lo = 0;// idx
 
-		String pktype = htblColNameType.get(pk);
+		String pktype = htblColNameType.get(pk); //todo searchkey of which type instanceof
 
 		if (pktype.equals("java.lang.Integer"))
 			return BinarySearchInt((Integer) searchkey, hi, lo);
