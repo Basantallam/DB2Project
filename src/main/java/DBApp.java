@@ -1,24 +1,37 @@
 import java.io.*;
 import java.io.IOException;
-import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Set;
 
-public class DBApp implements DBAppInterface, Serializable {
-    Hashtable<String, Table> DB;
+public class DBApp implements DBAppInterface {
+    HashSet<String> DB;
+    public static int capacity ;
 
     public void init() {
-        //Todo load the tables from datatable
-        DB = new Hashtable<>();
-
+        DB = new HashSet<>();
+        capacity= getCapacity();
+        addtoDB();
         //TODO add signature of metatable
+    }
+
+    private int getCapacity() {
+        //todo from AppDB.config
+        return 250;
+    }
+
+    private void addtoDB() {
+        //TODO retrieve table names from meta table to DB(this)
     }
 
     @Override
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException {
         if (!DB.contains(tableName)) {
+            DB.add(tableName);
             try {
-                DB.put(tableName, new Table(tableName, clusteringKey, colNameType, colNameMin, colNameMax));
+                Table t = new Table( tableName,  clusteringKey,  colNameType, colNameMin, colNameMax);
+                serialize(tableName,t);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -34,18 +47,51 @@ public class DBApp implements DBAppInterface, Serializable {
     @Override
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
-            Table table = DB.get(tableName);
-            table.insert(colNameValue);  //TODO
+
+
+           String pk= checkinMeta( tableName,  colNameValue);
+            Table table= (Table) deserialize(tableName);
+            table.insert(pk ,colNameValue);
+            serialize(tableName,table);
 
 
         } else throw new DBAppException("Table does not exist in Database");
     }
 
+    private String checkinMeta(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
+        //todo retrieve from meta data to chdeck and save pk
+//        if (colNameValue.get((Object) pk) == null)
+//            throw new DBAppException();
+//        else {
+//            // Set<String> original = this.htblColNameType.keySet();
+//            Set<String> input = colNameValue.keySet();
+//
+//            for (String key : input) {
+//                if (!(this.htblColNameType.containsKey(key)))
+//
+//                    throw new DBAppException("column name doesn't exist");// TODO + do we break here?
+//
+//                if (!(this.htblColNameType.get(key).equals((colNameValue.get(key).getClass()).toString())))
+//                    // checking correct data types
+//                    throw new DBAppException("incorrect datatype");// TODO + do we break here?
+//                if ((this.htblColNameMax.get(key)).compareTo((colNameValue.get(key).getClass()).toString()) < 0)
+//                    throw new DBAppException("value entered is above max");// TODO + do we break here?
+//                if ((this.htblColNameMin.get(key)).compareTo((colNameValue.get(key).getClass()).toString()) > 0)
+//                    throw new DBAppException("value entered is below min");// TODO + do we break here?
+//
+//            }
+//        }
+
+        return null;
+    }
+
     @Override
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
-            Table table = DB.get(tableName);
+            Table table = (Table)deserialize(tableName);
+            checkinMeta(tableName,columnNameValue);
             table.update(clusteringKeyValue, columnNameValue);
+            serialize(tableName,table);
         } else throw new DBAppException("Table does not exist in Database");
 
     }
@@ -53,8 +99,9 @@ public class DBApp implements DBAppInterface, Serializable {
     @Override
     public void deleteFromTable(String tableName, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
-            Table table = DB.get(tableName);
+            Table table = (Table)deserialize(tableName);
             table.delete(columnNameValue);
+            serialize(tableName,table);
 
         } else throw new DBAppException("Table does not exist in Database");
 
@@ -85,22 +132,23 @@ public class DBApp implements DBAppInterface, Serializable {
             if (!(DB.contains(sqlTerms[i].strTableName)))
                 throw new DBAppException("Table does not exist in Database");
             else {
-                table = DB.get(sqlTerms[i].strTableName);
-                if (!(table.htblColNameType.containsKey(sqlTerms[i].strColumnName)))
-                    throw new DBAppException("Column" + sqlTerms[i].strColumnName + "does not exist in Table: " + sqlTerms[i].strTableName);
-                else {
-                    column = sqlTerms[i].strColumnName;
-                    valueType = (sqlTerms[i].objValue.getClass()).toString();
-                    if (!(table.htblColNameType.get(column).equals(valueType)))
-                        throw new DBAppException("Value has an incorrect data type");
-                    else {
-                        //todo
-
-                    }
-                }
+                table = (Table)deserialize(sqlTerms[i].strTableName); //TODO hashset instead of hashtable table in serialized files
+//                if (!(table.htblColNameType.containsKey(sqlTerms[i].strColumnName)))
+//                    throw new DBAppException("Column" + sqlTerms[i].strColumnName + "does not exist in Table: " + sqlTerms[i].strTableName);
+//                else {
+//                    column = sqlTerms[i].strColumnName;
+//                    valueType = (sqlTerms[i].objValue.getClass()).toString();
+//                    if (!(table.htblColNameType.get(column).equals(valueType)))
+//                        throw new DBAppException("Value has an incorrect data type");
+//                    else {
+//                        //todo
+//
+//                    }
+//
+//                }  //todo checking in meta
             }
         }
-        Iterator pagesItr = (table.Pages).iterator();
+        Iterator pagesItr = (table.table).iterator();
         Iterator recs = null;
         Iterator res = null;
         Page currPage;
@@ -128,7 +176,7 @@ public class DBApp implements DBAppInterface, Serializable {
 
         return false;
     }
-    public void serialize (String filename , Object obj){
+    public static void serialize (String filename , Object obj){
         try {
             FileOutputStream fileOut =
                     new FileOutputStream("src\\main\\resources\\data\\"+filename+".ser");
@@ -141,7 +189,7 @@ public class DBApp implements DBAppInterface, Serializable {
             i.printStackTrace();
         }
     }
-    public Object deserialize(String filename){
+    public static Object deserialize(String filename){
         Object obj;
         try {
             FileInputStream fileIn = new FileInputStream("src\\main\\resources\\data\\"+filename+".ser");
