@@ -1,17 +1,21 @@
 import java.io.*;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-public class DBApp implements DBAppInterface, Serializable {
-    Hashtable<String, Table> DB;
+public class DBApp implements DBAppInterface {
+    HashSet<String> DB;
 
     public void init() {
-        //Todo load the tables from datatable
-        DB = new Hashtable<>();
-
+        DB = new HashSet<>();
+        addtoDB();
         //TODO add signature of metatable
+    }
+
+    private void addtoDB() {
+        //TODO retrieve table names from meta table to DB(this)
     }
 
     @Override
@@ -85,7 +89,7 @@ public class DBApp implements DBAppInterface, Serializable {
             if (!(DB.contains(sqlTerms[i].strTableName)))
                 throw new DBAppException("Table does not exist in Database");
             else {
-                table = DB.get(sqlTerms[i].strTableName);
+                table = DB.get(sqlTerms[i].strTableName); //TODO hashset instead of hashtable table in serialized files
                 if (!(table.htblColNameType.containsKey(sqlTerms[i].strColumnName)))
                     throw new DBAppException("Column" + sqlTerms[i].strColumnName + "does not exist in Table: " + sqlTerms[i].strTableName);
                 else {
@@ -128,7 +132,7 @@ public class DBApp implements DBAppInterface, Serializable {
 
         return false;
     }
-    public void serialize (String filename , Object obj){
+    public static void serialize (String filename , Object obj){
         try {
             FileOutputStream fileOut =
                     new FileOutputStream("src\\main\\resources\\data\\"+filename+".ser");
@@ -141,7 +145,7 @@ public class DBApp implements DBAppInterface, Serializable {
             i.printStackTrace();
         }
     }
-    public Object deserialize(String filename){
+    public static Object deserialize(String filename){
         Object obj;
         try {
             FileInputStream fileIn = new FileInputStream("src\\main\\resources\\data\\"+filename+".ser");
