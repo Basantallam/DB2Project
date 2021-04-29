@@ -8,16 +8,15 @@ import java.util.Map.Entry;
 
 public class Table implements Serializable {
 	String tableName;
-	String pk;
-	Hashtable<String, String> htblColNameType;
-	Hashtable<String, String> htblColNameMin;
-	Hashtable<String, String> htblColNameMax;
+	transient String pk;
+	transient Hashtable<String, String> htblColNameType;
+	transient Hashtable<String, String> htblColNameMin;
+	transient Hashtable<String, String> htblColNameMax;
 	Vector<Page> Pages;
 	transient Vector<Pair> range; // every element corresponds to a page
 
-	//testing
 	public Table(String strTableName, String strClusteringKeyColumn, Hashtable<String, String> htblColNameType,
-			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
+				 Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
 			throws DBAppException, IOException {
 		tableName = strTableName;
 		this.Pages = new Vector<Page>();
@@ -42,7 +41,7 @@ public class Table implements Serializable {
 
 		updateMetadata();
 
-		// TODO convert types into the datatypes
+		//TODO convert types into the datatypes
 
 	}
 
@@ -79,24 +78,22 @@ public class Table implements Serializable {
 					Pair firstpair = new Pair(firstpk, firstpk);
 					range.add(firstpair);
 				} else {
-					// binary search for page
+					//TODO binary search for page
 
 					Page foundpage = BinarySearch(colNameValue.get(pk));
 					foundpage.insert(colNameValue);// TODO
 				}
 
-				// now we search for correct location then we insert
+				//TODO now we search for correct location then we insert
 				// shift records if necessary
 				// create a new page if necessary and if you'll create new page create a new
 				// range too
-				
-				
 			}
 		}
 	}
 
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
-		// update range
+		//TODo update range
 		Page foundpage = BinarySearch(columnNameValue.get(pk)); // TODO currently returns null
 		foundpage.update(clusteringKeyValue, columnNameValue);// TODO
 	}
@@ -104,9 +101,9 @@ public class Table implements Serializable {
 	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {// TODO
 
 		Page foundpage = BinarySearch(columnNameValue.get(pk)); // TODO currently returns null
-		foundpage.delete(columnNameValue);// TODO
+		foundpage.delete(columnNameValue);
 
-		// delete entire page if last record is deleted in table use isEmpty()
+		//TODO delete entire page if last record is deleted in table use isEmpty()
 		// delete it in range vector too
 		if (foundpage.isEmpty()) {
 			int idx = Pages.indexOf(foundpage);
@@ -128,7 +125,7 @@ public class Table implements Serializable {
 
 	public void updateMetadata() throws IOException {
 
-		String path = "C:\\Users\\Bassant\\Desktop\\Sem 6\\Database 2\\DB2Project\\DB2Project\\src\\main\\resources\\metadata.csv";
+		String path = "src\\main\\resources\\metadata.csv";
 		FileWriter fw = new FileWriter(path);
 
 		Set<String> keys = htblColNameType.keySet();
@@ -149,6 +146,7 @@ public class Table implements Serializable {
 		}
 		fw.write(s);
 		fw.close();
+		//TODO new file or add??
 	}
 
 	public Page BinarySearch(Object searchkey) {
