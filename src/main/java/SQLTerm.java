@@ -1,0 +1,2 @@
+public class SQLTerm {
+}
