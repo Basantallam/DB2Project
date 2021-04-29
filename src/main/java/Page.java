@@ -15,7 +15,7 @@ public class Page implements Serializable {
 
     }
 
-    public Pair insert(Hashtable<String, Object> colNameValue) throws DBAppException{
+    public Pair insert(Object pkvalue ,Hashtable<String, Object> colNameValue) throws DBAppException{
 
         //todo if full then delete from vector last and return it
         // else return null

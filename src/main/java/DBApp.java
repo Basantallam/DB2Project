@@ -51,7 +51,7 @@ public class DBApp implements DBAppInterface {
 
            String pk= checkinMeta( tableName,  colNameValue);
             Table table= (Table) deserialize(tableName);
-            table.insert(colNameValue,pk);
+            table.insert(pk ,colNameValue);
             serialize(tableName,table);
 
 
@@ -61,11 +61,11 @@ public class DBApp implements DBAppInterface {
     private String checkinMeta(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
         //todo retrieve from meta data to chdeck and save pk
 //        if (colNameValue.get((Object) pk) == null)
-//            throw new DBAppException(); // TODO
+//            throw new DBAppException();
 //        else {
 //            // Set<String> original = this.htblColNameType.keySet();
 //            Set<String> input = colNameValue.keySet();
-//            // todo all checks will be in AppDB
+//
 //            for (String key : input) {
 //                if (!(this.htblColNameType.containsKey(key)))
 //

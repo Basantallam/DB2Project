@@ -17,11 +17,6 @@ public class Table implements Serializable  {
 			throws DBAppException, IOException {
 		tableName = strTableName;
 		this.table = new Vector<tuple4>();
-//		this.htblColNameType = htblColNameType;
-//		this.htblColNameMin = htblColNameMin;
-//		this.htblColNameMax = htblColNameMax;
-//		pk = strClusteringKeyColumn;
-//		range = new Vector<Pair>();
 		Set<String> keys = htblColNameType.keySet();
 
 		if (strClusteringKeyColumn.equals("")) {
@@ -43,15 +38,16 @@ public class Table implements Serializable  {
 
 	}
 
-	public void insert(Hashtable<String, Object> colNameValue, String pk) throws DBAppException {
+	public void insert( String pk ,Hashtable<String, Object> colNameValue) throws DBAppException {
 		// TODO
 		// if(!(colNameValue.containsKey((Object)this.pk)))
 
 				if (table.isEmpty()) { // will not do binary search and will insert directly
 					tuple4 firstpage = new tuple4(0,new Page(0),0,0);
-					firstpage.page.insert(colNameValue);
-
 					Object firstpk = colNameValue.get(pk);
+					firstpage.page.insert(firstpk,colNameValue);
+
+
 					firstpage.max = firstpk;
 					firstpage.min = firstpk;
 
@@ -61,7 +57,7 @@ public class Table implements Serializable  {
 					//TODO binary search for page
 
 					Page foundpage = BinarySearch(colNameValue.get(pk)); //todo deserialize and return page
-					foundpage.insert(colNameValue);// TODO
+					foundpage.insert(colNameValue.get(pk),colNameValue);// TODO
 					DBApp.serialize(tableName+"_0",foundpage.id);
 				}
 
@@ -128,14 +124,10 @@ public class Table implements Serializable  {
 		int hi = table.size(); // idx
 		int lo = 0;// idx
 
-
 		if (searchkey instanceof  Integer)return BinarySearchInt((Integer) searchkey, hi, lo);
 		else if(searchkey instanceof Double) return BinarySearchDouble((Double) searchkey, hi, lo);
 		else  if (searchkey instanceof Date) return BinarySearchDate((Date) searchkey, hi, lo);
 		else   return BinarySearchString((String) searchkey, hi, lo);
-
-
-
 	}
 
 	public Page BinarySearchInt(Integer searchkey, int hi, int lo) {
