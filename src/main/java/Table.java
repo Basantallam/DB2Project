@@ -63,6 +63,7 @@ public class Table implements Serializable {
 					tuple4 tuple=table.get(idx);
 					if(tuple.id== foundID) {
 						table.insertElementAt(newtuple, idx+1);
+						//lesa we need to know which record will be inserted in new page & we need to call foundpage.insert()
 						break;
 					}
 				}
