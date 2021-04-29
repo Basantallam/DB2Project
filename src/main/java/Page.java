@@ -3,52 +3,54 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 public class Page implements Serializable {
-    double id;
+	double id;
 
-    Vector <Pair> records;
+	Vector<Pair> records;
 
-    //TODO class pages
-    public Page(double id){
+	// TODO class pages
+	public Page(double id) {
 
-        records=new Vector<Pair>();
-        this.id=id;
+		records = new Vector<Pair>();
+		this.id = id;
 
-    }
+	}
 
-    public Pair insert(Object pkvalue ,Hashtable<String, Object> colNameValue) throws DBAppException{
+	public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) throws DBAppException {
+		
+		// TODO if full then delete from vector last and return it
+		// else return null
 
-        //todo if full then delete from vector last and return it
-        // else return null
+		// TODO binary search on pk
+		return null;
+	}
 
-// todo       binary search on pk
-        return null;
-    }
+	public void update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
+		// TODO binary search then change row in the pair
 
-    public void update( Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
-        //TODO binary search then change row in the pair
+	}
 
-    }
+	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
+		// TODO delete the record
 
-    public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
-        //TODO delete the record
+	}
 
-    }
+	public boolean isEmpty() {
+		return records.isEmpty();
+	}
 
-    public boolean isEmpty() {
-        return records.isEmpty();
-    }
-    private boolean isFull(){
-        return records.size()==DBApp.capacity;
-    }
-    public static class Pair {
-        Object pk;
-        Hashtable <String, Object> row;
+	public boolean isFull() {
+		return records.size() == DBApp.capacity;
+	}
 
-        public Pair(Object pk, Hashtable <String, Object> row) {
-            this.pk=pk;
-            this.row=row;
-        }
+	public static class Pair {
+		Object pk;
+		Hashtable<String, Object> row;
 
-    }
+		public Pair(Object pk, Hashtable<String, Object> row) {
+			this.pk = pk;
+			this.row = row;
+		}
+
+	}
 
 }

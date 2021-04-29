@@ -3,17 +3,16 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
-public class Table implements Serializable  {
+public class Table implements Serializable {
 	String tableName;
 //	String pk;
 //	transient Hashtable<String, String> htblColNameType;
 //	transient Hashtable<String, String> htblColNameMin;
 //	transient Hashtable<String, String> htblColNameMax;
-	Vector<tuple4> table; //todo page ranges and ids
-
+	Vector<tuple4> table; // todo page ranges and ids
 
 	public Table(String strTableName, String strClusteringKeyColumn, Hashtable<String, String> htblColNameType,
-				 Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
+			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
 			throws DBAppException, IOException {
 		tableName = strTableName;
 		this.table = new Vector<tuple4>();
@@ -31,69 +30,84 @@ public class Table implements Serializable  {
 				throw new DBAppException("not a valid datatype");
 		}
 
-		updateMetadata( strClusteringKeyColumn,  htblColNameType,
-				 htblColNameMin,  htblColNameMax);
+		updateMetadata(strClusteringKeyColumn, htblColNameType, htblColNameMin, htblColNameMax);
 
-		//TODO convert types into the datatypes
+		// TODO convert types into the datatypes
 
 	}
 
-	public void insert( String pk ,Hashtable<String, Object> colNameValue) throws DBAppException {
+	public void insert(String pk, Hashtable<String, Object> colNameValue) throws DBAppException {
 		// TODO
 		// if(!(colNameValue.containsKey((Object)this.pk)))
 
-				if (table.isEmpty()) { // will not do binary search and will insert directly
-					tuple4 firstpage = new tuple4(0,new Page(0),0,0);
-					Object firstpk = colNameValue.get(pk);
-					firstpage.page.insert(firstpk,colNameValue);
+		if (table.isEmpty()) { // will not do binary search and will insert directly
+			tuple4 firstpage = new tuple4(0, new Page(0), 0, 0);
+			Object firstpk = colNameValue.get(pk);
+			firstpage.page.insert(firstpk, colNameValue);
 
+			firstpage.max = firstpk;
+			firstpage.min = firstpk;
 
-					firstpage.max = firstpk;
-					firstpage.min = firstpk;
-
-					table.add(firstpage);
-					DBApp.serialize(tableName+"_0",firstpage.page);
-				} else {
-					//TODO binary search for page
-
-					Page foundpage = BinarySearch(colNameValue.get(pk)); //todo deserialize and return page
-					foundpage.insert(colNameValue.get(pk),colNameValue);// TODO
-					DBApp.serialize(tableName+"_0",foundpage.id);
+			table.add(firstpage);
+			DBApp.serialize(tableName + "_0", firstpage.page);
+		} else {
+			// TODO binary search for page
+			Page foundpage = BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
+			if (foundpage.isFull()) {
+				double foundID = foundpage.id;
+				double newID = CreateID(foundID);
+				Page newPage= new Page(newID);
+				tuple4 newtuple= new tuple4(newID,newPage,pk,pk);
+				
+				for(int idx=0;idx<table.size();idx++) {
+					tuple4 tuple=table.get(idx);
+					if(tuple.id== foundID) {
+						table.insertElementAt(newtuple, idx+1);
+						break;
+					}
 				}
+			} else {
 
-				//TODO now we search for correct location then we insert
-				// shift records if necessary
-				// create a new page if necessary and if you'll create new page create a new
-				// range too
+				foundpage.insert(colNameValue.get(pk), colNameValue);// TODO
+				DBApp.serialize(tableName + "_0", foundpage.id);
+			}
+		}
 
+		// TODO now we search for correct location then we insert
+		// shift records if necessary
+		// create a new page if necessary and if you'll create new page create a new
+		// range too
 
 	}
 
+	private double CreateID(double foundID) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
-		//TODo update range
+		// TODo update range
 		Page foundpage = BinarySearch(columnNameValue.get(clusteringKeyValue)); // TODO currently returns null
 		foundpage.update(clusteringKeyValue, columnNameValue);// TODO
 	}
 
 	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
 		// todo access every page todelete records
-		for( tuple4 t  : table){
-			 t.page.delete(columnNameValue);
-			//TODO delete entire page if last record is deleted in table use isEmpty()
+		for (tuple4 t : table) {
+			t.page.delete(columnNameValue);
+			// TODO delete entire page if last record is deleted in table use isEmpty()
 			// delete it in range vector too
 			if (t.page.isEmpty()) {
 				int idx = table.indexOf(t.page);
 				table.remove(idx);
-				//todo delete its binary file
+				// todo delete its binary file
 			}
 		}
 
-
 	}
 
-
-
-	public void updateMetadata(String pk, Hashtable<String, String> htblColNameType, Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax) throws IOException {
+	public void updateMetadata(String pk, Hashtable<String, String> htblColNameType,
+			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax) throws IOException {
 
 		String path = "src\\main\\resources\\metadata.csv";
 		FileWriter fw = new FileWriter(path);
@@ -116,18 +130,21 @@ public class Table implements Serializable  {
 		}
 		fw.write(s);
 		fw.close();
-		//TODO new file or add??
+		// TODO new file or add??
 	}
 
 	public Page BinarySearch(Object searchkey) {
-		// TODO
 		int hi = table.size(); // idx
 		int lo = 0;// idx
 
-		if (searchkey instanceof  Integer)return BinarySearchInt((Integer) searchkey, hi, lo);
-		else if(searchkey instanceof Double) return BinarySearchDouble((Double) searchkey, hi, lo);
-		else  if (searchkey instanceof Date) return BinarySearchDate((Date) searchkey, hi, lo);
-		else   return BinarySearchString((String) searchkey, hi, lo);
+		if (searchkey instanceof Integer)
+			return BinarySearchInt((Integer) searchkey, hi, lo);
+		else if (searchkey instanceof Double)
+			return BinarySearchDouble((Double) searchkey, hi, lo);
+		else if (searchkey instanceof Date)
+			return BinarySearchDate((Date) searchkey, hi, lo);
+		else
+			return BinarySearchString((String) searchkey, hi, lo);
 	}
 
 	public Page BinarySearchInt(Integer searchkey, int hi, int lo) {
