@@ -2,6 +2,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+import java.lang.reflect.*;
 
 public class Table implements Serializable {
 	String tableName;
@@ -10,6 +11,7 @@ public class Table implements Serializable {
 //	transient Hashtable<String, String> htblColNameMin;
 //	transient Hashtable<String, String> htblColNameMax;
 	Vector<tuple4> table; // todo page ranges and ids
+	String pktype;
 
 	public Table(String strTableName, String strClusteringKeyColumn, Hashtable<String, String> htblColNameType,
 			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
@@ -17,7 +19,6 @@ public class Table implements Serializable {
 		tableName = strTableName;
 		this.table = new Vector<tuple4>();
 		Set<String> keys = htblColNameType.keySet();
-
 		if (strClusteringKeyColumn.equals("")) {
 			throw new DBAppException("please enter a primary key");
 		}
@@ -28,8 +29,10 @@ public class Table implements Serializable {
 					|| htblColNameType.get(key).equals("java.lang.Double")
 					|| htblColNameType.get(key).equals("java.util.Date")))
 				throw new DBAppException("not a valid datatype");
+
 		}
 
+		pktype = htblColNameType.get(strClusteringKeyColumn);
 		updateMetadata(strClusteringKeyColumn, htblColNameType, htblColNameMin, htblColNameMax);
 
 		// TODO convert types into the datatypes
@@ -51,19 +54,25 @@ public class Table implements Serializable {
 			table.add(firstpage);
 			DBApp.serialize(tableName + "_0", firstpage.page);
 		} else {
-			// TODO binary search for page
 			Page foundpage = BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
+
 			if (foundpage.isFull()) {
 				double foundID = foundpage.id;
 				double newID = CreateID(foundID);
-				Page newPage= new Page(newID);
-				tuple4 newtuple= new tuple4(newID,newPage,pk,pk);
-				
-				for(int idx=0;idx<table.size();idx++) {
-					tuple4 tuple=table.get(idx);
-					if(tuple.id== foundID) {
-						table.insertElementAt(newtuple, idx+1);
-						//lesa we need to know which record will be inserted in new page & we need to call foundpage.insert()
+				Page newPage = new Page(newID);
+				tuple4 newtuple = new tuple4(newID, newPage, pk, pk);
+
+				for (int idx = 0; idx < table.size(); idx++) {
+					tuple4 tuple = table.get(idx);
+					if (tuple.id == foundID) {
+						table.insertElementAt(newtuple, idx + 1);
+					
+						if (GenericCompare(foundpage.records.lastElement().pk,(Object)pk) <= 0) {
+
+						}
+						// lesa we need to know which record will be inserted in new page & we need to
+						// call foundpage.insert()
+						
 						break;
 					}
 				}
@@ -138,65 +147,29 @@ public class Table implements Serializable {
 		int hi = table.size(); // idx
 		int lo = 0;// idx
 
-		if (searchkey instanceof Integer)
-			return BinarySearchInt((Integer) searchkey, hi, lo);
-		else if (searchkey instanceof Double)
-			return BinarySearchDouble((Double) searchkey, hi, lo);
-		else if (searchkey instanceof Date)
-			return BinarySearchDate((Date) searchkey, hi, lo);
-		else
-			return BinarySearchString((String) searchkey, hi, lo);
+		return BinarySearch(searchkey, hi, lo);
+
 	}
 
-	public Page BinarySearchInt(Integer searchkey, int hi, int lo) {
-		int mid = (hi + lo) / 2;
-
-		if (((Integer) table.get(mid).max) < searchkey)
-			return BinarySearchInt(searchkey, hi, mid);
-
-		else if (((Integer) table.get(mid).min) > searchkey)
-			return BinarySearchInt(searchkey, mid, lo);
-
+	public static Double GenericCompare(Object a, Object b) {
+		if (a instanceof Integer)
+			return (double) ((Integer) a).compareTo((Integer) b);
+		else if (a instanceof Double)
+			return (double) ((Double) a).compareTo((Double) b);
+		else if (a instanceof Date)
+			return (double) ((Date) a).compareTo((Date) b);
 		else
-			return table.get(mid).page;
+			return (double) ((String) a).compareTo((String) b);
 	}
 
-	public Page BinarySearchDouble(Double searchkey, int hi, int lo) {
+	public Page BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo) / 2;
 
-		if (((Double) table.get(mid).max) < searchkey)
-			return BinarySearchDouble(searchkey, hi, mid);
+		if (GenericCompare(table.get(mid).max, searchkey) > 0)
+			return BinarySearch(searchkey, hi, mid);
 
-		else if (((Double) table.get(mid).min) > searchkey)
-			return BinarySearchDouble(searchkey, mid, lo);
-
-		else
-			return table.get(mid).page;
-	}
-
-	public Page BinarySearchString(String searchkey, int hi, int lo) {
-
-		int mid = (hi + lo) / 2;
-
-		if (((String) table.get(mid).max).compareTo(searchkey) < 0)
-			return BinarySearchString(searchkey, hi, mid);
-
-		else if (((String) table.get(mid).min).compareTo(searchkey) > 0)
-			return BinarySearchString(searchkey, mid, lo);
-
-		else
-			return table.get(mid).page;
-	}
-
-	public Page BinarySearchDate(Date searchkey, int hi, int lo) {
-
-		int mid = (hi + lo) / 2;
-
-		if (((Date) table.get(mid).max).compareTo(searchkey) < 0)
-			return BinarySearchDate(searchkey, hi, mid);
-
-		else if (((Date) table.get(mid).min).compareTo(searchkey) > 0)
-			return BinarySearchDate(searchkey, mid, lo);
+		else if (GenericCompare(table.get(mid).min, searchkey) < 0)
+			return BinarySearch(searchkey, mid, lo);
 
 		else
 			return table.get(mid).page;
