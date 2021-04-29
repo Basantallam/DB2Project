@@ -7,11 +7,17 @@ import java.util.Iterator;
 
 public class DBApp implements DBAppInterface {
     HashSet<String> DB;
+    public static int capacity ;
 
     public void init() {
         DB = new HashSet<>();
+        capacity= getCapacity();
         addtoDB();
         //TODO add signature of metatable
+    }
+
+    private int getCapacity() {
+        //todo from AppDB.config
     }
 
     private void addtoDB() {
