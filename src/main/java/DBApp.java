@@ -1,9 +1,7 @@
 import java.io.*;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
+import java.lang.invoke.MethodType;
+import java.util.*;
 
 public class DBApp implements DBAppInterface {
     HashSet<String> DB;
@@ -11,18 +9,40 @@ public class DBApp implements DBAppInterface {
 
     public void init() {
         DB = new HashSet<>();
-        capacity= getCapacity();
-        addtoDB();
+        try {
+            capacity = getCapacity();
+        }catch(Exception e){
+            e.printStackTrace();
+        }try {
+            addtoDB();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
         //TODO add signature of metatable
     }
 
-    private int getCapacity() {
-        //todo from AppDB.config
-        return 250;
+    private int getCapacity() throws IOException {
+        Properties prop = new Properties();
+        String fileName = "..\\DB2Project-main\\target\\classes\\DBApp.config";
+        FileInputStream is = new FileInputStream(fileName);
+        prop.load(is);
+
+        //    System.out.println(prop.getProperty("..\\DB2Project-main\\target\\classes\\DBApp.config"));
+        return Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
     }
 
-    private void addtoDB() {
-        //TODO retrieve table names from meta table to DB(this)
+    private void addtoDB() throws IOException {
+        FileReader fr = new FileReader("..\\DB2Project-main\\src\\main\\resources\\metadata.csv");
+        BufferedReader br = new BufferedReader(fr);
+        br.readLine();
+        while (br.ready()) {
+            String line = br.readLine();
+
+            String[] metadata = (line).split(", ");
+
+            DB.add(metadata[0]);
+            //    System.out.println(metadata[0]);
+        }
     }
 
     @Override
@@ -35,8 +55,8 @@ public class DBApp implements DBAppInterface {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            //TODO add into metatable
-        } else throw new DBAppException(); //TODO
+            // add into metatable is done in the constructor of table
+        } else throw new DBAppException("table already exists");
     }
 
     @Override
@@ -49,7 +69,7 @@ public class DBApp implements DBAppInterface {
         if (DB.contains(tableName)) {
 
 
-           String pk= checkinMeta( tableName,  colNameValue);
+            String pk= checkinMeta( tableName,  colNameValue);
             Table table= (Table) deserialize(tableName);
             table.insert(pk ,colNameValue);
             serialize(tableName,table);
@@ -59,32 +79,43 @@ public class DBApp implements DBAppInterface {
     }
 
     private String checkinMeta(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
-        //todo retrieve from meta data to chdeck and save pk
-//        if (colNameValue.get((Object) pk) == null)
-//            throw new DBAppException();
-//        else {
-//            // Set<String> original = this.htblColNameType.keySet();
-//            Set<String> input = colNameValue.keySet();
-//
-//            for (String key : input) {
-//                if (!(this.htblColNameType.containsKey(key)))
-//
-//                    throw new DBAppException("column name doesn't exist");// TODO + do we break here?
-//
-//                if (!(this.htblColNameType.get(key).equals((colNameValue.get(key).getClass()).toString())))
-//                    // checking correct data types
-//                    throw new DBAppException("incorrect datatype");// TODO + do we break here?
-//                if ((this.htblColNameMax.get(key)).compareTo((colNameValue.get(key).getClass()).toString()) < 0)
-//                    throw new DBAppException("value entered is above max");// TODO + do we break here?
-//                if ((this.htblColNameMin.get(key)).compareTo((colNameValue.get(key).getClass()).toString()) > 0)
-//                    throw new DBAppException("value entered is below min");// TODO + do we break here?
-//
-//            }
-//        }
+        String pk="";
+        try {
+            FileReader fr = new FileReader("..\\DB2Project-main\\src\\main\\resources\\metadata.csv");
+            BufferedReader br = new BufferedReader(fr);
+            br.readLine();
+            while (br.ready()) {
+                String line = br.readLine();
 
-        return null;
+                String[] metadata = (line).split(", ");
+
+                if(metadata[0]==tableName){
+                    pk=metadata[3];
+                    if(colNameValue.containsKey(metadata[1])){
+                        if(GenericCompare(colNameValue.get(metadata[1]),metadata[5])<0
+                                ||GenericCompare(colNameValue.get(metadata[1]),metadata[6])>0){
+                            throw new DBAppException("Value is too big or too small ");
+                        }colNameValue.remove(metadata[1]);
+                    }
+                }
+            }if(!colNameValue.isEmpty()){
+                throw new DBAppException("column name not found");
+            }
+        }catch(Exception e){
+
+        }return pk;
+
     }
-
+    public static Double GenericCompare(Object a, Object b) {
+        if (a instanceof Integer)
+            return (double) ((Integer) a).compareTo((Integer) b);
+        else if (a instanceof Double)
+            return (double) ((Double) a).compareTo((Double) b);
+        else if (a instanceof Date)
+            return (double) ((Date) a).compareTo((Date) b);
+        else
+            return (double) ((String) a).compareTo((String) b);
+    }
     @Override
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
@@ -176,6 +207,7 @@ public class DBApp implements DBAppInterface {
 
         return false;
     }
+
     public static void serialize (String filename , Object obj){
         try {
             FileOutputStream fileOut =
@@ -204,4 +236,8 @@ public class DBApp implements DBAppInterface {
         return obj;
     }
 
+    public static void main(String[] args) throws IOException {
+        //System.out.println(getCapacity());
+        //init();
+    }
 }
