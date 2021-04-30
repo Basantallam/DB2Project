@@ -36,7 +36,7 @@ public class Table implements Serializable {
 		// if(!(colNameValue.containsKey((Object)this.pk)))
 
 		if (table.isEmpty()) { // will not do binary search and will insert directly
-			tuple4 firstpage = new tuple4(0, new Page(0), 0, 0);
+			tuple4 firstpage = new tuple4(new Double(0), new Page(new Double(0)), 0, 0);
 			Object firstpk = colNameValue.get(pk);
 			firstpage.page.insert(firstpk, colNameValue);
 
@@ -201,13 +201,13 @@ public class Table implements Serializable {
 
 	}
 
-	public static class tuple4 {
-		double id;
+	public static class tuple4 implements Serializable{
+		Double id;
 		Page page;
 		Object min;
 		Object max;
 
-		public tuple4(double id, Page page, Object min, Object max) {
+		public tuple4(Double id, Page page, Object min, Object max) {
 			this.id = id;
 			this.page = page;
 			this.max = max;

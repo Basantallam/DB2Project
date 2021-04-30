@@ -83,14 +83,14 @@ public class DBApp implements DBAppInterface {
         try {
             FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
             BufferedReader br = new BufferedReader(fr);
-            br.readLine();
+
             while (br.ready()) {
                 String line = br.readLine();
 
                 String[] metadata = (line).split(", ");
 
-                if(metadata[0]==tableName){
-                    pk=metadata[3];
+                if(metadata[0].equals(tableName)){
+                    if(metadata[3].equals("True"))pk=metadata[1];
                     if(colNameValue.containsKey(metadata[1])){
                         if(GenericCompare(colNameValue.get(metadata[1]),metadata[5])<0
                                 ||GenericCompare(colNameValue.get(metadata[1]),metadata[6])>0){

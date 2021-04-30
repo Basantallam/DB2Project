@@ -3,12 +3,12 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 public class Page implements Serializable {
-	double id;
+	Double id;
 
 	Vector<Pair> records;
 
 	// TODO class pages
-	public Page(double id) {
+	public Page(Double id) {
 
 		records = new Vector<Pair>();
 		this.id = id;
@@ -68,7 +68,7 @@ public class Page implements Serializable {
 		return records.size() == DBApp.capacity;
 	}
 
-	public static class Pair {
+	public static class Pair implements Serializable{
 		Object pk;
 		Hashtable<String, Object> row;
 
