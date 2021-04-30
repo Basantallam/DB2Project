@@ -50,8 +50,8 @@ public class Table implements Serializable {
 
 		} else {
 			int foundIdx = BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
-			Page foundpage = table.get(foundIdx).page;
-			tuple4 foundTuple = null;// correspomding lel page
+			Page foundpage = (Page) DBApp.deserialize(tableName+"_"+foundIdx);
+			tuple4 foundTuple = null;// corresponding lel page
 			if (foundpage.isFull()) {
 				double foundID = foundpage.id;
 
@@ -67,6 +67,7 @@ public class Table implements Serializable {
 				newPage.insert(returned.pk, returned.row);
 				tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
 				table.insertElementAt(newtuple, foundIdx + 1);
+				DBApp.serialize(tableName+"_"+newID,newPage);
 
 			} else
 
@@ -74,7 +75,7 @@ public class Table implements Serializable {
 
 				foundpage.insert((Object) pk, colNameValue);
 				// mesh 3arfa eih da
-				// DBApp.serialize(tableName + "_0", foundpage.id);
+				 DBApp.serialize(tableName + "_"+foundpage.id, foundpage);
 			}
 		}
 

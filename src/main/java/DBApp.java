@@ -23,7 +23,7 @@ public class DBApp implements DBAppInterface {
 
     private int getCapacity() throws IOException {
         Properties prop = new Properties();
-        String fileName = "..\\DB2Project-main\\target\\classes\\DBApp.config";
+        String fileName = "src\\main\\resources\\DBApp.config";
         FileInputStream is = new FileInputStream(fileName);
         prop.load(is);
 
@@ -32,7 +32,7 @@ public class DBApp implements DBAppInterface {
     }
 
     private void addtoDB() throws IOException {
-        FileReader fr = new FileReader("..\\DB2Project-main\\src\\main\\resources\\metadata.csv");
+        FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
         BufferedReader br = new BufferedReader(fr);
         br.readLine();
         while (br.ready()) {
@@ -81,7 +81,7 @@ public class DBApp implements DBAppInterface {
     private String checkinMeta(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
         String pk="";
         try {
-            FileReader fr = new FileReader("..\\DB2Project-main\\src\\main\\resources\\metadata.csv");
+            FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
             BufferedReader br = new BufferedReader(fr);
             br.readLine();
             while (br.ready()) {
