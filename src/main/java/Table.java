@@ -203,7 +203,7 @@ public class Table implements Serializable {
 
 	public static class tuple4 implements Serializable{
 		Double id;
-		Page page;
+		transient Page page;
 		Object min;
 		Object max;
 
