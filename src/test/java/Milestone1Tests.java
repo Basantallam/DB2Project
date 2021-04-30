@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
+//import main.java.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class Milestone1Tests {
@@ -50,7 +50,7 @@ public class Milestone1Tests {
 
     @Test
     @Order(2)
-    public void testClearMetaDataFile() throws Exception{
+    public void testClearMetaDataFile() throws Exception {
 
         String metaFilePath = "src/main/resources/metadata.csv";
         File metaFile = new File(metaFilePath);
@@ -67,6 +67,9 @@ public class Milestone1Tests {
     @Test
     @Order(3)
     public void testDataDirectory() throws Exception {
+        DBApp dbApp = new DBApp();
+        dbApp.init();
+
         String dataDirPath = "src/main/resources/data";
         File dataDir = new File(dataDirPath);
 
@@ -214,8 +217,22 @@ public class Milestone1Tests {
         DBApp dbApp = new DBApp();
         dbApp.init();
 
+
+        BufferedReader studentsTable = new BufferedReader(new FileReader("src/main/resources/students_table.csv"));
+        String record;
+        int c = 1;
+
+        String clusteringKey = "";
+        Hashtable<String, Object> row = new Hashtable<>();
+        while ((record = studentsTable.readLine()) != null && c > 0) {
+            String[] fields = record.split(",");
+            clusteringKey = fields[0];
+            c--;
+        }
+        studentsTable.close();
+
         String table = "students";
-        Hashtable<String, Object> row = new Hashtable();
+
         row.put("first_name", "foo");
         row.put("last_name", "bar");
 
@@ -223,7 +240,7 @@ public class Milestone1Tests {
         row.put("dob", dob);
         row.put("gpa", 1.1);
 
-        dbApp.updateTable(table, "82-8772", row);
+        dbApp.updateTable(table, clusteringKey, row);
         dbApp = null;
     }
 
@@ -233,14 +250,32 @@ public class Milestone1Tests {
         dbApp.init();
 
         String table = "courses";
-        Hashtable<String, Object> row = new Hashtable();
 
-        row.put("course_id", "foo");
+        BufferedReader coursesTable = new BufferedReader(new FileReader("src/main/resources/courses_table.csv"));
+        String record;
+        Hashtable<String, Object> row = new Hashtable<>();
+        int c = 1;
+
+        String clusteringKey = "";
+        while ((record = coursesTable.readLine()) != null && c > 0) {
+            String[] fields = record.split(",");
+            clusteringKey += fields[0].trim().substring(0, 4);
+            clusteringKey += "-";
+            clusteringKey += fields[0].trim().substring(5, 7);
+            clusteringKey += "-";
+            clusteringKey += fields[0].trim().substring(8);
+
+            c--;
+        }
+
+        coursesTable.close();
+
+        row.put("course_id", "1100");
         row.put("course_name", "bar");
         row.put("hours", 13);
 
 
-        dbApp.updateTable(table, "2000-04-03", row);
+        dbApp.updateTable(table, clusteringKey, row);
         dbApp = null;
     }
 
@@ -252,13 +287,27 @@ public class Milestone1Tests {
         String table = "transcripts";
         Hashtable<String, Object> row = new Hashtable();
 
-        row.put("student_id", "34-9874");
+        BufferedReader transcriptsTable = new BufferedReader(new FileReader("src/main/resources/transcripts_table.csv"));
+        String record;
+
+        int c = 1;
+        String clusteringKey = "";
+        while ((record = transcriptsTable.readLine()) != null && c > 0) {
+            String[] fields = record.split(",");
+            clusteringKey = fields[0].trim();
+
+            c--;
+        }
+
+        transcriptsTable.close();
+
+        row.put("student_id", "43-9874");
         row.put("course_name", "bar");
 
         Date date_passed = new Date(2011 - 1900, 4 - 1, 1);
         row.put("date_passed", date_passed);
 
-        dbApp.updateTable(table, "1.57", row);
+        dbApp.updateTable(table, clusteringKey, row);
     }
 
     @Test
@@ -268,9 +317,25 @@ public class Milestone1Tests {
 
         String table = "pcs";
         Hashtable<String, Object> row = new Hashtable();
-        row.put("student_id", "32-12121");
+        row.put("student_id", "51-3808");
 
-        dbApp.updateTable(table, "50", row);
+        BufferedReader pcsTable = new BufferedReader(new FileReader("src/main/resources/pcs_table.csv"));
+        String record;
+
+        int c = 1;
+        String clusteringKey = "";
+
+        while ((record = pcsTable.readLine()) != null && c > 0) {
+            String[] fields = record.split(",");
+            clusteringKey = fields[0].trim();
+            c--;
+
+        }
+
+        pcsTable.close();
+
+        dbApp.updateTable(table, clusteringKey, row);
+
     }
 
     @Test
@@ -342,12 +407,14 @@ public class Milestone1Tests {
 
         String table = "pcs";
         Hashtable<String, Object> row = new Hashtable();
-        row.put("student_id", "32-12121");
 
+        row.put("student_id", "79-0786");
         row.put("os", "linux");
 
         Assertions.assertThrows(DBAppException.class, () -> {
-            dbApp.updateTable(table, "50", row);
+
+            dbApp.updateTable(table, "00353", row);
+
         });
 
 
@@ -361,10 +428,34 @@ public class Milestone1Tests {
         String table = "students";
         Hashtable<String, Object> row = new Hashtable();
 
-        Date dob = new Date(1993 - 1900, 11 - 1, 21);
-        row.put("dob", dob);
+        BufferedReader studentsTable = new BufferedReader(new FileReader("src/main/resources/students_table.csv"));
+        String record;
+        int c = 0;
+        int finalLine = 1;
 
-        row.put("gpa", 1.23);
+
+        while ((record = studentsTable.readLine()) != null && c <= finalLine) {
+            if (c == finalLine) {
+                String[] fields = record.split(",");
+                row.put("id", fields[0]);
+
+                int year = Integer.parseInt(fields[3].trim().substring(0, 4));
+                int month = Integer.parseInt(fields[3].trim().substring(5, 7));
+                int day = Integer.parseInt(fields[3].trim().substring(8));
+
+
+                Date dob = new Date(year - 1900, month - 1, day);
+                row.put("dob", dob);
+
+                double gpa = Double.parseDouble(fields[4].trim());
+
+                row.put("gpa", gpa);
+
+            }
+            c++;
+        }
+        studentsTable.close();
+
 
         dbApp.deleteFromTable(table, row);
 
@@ -375,11 +466,30 @@ public class Milestone1Tests {
         final DBApp dbApp = new DBApp();
         dbApp.init();
 
+        BufferedReader coursesTable = new BufferedReader(new FileReader("src/main/resources/courses_table.csv"));
+        String record;
+        Hashtable<String, Object> row = new Hashtable<>();
+        int c = 0;
+        int finalLine = 1;
+        while ((record = coursesTable.readLine()) != null && c <= finalLine) {
+            if (c == finalLine) {
+                String[] fields = record.split(",");
+
+                int year = Integer.parseInt(fields[0].trim().substring(0, 4));
+                int month = Integer.parseInt(fields[0].trim().substring(5, 7));
+                int day = Integer.parseInt(fields[0].trim().substring(8));
+
+                Date dateAdded = new Date(year - 1900, month - 1, day);
+                row.put("date_added", dateAdded);
+                row.put("course_name", fields[2]);
+
+
+            }
+            c++;
+        }
+
+
         String table = "courses";
-        Hashtable<String, Object> row = new Hashtable();
-        Date dateAdded = new Date(2000 - 1900, 11 - 1, 21);
-        row.put("date_added", dateAdded);
-        row.put("course_name", "pAYqDr");
 
         dbApp.deleteFromTable(table, row);
     }
@@ -390,11 +500,23 @@ public class Milestone1Tests {
         final DBApp dbApp = new DBApp();
         dbApp.init();
 
-        String table = "transcripts";
-        Hashtable<String, Object> row = new Hashtable();
+        BufferedReader transcriptsTable = new BufferedReader(new FileReader("src/main/resources/transcripts_table.csv"));
+        String record;
+        Hashtable<String, Object> row = new Hashtable<>();
+        int c = 0;
+        int finalLimit = 1;
+        while ((record = transcriptsTable.readLine()) != null && c <= finalLimit) {
+            if (c == finalLimit) {
+                String[] fields = record.split(",");
+                row.put("gpa", Double.parseDouble(fields[0].trim()));
+                row.put("course_name", fields[2].trim());
+            }
+            c++;
+        }
 
-        row.put("course_name", "TwKnJm");
-        row.put("gpa", 0.92);
+        transcriptsTable.close();
+
+        String table = "transcripts";
 
         dbApp.deleteFromTable(table, row);
     }
@@ -404,11 +526,23 @@ public class Milestone1Tests {
         final DBApp dbApp = new DBApp();
         dbApp.init();
 
-        String table = "pcs";
-        Hashtable<String, Object> row = new Hashtable();
-        row.put("pc_id", 18763);
-        row.put("student_id", "57-4782");
+        BufferedReader pcsTable = new BufferedReader(new FileReader("src/main/resources/pcs_table.csv"));
+        String record;
+        Hashtable<String, Object> row = new Hashtable<>();
+        int c = 0;
+        int finalLine = 1;
+        while ((record = pcsTable.readLine()) != null && c <= finalLine) {
+            if(c == finalLine) {
+                String[] fields = record.split(",");
 
+                row.put("pc_id", Integer.parseInt(fields[0].trim()));
+                row.put("student_id", fields[1].trim());
+            }
+            c++;
+        }
+
+
+        String table = "pcs";
         dbApp.deleteFromTable(table, row);
     }
 
@@ -461,7 +595,6 @@ public class Milestone1Tests {
             String[] fields = record.split(",");
 
 
-
             int year = Integer.parseInt(fields[0].trim().substring(0, 4));
             int month = Integer.parseInt(fields[0].trim().substring(5, 7));
             int day = Integer.parseInt(fields[0].trim().substring(8));
@@ -473,7 +606,6 @@ public class Milestone1Tests {
             row.put("course_id", fields[1]);
             row.put("course_name", fields[2]);
             row.put("hours", Integer.parseInt(fields[3]));
-
 
             dbApp.insertIntoTable("courses", row);
             row.clear();
@@ -528,7 +660,7 @@ public class Milestone1Tests {
         if (limit == -1) {
             c = 1;
         }
-        while ((record = pcsTable.readLine()) != null) {
+        while ((record = pcsTable.readLine()) != null && c > 0) {
             String[] fields = record.split(",");
 
             row.put("pc_id", Integer.parseInt(fields[0].trim()));
@@ -586,14 +718,14 @@ public class Milestone1Tests {
 
 
         Hashtable<String, String> minValues = new Hashtable<>();
-        minValues.put("date_added", "1990-01-01");
-        minValues.put("course_id", "100");
+        minValues.put("date_added", "1901-01-01");
+        minValues.put("course_id", "0000");
         minValues.put("course_name", "AAAAAA");
         minValues.put("hours", "1");
 
         Hashtable<String, String> maxValues = new Hashtable<>();
-        maxValues.put("date_added", "2000-12-31");
-        maxValues.put("course_id", "2000");
+        maxValues.put("date_added", "2020-12-31");
+        maxValues.put("course_id", "9999");
         maxValues.put("course_name", "zzzzzz");
         maxValues.put("hours", "24");
 
