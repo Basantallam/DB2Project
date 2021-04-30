@@ -6,12 +6,7 @@ import java.lang.reflect.*;
 
 public class Table implements Serializable {
 	String tableName;
-//	String pk;
-//	transient Hashtable<String, String> htblColNameType;
-//	transient Hashtable<String, String> htblColNameMin;
-//	transient Hashtable<String, String> htblColNameMax;
 	Vector<tuple4> table; // todo page ranges and ids
-	String pktype;
 
 	public Table(String strTableName, String strClusteringKeyColumn, Hashtable<String, String> htblColNameType,
 			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
@@ -32,7 +27,6 @@ public class Table implements Serializable {
 
 		}
 
-		pktype = htblColNameType.get(strClusteringKeyColumn);
 		updateMetadata(strClusteringKeyColumn, htblColNameType, htblColNameMin, htblColNameMax);
 
 		// TODO convert types into the datatypes
@@ -80,8 +74,9 @@ public class Table implements Serializable {
 			} else
 
 			{
+				
+				foundpage.insert((Object)pk, colNameValue); 
 				// ??? mesh 3arfa eih da
-				// foundpage.insert(colNameValue.get(pk), colNameValue);// TODO
 				// DBApp.serialize(tableName + "_0", foundpage.id);
 			}
 		}
