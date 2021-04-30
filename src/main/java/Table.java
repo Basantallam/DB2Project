@@ -208,15 +208,4 @@ public class Table implements Serializable {
 
 	}
 
-	public static class ReturnedPage {
-		int idx;
-		Page page;
-
-		public ReturnedPage(int i, Page p) {
-			page = p;
-			idx = i;
-
-		}
-	}
-
 }
