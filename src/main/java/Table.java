@@ -1,6 +1,4 @@
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
 
@@ -110,12 +108,21 @@ public class Table implements Serializable {
 
 	public void updateMetadata(String pk, Hashtable<String, String> htblColNameType,
 			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax) throws IOException {
+		FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
+		BufferedReader br = new BufferedReader(fr);
+		br.readLine();
+		String s = "";
+		while (br.ready()) {
+			String line = br.readLine();
+			s+=line;
+			s += "\n";
+		}
 
 		String path = "src\\main\\resources\\metadata.csv";
 		FileWriter fw = new FileWriter(path);
 
 		Set<String> keys = htblColNameType.keySet();
-		String s = "";
+
 		for (String key : keys) {
 			s += tableName + ", ";
 			s += key + ", ";
