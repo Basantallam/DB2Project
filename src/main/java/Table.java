@@ -132,8 +132,10 @@ public class Table implements Serializable {
 				s += "False, ";
 			}
 			s += "False, ";
-			s += "\"" + htblColNameMin.get(key) + "\", ";
-			s += "\"" + htblColNameMax.get(key) + "\", ";
+			s += "" + htblColNameMin.get(key) + ", ";
+			s += "" + htblColNameMax.get(key) ;
+//			s += "\"" + htblColNameMin.get(key) + "\", ";
+//			s += "\"" + htblColNameMax.get(key) + "\" ";
 			s += "\n";
 		}
 		fw.write(s);
