@@ -49,7 +49,7 @@ public class Table implements Serializable {
 			DBApp.serialize(tableName + "_0", firstpage.page);
 
 		} else {
-			int foundIdx=BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
+			int foundIdx = BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
 			Page foundpage = table.get(foundIdx).page;
 			tuple4 foundTuple = null;// correspomding lel page
 			if (foundpage.isFull()) {
@@ -73,7 +73,7 @@ public class Table implements Serializable {
 			{
 
 				foundpage.insert((Object) pk, colNameValue);
-				// ??? mesh 3arfa eih da
+				// mesh 3arfa eih da
 				// DBApp.serialize(tableName + "_0", foundpage.id);
 			}
 		}
@@ -86,9 +86,9 @@ public class Table implements Serializable {
 	}
 
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
-		// TODo update range
-		int foundIdx=BinarySearch(columnNameValue.get(clusteringKeyValue));
-		Page foundpage =table.get(foundIdx).page; // TODO currently returns null
+		// TODO update range
+		int foundIdx = BinarySearch(columnNameValue.get(clusteringKeyValue));
+		Page foundpage = table.get(foundIdx).page; // TODO currently returns null
 		foundpage.update(clusteringKeyValue, columnNameValue);// TODO
 	}
 
