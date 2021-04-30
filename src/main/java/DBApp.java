@@ -79,6 +79,7 @@ public class DBApp implements DBAppInterface {
     }
 
     private String checkinMeta(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
+        Hashtable test = colNameValue;
         String pk="";
         try {
             FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
@@ -90,15 +91,19 @@ public class DBApp implements DBAppInterface {
                 String[] metadata = (line).split(", ");
 
                 if(metadata[0].equals(tableName)){
-                    if(metadata[3].equals("True"))pk=metadata[1];
+                    if(metadata[3].equals("True")&& colNameValue.containsKey(metadata[1]))pk=metadata[1];
                     if(colNameValue.containsKey(metadata[1])){
                         if(GenericCompare(colNameValue.get(metadata[1]),metadata[5])<0
                                 ||GenericCompare(colNameValue.get(metadata[1]),metadata[6])>0){
                             throw new DBAppException("Value is too big or too small ");
-                        }colNameValue.remove(metadata[1]);
+                        }
+                    test.remove(metadata[1]);
                     }
                 }
-            }if(!colNameValue.isEmpty()){
+            }
+            if(pk.equals(""))
+                throw new DBAppException("Primary Key Not Found");
+            if(!test.isEmpty()){
                 throw new DBAppException("column name not found");
             }
         }catch(IOException e){
