@@ -49,22 +49,19 @@ public class Table implements Serializable {
 			DBApp.serialize(tableName + "_0", firstpage.page);
 
 		} else {
-			Page foundpage = BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
+			ReturnedPage foundpage = BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
 			tuple4 foundTuple = null;// correspomding lel page
-			if (foundpage.isFull()) {
-				double foundID = foundpage.id;
-				int foundIdx = 0;
-				for (foundIdx = 0; foundIdx < table.size(); foundIdx++) {
-					foundTuple = table.get(foundIdx);
-					if (foundTuple.id == foundID) {
-						break;
-					}
-				}
+			if (foundpage.page.isFull()) {
+				double foundID = foundpage.page.id;
+				int foundIdx = foundpage.idx;
+
+				foundTuple = table.get(foundIdx);
+
 				if (GenericCompare((Object) pk, foundTuple.max) > 0) {
 					foundTuple.max = (Object) pk;
 				}
 
-				Page.Pair returned = foundpage.insert(pk, colNameValue);
+				Page.Pair returned = foundpage.page.insert(pk, colNameValue);
 				double newID = CreateID(foundID); // TODO
 				Page newPage = new Page(newID);
 				newPage.insert(returned.pk, returned.row);
@@ -74,8 +71,8 @@ public class Table implements Serializable {
 			} else
 
 			{
-				
-				foundpage.insert((Object)pk, colNameValue); 
+
+				foundpage.page.insert((Object) pk, colNameValue);
 				// ??? mesh 3arfa eih da
 				// DBApp.serialize(tableName + "_0", foundpage.id);
 			}
@@ -90,7 +87,7 @@ public class Table implements Serializable {
 
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
 		// TODo update range
-		Page foundpage = BinarySearch(columnNameValue.get(clusteringKeyValue)); // TODO currently returns null
+		Page foundpage = BinarySearch(columnNameValue.get(clusteringKeyValue)).page; // TODO currently returns null
 		foundpage.update(clusteringKeyValue, columnNameValue);// TODO
 	}
 
@@ -136,7 +133,7 @@ public class Table implements Serializable {
 		// TODO new file or add??
 	}
 
-	public Page BinarySearch(Object searchkey) {
+	public ReturnedPage BinarySearch(Object searchkey) {
 		int hi = table.size(); // idx
 		int lo = 0;// idx
 
@@ -155,11 +152,11 @@ public class Table implements Serializable {
 			return (double) ((String) a).compareTo((String) b);
 	}
 
-	public Page BinarySearch(Object searchkey, int hi, int lo) {
+	public ReturnedPage BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo) / 2;
 
 		if (hi <= lo) {
-			return table.get(hi).page;
+			return new ReturnedPage(hi, table.get(hi).page);
 		}
 
 		if (GenericCompare(table.get(mid).min, searchkey) > 0)
@@ -169,7 +166,7 @@ public class Table implements Serializable {
 			return BinarySearch(searchkey, mid + 1, lo);
 
 		else
-			return table.get(mid).page;
+			return new ReturnedPage(mid, table.get(mid).page);
 	}
 
 	public static void main(String args[]) throws DBAppException, IOException {
@@ -208,6 +205,17 @@ public class Table implements Serializable {
 			this.min = min;
 		}
 
+	}
+
+	public static class ReturnedPage {
+		int idx;
+		Page page;
+
+		public ReturnedPage(int i, Page p) {
+			page = p;
+			idx = i;
+
+		}
 	}
 
 }
