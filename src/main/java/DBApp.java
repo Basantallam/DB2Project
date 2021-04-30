@@ -101,7 +101,7 @@ public class DBApp implements DBAppInterface {
             }if(!colNameValue.isEmpty()){
                 throw new DBAppException("column name not found");
             }
-        }catch(Exception e){
+        }catch(IOException e){
 
         }return pk;
 
