@@ -1,4 +1,5 @@
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.lang.reflect.*;
 
@@ -156,8 +157,11 @@ public class Table implements Serializable {
 			return (double) ((Integer) a).compareTo(Integer.parseInt((String) b));
 		else if (a instanceof Double)
 			return (double) ((Double) a).compareTo(Double.parseDouble((String) b) );
-		else if (a instanceof Date)
-			return (double) ((Date) a).compareTo((Date) b);
+		else if (a instanceof Date){
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			String format = formatter.format(a);
+			return (double) ((String) format).compareTo((String) b);
+		}
 		else
 			return (double) ((String) a).compareTo((String) b);
 	}

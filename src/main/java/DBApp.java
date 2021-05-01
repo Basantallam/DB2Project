@@ -102,9 +102,9 @@ public class DBApp implements DBAppInterface {
                 }
             }
             if(pk.equals(""))
-                throw new DBAppException("Primary Key Not Found");
+                throw new DBAppException("Primary Key is Not Found");
             if(!test.isEmpty()){
-                throw new DBAppException("column name not found");
+                throw new DBAppException("column name is not found");
             }
         }catch(IOException e){
 
