@@ -90,18 +90,23 @@ public class Table implements Serializable {
 	}
 
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
-		// TODO update range
-		int foundIdx = BinarySearch(columnNameValue.get(clusteringKeyValue));
-		Page foundpage = table.get(foundIdx).page; // TODO currently returns null
-		foundpage.update(clusteringKeyValue, columnNameValue);// TODO
+
+//		int foundIdx = BinarySearch(columnNameValue.get(clusteringKeyValue));
+//		Page foundpage = table.get(foundIdx).page; // TODO currently returns null
+//		foundpage.update(clusteringKeyValue, columnNameValue);// TODO
+
+		int idx = BinarySearch(columnNameValue.get(clusteringKeyValue));
+		Page p= (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
+		p.update(clusteringKeyValue,columnNameValue);
+		DBApp.serialize(tableName + "_" + table.get(idx).id, p);
 	}
 
 	public void delete(Hashtable<String, Object> columnNameValue) {
-		// todo access every page to delete records
+		//  access every page to delete records
 		for (tuple4 t : table) {
 			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
 			p.delete(columnNameValue);
-			// TODO delete entire page if last record is deleted in table use isEmpty()
+			//  delete entire page if last record is deleted in table use isEmpty()
 			// delete it in range vector too
 			if (p.isEmpty()) {
 				int idx = table.indexOf(t);
