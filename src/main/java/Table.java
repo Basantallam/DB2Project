@@ -45,11 +45,12 @@ public class Table implements Serializable {
 			firstpage.min = firstpk;
 
 			table.add(firstpage);
-			DBApp.serialize(tableName + "_"+firstpage.id, firstpage.page);
+			DBApp.serialize(tableName + "_" + firstpage.id, firstpage.page);
 
 		} else {
+			
 			int foundIdx = BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
-			Page foundpage = (Page) DBApp.deserialize(tableName+"_"+table.get(foundIdx).id);
+			Page foundpage = (Page) DBApp.deserialize(tableName + "_" + table.get(foundIdx).id);
 			tuple4 foundTuple = null;// corresponding lel page
 			if (foundpage.isFull()) {
 				double foundID = foundpage.id;
@@ -66,7 +67,7 @@ public class Table implements Serializable {
 				newPage.insert(returned.pk, returned.row);
 				tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
 				table.insertElementAt(newtuple, foundIdx + 1);
-				DBApp.serialize(tableName+"_"+newID,newPage);
+				DBApp.serialize(tableName + "_" + newID, newPage);
 
 			} else
 
@@ -74,7 +75,7 @@ public class Table implements Serializable {
 
 				foundpage.insert((Object) colNameValue.get(pk), colNameValue);
 				// mesh 3arfa eih da
-				 DBApp.serialize(tableName + "_"+foundpage.id, foundpage);
+				DBApp.serialize(tableName + "_" + foundpage.id, foundpage);
 			}
 		}
 
@@ -114,7 +115,7 @@ public class Table implements Serializable {
 		String s = "";
 		while (br.ready()) {
 			String line = br.readLine();
-			s+=line;
+			s += line;
 			s += "\n";
 		}
 
@@ -134,7 +135,7 @@ public class Table implements Serializable {
 			}
 			s += "False, ";
 			s += "" + htblColNameMin.get(key) + ", ";
-			s += "" + htblColNameMax.get(key) ;
+			s += "" + htblColNameMax.get(key);
 //			s += "\"" + htblColNameMin.get(key) + "\", ";
 //			s += "\"" + htblColNameMax.get(key) + "\" ";
 			s += "\n";
@@ -145,7 +146,7 @@ public class Table implements Serializable {
 	}
 
 	public int BinarySearch(Object searchkey) {
-		int hi = table.size(); // idx
+		int hi = table.size()-1; // idx
 		int lo = 0;// idx
 
 		return BinarySearch(searchkey, hi, lo);
@@ -156,22 +157,23 @@ public class Table implements Serializable {
 		if (a instanceof Integer)
 			return (double) ((Integer) a).compareTo((Integer) b);
 		else if (a instanceof Double)
-			return (double) ((Double) a).compareTo((Double) b) ;
-		else if (a instanceof Date){
+			return (double) ((Double) a).compareTo((Double) b);
+		else if (a instanceof Date) {
 
 			return (double) ((Date) a).compareTo((Date) b);
-		}
-		else
+		} else if (a instanceof String)
 			return (double) ((String) a).compareTo((String) b);
+		else return null;
 	}
 
 	public int BinarySearch(Object searchkey, int hi, int lo) {
-		int mid = (hi + lo) / 2;
-
-		if (lo+1>=hi) {
-			return lo;
+		int mid = (hi + lo + 1) / 2;
+		if (lo+1 >= hi) {
+			return hi;
 		}
-
+//		System.out.println(table.size());
+		System.out.println(hi+" "+lo);
+		
 		if (GenericCompare(table.get(mid).min, searchkey) > 0)
 			return BinarySearch(searchkey, hi, mid - 1);
 
@@ -205,7 +207,7 @@ public class Table implements Serializable {
 
 	}
 
-	public static class tuple4 implements Serializable{
+	public static class tuple4 implements Serializable {
 		Double id;
 		transient Page page;
 		Object min;
