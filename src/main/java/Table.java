@@ -153,9 +153,9 @@ public class Table implements Serializable {
 
 	public static Double GenericCompare(Object a, Object b) {
 		if (a instanceof Integer)
-			return (double) ((Integer) a).compareTo((Integer) b);
+			return (double) ((Integer) a).compareTo(Integer.parseInt((String) b));
 		else if (a instanceof Double)
-			return (double) ((Double) a).compareTo((Double) b);
+			return (double) ((Double) a).compareTo(Double.parseDouble((String) b) );
 		else if (a instanceof Date)
 			return (double) ((Date) a).compareTo((Date) b);
 		else
