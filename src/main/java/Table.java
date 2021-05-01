@@ -169,7 +169,7 @@ public class Table implements Serializable {
 	public int BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo) / 2;
 
-		if (hi <= lo) {
+		if (lo+1>=hi) {
 			return hi;
 		}
 
