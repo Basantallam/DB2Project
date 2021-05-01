@@ -37,7 +37,7 @@ public class Table implements Serializable {
 
 		Object insertedPkValue = colNameValue.get(pk);
 		if (table.isEmpty()) { // will not do binary search and will insert directly
-			tuple4 firstpage = new tuple4(new Double(0), new Page(new Double(0)), 0, 0);
+			tuple4 firstpage = new tuple4(Double.valueOf(0), new Page(Double.valueOf(0)), 0, 0);
 			firstpage.page.insert(insertedPkValue, colNameValue);
 
 			firstpage.max = insertedPkValue;
