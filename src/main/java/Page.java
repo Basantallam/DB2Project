@@ -69,11 +69,11 @@ public class Page implements Serializable {
 //
 //        }
 //    }
-    public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
+    public void delete(Hashtable<String, Object> columnNameValue)  {
         for (Pair r: records) {
             boolean and=true;
             for (String s: columnNameValue.keySet()) {
-                    if(!r.row.get(s).equals(columnNameValue.get(s)) )
+                    if(r.row.get(s)==null || (!r.row.get(s).equals(columnNameValue.get(s))) )
                         and=false;
             }if(and)records.remove(r);
         }

@@ -96,7 +96,7 @@ public class Table implements Serializable {
 		foundpage.update(clusteringKeyValue, columnNameValue);// TODO
 	}
 
-	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
+	public void delete(Hashtable<String, Object> columnNameValue) {
 		// todo access every page to delete records
 		for (tuple4 t : table) {
 			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
@@ -144,13 +144,10 @@ public class Table implements Serializable {
 			s += "False, ";
 			s += "" + htblColNameMin.get(key) + ", ";
 			s += "" + htblColNameMax.get(key);
-//			s += "\"" + htblColNameMin.get(key) + "\", ";
-//			s += "\"" + htblColNameMax.get(key) + "\" ";
 			s += "\n";
 		}
 		fw.write(s);
 		fw.close();
-		// TODO new file or add??
 	}
 
 	public int BinarySearch(Object searchkey) {
@@ -185,8 +182,6 @@ public class Table implements Serializable {
 		if (lo+1 >= hi) {
 			return hi;
 		}
-//		System.out.println(table.size());
-	//	System.out.println(hi+" "+lo);
 		
 		if (GenericCompare(table.get(mid).min, searchkey) > 0)
 			return BinarySearch(searchkey, hi, mid - 1);
@@ -198,26 +193,7 @@ public class Table implements Serializable {
 			return mid;
 	}
 
-	public static void main(String args[]) throws DBAppException, IOException {
-		String strTableName = "Student";
-
-		Hashtable<String, String> htblColNameType = new Hashtable<String, String>();
-		htblColNameType.put("id", "java.lang.Integer");
-		htblColNameType.put("name", "java.lang.String");
-		htblColNameType.put("gpa", "java.lang.Double");
-
-		Hashtable<String, String> htblColNameMin = new Hashtable<String, String>();
-		htblColNameMin.put("id", "0");
-		htblColNameMin.put("name", new String("Ahmed Noor"));
-		htblColNameMin.put("gpa", "0");
-
-		Hashtable<String, String> htblColNameMax = new Hashtable<String, String>();
-
-		htblColNameMax.put("id", "2343432");
-		htblColNameMax.put("name", new String("Ahmed Noor"));
-		htblColNameMax.put("gpa", "0.95");
-
-		Table t = new Table(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
+	public static void main(String args[]) {
 
 	}
 
