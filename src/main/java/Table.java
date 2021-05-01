@@ -1,4 +1,5 @@
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Table implements Serializable {
@@ -56,7 +57,7 @@ public class Table implements Serializable {
 				foundTuple = table.get(foundIdx);
 
 
-				Page.Pair returned = foundpage.insert(pk, colNameValue);
+				Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
 				
 				if (returned.pk!=insertedPkValue &&
 						GenericCompare(insertedPkValue, foundTuple.max) > 0) {
@@ -171,8 +172,15 @@ public class Table implements Serializable {
 			return (double) ((Integer) a).compareTo((Integer) b);
 		else if (a instanceof Double)
 			return (double) ((Double) a).compareTo((Double) b);
-		else if (a instanceof Date) {
-			return (double) ((Date) a).compareTo((Date) b);
+		else if (a instanceof Date || b instanceof Date) {
+			if (a instanceof Date && b instanceof Date)
+				return (double) ((Date) a).compareTo((Date) b);
+			else {
+				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+				String formata = a instanceof Date? formatter.format(a):(String) a;
+				String formatb = b instanceof Date? formatter.format(b):(String) b;
+				return (double) ((String) formata).compareTo((String) formatb);
+			}
 		} else if (a instanceof String)
 			return (double) ((String) a).compareTo((String) b);
 		else return null;
