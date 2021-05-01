@@ -79,7 +79,7 @@ public class DBApp implements DBAppInterface {
     }
 
     private String checkinMeta(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
-        Hashtable test = colNameValue;
+        Hashtable test = (Hashtable) colNameValue.clone();
         String pk="";
         try {
             FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
