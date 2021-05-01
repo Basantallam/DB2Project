@@ -107,7 +107,7 @@ public class Table implements Serializable {
 	}
 
 	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
-		// todo access every page todelete records
+		// todo access every page to delete records
 		for (tuple4 t : table) {
 			t.page.delete(columnNameValue);
 			// TODO delete entire page if last record is deleted in table use isEmpty()
