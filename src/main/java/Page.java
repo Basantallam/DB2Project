@@ -55,14 +55,14 @@ public class Page implements Serializable {
 
     }
 
-//    public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
+//    public void delete(Hashtable<String, Object> columnNameValue) {
 //        Iterator itr = records.iterator();
 //        while (itr.hasNext()) {
 //            Pair currRec = (Pair) itr.next();
 //            Boolean toDelete = true;
 //            Set<String> keys = columnNameValue.keySet();
 //            for (String key : keys)
-//                if(!(currRec.row.get(key).equals(columnNameValue.get(key))))
+//                if(currRec.row.get(key)==null ||(!(currRec.row.get(key).equals(columnNameValue.get(key)))))
 //                    toDelete=false;
 //            if(!toDelete)
 //                records.remove(currRec);
@@ -70,12 +70,17 @@ public class Page implements Serializable {
 //        }
 //    }
     public void delete(Hashtable<String, Object> columnNameValue)  {
-        for (Pair r: records) {
+//        for (Pair r: records) {
+          int i = records.size()-1;
+          while (i>=0){
+              Pair r = records.get(i);
             boolean and=true;
             for (String s: columnNameValue.keySet()) {
-                    if(r.row.get(s)==null || (!r.row.get(s).equals(columnNameValue.get(s))) )
-                        and=false;
+                    if(r.row.get(s)==null || (!r.row.get(s).equals(columnNameValue.get(s))) ){
+                        and=false; break;
+                    }
             }if(and)records.remove(r);
+            i--;
         }
 
     }
