@@ -98,7 +98,18 @@ public class DBApp implements DBAppInterface {
                                 ||GenericCompare(colNameValue.get(metadata[1]),metadata[6])>0){
                             throw new DBAppException("Value is too big or too small ");
                         }
-                    test.remove(metadata[1]);
+                        String strColType=metadata[2];
+                        boolean ex=false;
+                        switch (strColType){
+                            case "java.lang.Integer":if(!(colNameValue.get(metadata[1]) instanceof Integer))ex=true;break;
+                            case "java.lang.String":if(!(colNameValue.get(metadata[1]) instanceof String))ex=true;break;
+                            case "java.lang.Date":if(!(colNameValue.get(metadata[1]) instanceof Date))ex=true;break;
+                            case "java.lang.Double":if(!(colNameValue.get(metadata[1]) instanceof Double))ex=true;break;
+                        }
+                        if(ex){
+                            throw new DBAppException("column types not compatible");
+                        }
+                        test.remove(metadata[1]);
                     }
                 }
             }
@@ -112,6 +123,7 @@ public class DBApp implements DBAppInterface {
         }return pk;
 
     }
+
     public static Double GenericCompare(Object a, Object b) {
         if (a instanceof Integer)
             return (double) ((Integer) a).compareTo(Integer.parseInt((String) b));
@@ -213,6 +225,7 @@ public class DBApp implements DBAppInterface {
         return res;
 
     }
+
     public boolean checkCond(Hashtable rec, SQLTerm[] sqlTerms){
         //todo - iman
 
