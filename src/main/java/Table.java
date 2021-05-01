@@ -172,7 +172,7 @@ public class Table implements Serializable {
 			return hi;
 		}
 //		System.out.println(table.size());
-		System.out.println(hi+" "+lo);
+	//	System.out.println(hi+" "+lo);
 		
 		if (GenericCompare(table.get(mid).min, searchkey) > 0)
 			return BinarySearch(searchkey, hi, mid - 1);
