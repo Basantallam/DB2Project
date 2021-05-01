@@ -55,22 +55,8 @@ public class Page implements Serializable {
 
     }
 
-//    public void delete(Hashtable<String, Object> columnNameValue) {
-//        Iterator itr = records.iterator();
-//        while (itr.hasNext()) {
-//            Pair currRec = (Pair) itr.next();
-//            Boolean toDelete = true;
-//            Set<String> keys = columnNameValue.keySet();
-//            for (String key : keys)
-//                if(currRec.row.get(key)==null ||(!(currRec.row.get(key).equals(columnNameValue.get(key)))))
-//                    toDelete=false;
-//            if(!toDelete)
-//                records.remove(currRec);
-//
-//        }
-//    }
+
     public void delete(Hashtable<String, Object> columnNameValue)  {
-//        for (Pair r: records) {
           int i = records.size()-1;
           while (i>=0){
               Pair r = records.get(i);
