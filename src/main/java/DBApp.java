@@ -71,6 +71,8 @@ public class DBApp implements DBAppInterface {
 
 
             String pk= checkinMeta( tableName,  colNameValue);
+            if(pk.equals(""))
+                throw new DBAppException("Primary Key is Not Found");
             Table table= (Table) deserialize(tableName);
             table.insert(pk ,colNameValue);
             serialize(tableName,table);
@@ -113,8 +115,7 @@ public class DBApp implements DBAppInterface {
                     }
                 }
             }
-            if(pk.equals(""))
-                throw new DBAppException("Primary Key is Not Found");
+
             if(!test.isEmpty()){
                 throw new DBAppException("column name is not found");
             }
