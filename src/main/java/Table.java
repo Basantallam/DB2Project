@@ -45,11 +45,11 @@ public class Table implements Serializable {
 			firstpage.min = firstpk;
 
 			table.add(firstpage);
-			DBApp.serialize(tableName + "_0", firstpage.page);
+			DBApp.serialize(tableName + "_"+firstpage.id, firstpage.page);
 
 		} else {
 			int foundIdx = BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
-			Page foundpage = (Page) DBApp.deserialize(tableName+"_"+foundIdx);
+			Page foundpage = (Page) DBApp.deserialize(tableName+"_"+table.get(foundIdx).id);
 			tuple4 foundTuple = null;// corresponding lel page
 			if (foundpage.isFull()) {
 				double foundID = foundpage.id;
