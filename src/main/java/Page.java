@@ -1,7 +1,5 @@
 import java.io.Serializable;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.Vector;
 
 public class Page implements Serializable {
@@ -57,20 +55,35 @@ public class Page implements Serializable {
 
     }
 
+//    public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
+//        // TODO delete the record
+//        Iterator itr = records.iterator();
+//        while (itr.hasNext()) {
+//            Pair currRec = (Pair) itr.next();
+//            Boolean toDelete = true;
+//            Set<String> keys = columnNameValue.keySet();
+//            for (String key : keys)
+//                if(!(currRec.row.get(key).equals(columnNameValue.get(key))))
+//                    toDelete=false;
+//            if(!toDelete)
+//                records.remove(currRec);
+//
+//        }
+//    }
     public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
-        // TODO delete the record
-        Iterator itr = records.iterator();
-        while (itr.hasNext()) {
-            Pair currRec = (Pair) itr.next();
-            Boolean toDelete = true;
-            Set<String> keys = columnNameValue.keySet();
-            for (String key : keys)
-                if(!(currRec.row.get(key).equals(columnNameValue.get(key))))
-                    toDelete=false;
-            if(!toDelete)
-                records.remove(currRec);
-
+        for (Pair r: records) {
+            boolean and=true;
+            for (String s: columnNameValue.keySet()) {
+                if(r.row.containsKey(s)){
+                    if(!r.row.get(s).equals(columnNameValue.get(s)) ){
+                        and=false;
+                    }
+                }else{
+                    throw new DBAppException("invalid column name");
+                }
+            }if(and)records.remove(r);
         }
+
     }
 
     public boolean isEmpty() {

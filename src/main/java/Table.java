@@ -109,15 +109,19 @@ public class Table implements Serializable {
 	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
 		// todo access every page to delete records
 		for (tuple4 t : table) {
-			t.page.delete(columnNameValue);
+			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
+			p.delete(columnNameValue);
 			// TODO delete entire page if last record is deleted in table use isEmpty()
 			// delete it in range vector too
-
-			if (t.page.isEmpty()) {
+			if (p.isEmpty()) {
 				int idx = table.indexOf(t);
 				table.remove(idx);
-				// todo delete its binary file
-			}
+				new File("src/main/resources/data/"+tableName+"_"+t.id+".ser").delete();
+			}else{
+				t.min=p.records.firstElement().pk;
+				t.max=p.records.lastElement().pk;
+			}DBApp.serialize(tableName + "_" + t.id, p);
+
 		}
 
 	}
