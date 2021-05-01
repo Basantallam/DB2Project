@@ -170,7 +170,7 @@ public class Table implements Serializable {
 		int mid = (hi + lo) / 2;
 
 		if (lo+1>=hi) {
-			return hi;
+			return lo;
 		}
 
 		if (GenericCompare(table.get(mid).min, searchkey) > 0)
