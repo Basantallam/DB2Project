@@ -56,7 +56,6 @@ public class Page implements Serializable {
     }
 
 //    public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
-//        // TODO delete the record
 //        Iterator itr = records.iterator();
 //        while (itr.hasNext()) {
 //            Pair currRec = (Pair) itr.next();
@@ -74,13 +73,8 @@ public class Page implements Serializable {
         for (Pair r: records) {
             boolean and=true;
             for (String s: columnNameValue.keySet()) {
-                if(r.row.containsKey(s)){
-                    if(!r.row.get(s).equals(columnNameValue.get(s)) ){
+                    if(!r.row.get(s).equals(columnNameValue.get(s)) )
                         and=false;
-                    }
-                }else{
-                    throw new DBAppException("invalid column name");
-                }
             }if(and)records.remove(r);
         }
 

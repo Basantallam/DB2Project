@@ -129,6 +129,7 @@ public class DBApp implements DBAppInterface {
     @Override
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
+            checkinMeta(tableName,columnNameValue);
             Table table = (Table)deserialize(tableName);
             checkinMeta(tableName,columnNameValue);
             table.update(clusteringKeyValue, columnNameValue);
