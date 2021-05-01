@@ -4,10 +4,9 @@ import java.util.Vector;
 
 public class Page implements Serializable {
     Double id;
-
     Vector<Pair> records;
 
-    // TODO class pages
+
     public Page(Double id) {
 
         records = new Vector<Pair>();
@@ -50,9 +49,28 @@ public class Page implements Serializable {
 
     }
 
-    public void update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
-        // TODO binary search then change row in the pair
+    public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
+        Object pk=columnNameValue.get(clusteringKeyValue);
+        int idx=BinarySearch(pk, records.size()-1,0 );
+        for (String s: columnNameValue.keySet()) {
+            records.get(idx).row.replace(s,columnNameValue.get(s));
+        }
 
+    }
+    public int BinarySearch(Object searchkey, int hi, int lo) {
+        int mid = (hi + lo + 1) / 2;
+        if (lo+1 >= hi) {
+            return hi;
+        }
+
+        if (Table.GenericCompare(records.get(mid).pk, searchkey) > 0)
+            return BinarySearch(searchkey, hi, mid - 1);
+
+        else if (Table.GenericCompare(records.get(mid).pk, searchkey) < 0)
+            return BinarySearch(searchkey, mid + 1, lo);
+
+        else
+            return mid;
     }
 
 

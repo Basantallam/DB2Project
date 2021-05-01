@@ -19,7 +19,6 @@ public class DBApp implements DBAppInterface {
         }catch(Exception e){
             e.printStackTrace();
         }
-        //TODO add signature of metatable
     }
 
     private int getCapacity() throws IOException {
@@ -28,7 +27,6 @@ public class DBApp implements DBAppInterface {
         FileInputStream is = new FileInputStream(fileName);
         prop.load(is);
 
-        //    System.out.println(prop.getProperty("..\\DB2Project-main\\target\\classes\\DBApp.config"));
         return Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
     }
 
@@ -42,7 +40,6 @@ public class DBApp implements DBAppInterface {
             String[] metadata = (line).split(", ");
 
             DB.add(metadata[0]);
-            //    System.out.println(metadata[0]);
         }
     }
 
@@ -56,7 +53,6 @@ public class DBApp implements DBAppInterface {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            // add into metatable is done in the constructor of table
         } else throw new DBAppException("table already exists");
     }
 

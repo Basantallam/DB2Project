@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Table implements Serializable {
 	String tableName;
-	Vector<tuple4> table; // todo page ranges and ids
+	Vector<tuple4> table;
 
 	public Table(String strTableName, String strClusteringKeyColumn, Hashtable<String, String> htblColNameType,
 			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
@@ -27,14 +27,13 @@ public class Table implements Serializable {
 
 		updateMetadata(strClusteringKeyColumn, htblColNameType, htblColNameMin, htblColNameMax);
 
-		// TODO convert types into the datatypes
 
 	}
 
 	public void insert(String pk, Hashtable<String, Object> colNameValue)  {
 
 		Object insertedPkValue = colNameValue.get(pk);
-		if (table.isEmpty()) { // will not do binary search and will insert directly
+		if (table.isEmpty()) {
 			tuple4 firstpage = new tuple4(Double.valueOf(0), new Page(Double.valueOf(0)), insertedPkValue, insertedPkValue);
 			firstpage.page.insert(insertedPkValue, colNameValue);
 			table.add(firstpage);
@@ -42,7 +41,7 @@ public class Table implements Serializable {
 
 		} else {
 			
-			int foundIdx = BinarySearch(insertedPkValue); //  deserialize and return page
+			int foundIdx = BinarySearch(insertedPkValue);
 			Page foundpage = (Page) DBApp.deserialize(tableName + "_" + table.get(foundIdx).id);
 			tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
 			Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
@@ -90,11 +89,6 @@ public class Table implements Serializable {
 	}
 
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
-
-//		int foundIdx = BinarySearch(columnNameValue.get(clusteringKeyValue));
-//		Page foundpage = table.get(foundIdx).page; // TODO currently returns null
-//		foundpage.update(clusteringKeyValue, columnNameValue);// TODO
-
 		int idx = BinarySearch(columnNameValue.get(clusteringKeyValue));
 		Page p= (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
 		p.update(clusteringKeyValue,columnNameValue);
@@ -102,12 +96,9 @@ public class Table implements Serializable {
 	}
 
 	public void delete(Hashtable<String, Object> columnNameValue) {
-		//  access every page to delete records
 		for (tuple4 t : table) {
 			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
 			p.delete(columnNameValue);
-			//  delete entire page if last record is deleted in table use isEmpty()
-			// delete it in range vector too
 			if (p.isEmpty()) {
 				int idx = table.indexOf(t);
 				table.remove(idx);
