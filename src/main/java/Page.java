@@ -1,4 +1,7 @@
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -49,14 +52,32 @@ public class Page implements Serializable {
 
     }
 
-    public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
-        Object pk=columnNameValue.get(clusteringKeyValue);
+    public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue)  {
+        Object pk=parse(clusteringKeyValue);
         int idx=BinarySearch(pk, records.size()-1,0 );
         for (String s: columnNameValue.keySet()) {
             records.get(idx).row.replace(s,columnNameValue.get(s));
         }
 
     }
+
+    private Object parse(String clusteringKeyValue)  {
+        Object pk = records.get(0).pk;
+        Object res;
+        if (pk instanceof Integer)
+           return Integer.parseInt((String) clusteringKeyValue);
+        else if (pk instanceof Double)
+            return Double.parseDouble((String) clusteringKeyValue);
+        else if (pk instanceof  Date) {
+            try {
+              return   new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return clusteringKeyValue;
+    }
+
     public int BinarySearch(Object searchkey, int hi, int lo) {
         int mid = (hi + lo + 1) / 2;
         if (lo+1 >= hi) {
