@@ -34,20 +34,20 @@ public class Table implements Serializable {
 		// TODO
 		// if(!(colNameValue.containsKey((Object)this.pk)))
 
+		Object insertedPkValue = colNameValue.get(pk);
 		if (table.isEmpty()) { // will not do binary search and will insert directly
 			tuple4 firstpage = new tuple4(new Double(0), new Page(new Double(0)), 0, 0);
-			Object firstpk = colNameValue.get(pk);
-			firstpage.page.insert(firstpk, colNameValue);
+			firstpage.page.insert(insertedPkValue, colNameValue);
 
-			firstpage.max = firstpk;
-			firstpage.min = firstpk;
+			firstpage.max = insertedPkValue;
+			firstpage.min = insertedPkValue;
 
 			table.add(firstpage);
 			DBApp.serialize(tableName + "_" + firstpage.id, firstpage.page);
 
 		} else {
 			
-			int foundIdx = BinarySearch(colNameValue.get(pk)); // todo deserialize and return page
+			int foundIdx = BinarySearch(insertedPkValue); // todo deserialize and return page
 			Page foundpage = (Page) DBApp.deserialize(tableName + "_" + table.get(foundIdx).id);
 			tuple4 foundTuple = null;// corresponding lel page
 			if (foundpage.isFull()) {
@@ -55,11 +55,17 @@ public class Table implements Serializable {
 
 				foundTuple = table.get(foundIdx);
 
-				if (GenericCompare(colNameValue.get(pk), foundTuple.max) > 0) {
-					foundTuple.max = colNameValue.get(pk);
-				}
 
 				Page.Pair returned = foundpage.insert(pk, colNameValue);
+				
+				if (returned.pk!=insertedPkValue &&
+						GenericCompare(insertedPkValue, foundTuple.max) > 0) {
+					foundTuple.max = insertedPkValue;
+				}
+				else if (returned.pk!=insertedPkValue &&
+						GenericCompare(insertedPkValue, foundTuple.min) < 0) {
+					foundTuple.min = insertedPkValue;
+				}
 				double newID = CreateID(foundID); // TODO
 				Page newPage = new Page(newID);
 				newPage.insert(returned.pk, returned.row);
@@ -71,7 +77,15 @@ public class Table implements Serializable {
 
 			{
 
-				foundpage.insert((Object) colNameValue.get(pk), colNameValue);
+				foundTuple = table.get(foundIdx);
+				foundpage.insert((Object) insertedPkValue, colNameValue);
+
+				if (GenericCompare(insertedPkValue, foundTuple.max) > 0) {
+					foundTuple.max = insertedPkValue;
+				}
+				else if (GenericCompare(insertedPkValue, foundTuple.min) < 0) {
+					foundTuple.min = insertedPkValue;
+				}
 				// mesh 3arfa eih da
 				DBApp.serialize(tableName + "_" + foundpage.id, foundpage);
 			}
