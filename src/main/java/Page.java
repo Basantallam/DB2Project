@@ -15,7 +15,7 @@ public class Page implements Serializable {
 
     }
 
-    public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) throws DBAppException {
+    public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue)  {
         Pair newPair = new Pair(pkvalue, colNameValue);
 
         if (this.isEmpty()) {
