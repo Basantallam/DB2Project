@@ -111,8 +111,9 @@ public class Table implements Serializable {
 			t.page.delete(columnNameValue);
 			// TODO delete entire page if last record is deleted in table use isEmpty()
 			// delete it in range vector too
+
 			if (t.page.isEmpty()) {
-				int idx = table.indexOf(t.page);
+				int idx = table.indexOf(t);
 				table.remove(idx);
 				// todo delete its binary file
 			}
