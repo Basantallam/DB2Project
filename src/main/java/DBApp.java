@@ -131,7 +131,6 @@ public class DBApp implements DBAppInterface {
         if (DB.contains(tableName)) {
             checkinMeta(tableName,columnNameValue);
             Table table = (Table)deserialize(tableName);
-            checkinMeta(tableName,columnNameValue);
             table.update(clusteringKeyValue, columnNameValue);
             serialize(tableName,table);
         } else throw new DBAppException("Table does not exist in Database");
@@ -141,6 +140,7 @@ public class DBApp implements DBAppInterface {
     @Override
     public void deleteFromTable(String tableName, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
+            checkinMeta(tableName,columnNameValue);
             Table table = (Table)deserialize(tableName);
             table.delete(columnNameValue);
             serialize(tableName,table);
