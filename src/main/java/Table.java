@@ -1,7 +1,5 @@
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.lang.reflect.*;
 
 public class Table implements Serializable {
 	String tableName;
@@ -57,8 +55,8 @@ public class Table implements Serializable {
 
 				foundTuple = table.get(foundIdx);
 
-				if (GenericCompare((Object) pk, foundTuple.max) > 0) {
-					foundTuple.max = (Object) pk;
+				if (GenericCompare(colNameValue.get(pk), foundTuple.max) > 0) {
+					foundTuple.max = colNameValue.get(pk);
 				}
 
 				Page.Pair returned = foundpage.insert(pk, colNameValue);
@@ -159,7 +157,6 @@ public class Table implements Serializable {
 		else if (a instanceof Double)
 			return (double) ((Double) a).compareTo((Double) b);
 		else if (a instanceof Date) {
-
 			return (double) ((Date) a).compareTo((Date) b);
 		} else if (a instanceof String)
 			return (double) ((String) a).compareTo((String) b);
