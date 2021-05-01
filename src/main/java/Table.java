@@ -72,7 +72,7 @@ public class Table implements Serializable {
 
 			{
 
-				foundpage.insert((Object) pk, colNameValue);
+				foundpage.insert((Object) colNameValue.get(pk), colNameValue);
 				// mesh 3arfa eih da
 				 DBApp.serialize(tableName + "_"+foundpage.id, foundpage);
 			}
@@ -154,13 +154,12 @@ public class Table implements Serializable {
 
 	public static Double GenericCompare(Object a, Object b) {
 		if (a instanceof Integer)
-			return (double) ((Integer) a).compareTo(Integer.parseInt((String) b));
+			return (double) ((Integer) a).compareTo((Integer) b);
 		else if (a instanceof Double)
-			return (double) ((Double) a).compareTo(Double.parseDouble((String) b) );
+			return (double) ((Double) a).compareTo((Double) b) ;
 		else if (a instanceof Date){
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-			String format = formatter.format(a);
-			return (double) ((String) format).compareTo((String) b);
+
+			return (double) ((Date) a).compareTo((Date) b);
 		}
 		else
 			return (double) ((String) a).compareTo((String) b);

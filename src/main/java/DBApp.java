@@ -1,6 +1,7 @@
 import java.io.*;
 import java.io.IOException;
 import java.lang.invoke.MethodType;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class DBApp implements DBAppInterface {
@@ -93,8 +94,8 @@ public class DBApp implements DBAppInterface {
                 if(metadata[0].equals(tableName)){
                     if(metadata[3].equals("True")&& colNameValue.containsKey(metadata[1]))pk=metadata[1];
                     if(colNameValue.containsKey(metadata[1])){
-                        if(Table.GenericCompare(colNameValue.get(metadata[1]),metadata[5])<0
-                                ||Table.GenericCompare(colNameValue.get(metadata[1]),metadata[6])>0){
+                        if(GenericCompare(colNameValue.get(metadata[1]),metadata[5])<0
+                                ||GenericCompare(colNameValue.get(metadata[1]),metadata[6])>0){
                             throw new DBAppException("Value is too big or too small ");
                         }
                     test.remove(metadata[1]);
@@ -110,6 +111,19 @@ public class DBApp implements DBAppInterface {
 
         }return pk;
 
+    }
+    public static Double GenericCompare(Object a, Object b) {
+        if (a instanceof Integer)
+            return (double) ((Integer) a).compareTo(Integer.parseInt((String) b));
+        else if (a instanceof Double)
+            return (double) ((Double) a).compareTo(Double.parseDouble((String) b) );
+        else if (a instanceof Date){
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            String format = formatter.format(a);
+            return (double) ((String) format).compareTo((String) b);
+        }
+        else
+            return (double) ((String) a).compareTo((String) b);
     }
 
     @Override
