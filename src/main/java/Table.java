@@ -81,9 +81,12 @@ public class Table implements Serializable {
 
 	}
 
-	private double CreateID(double foundID) {
-		// TODO Auto-generated method stub
-		return 0;
+	private double CreateID(int prevIdx) {
+		double prevId = table.get(prevIdx).id;
+		if(table.size()==prevIdx+1)return prevId+1;
+		double nxtId = table.get(prevIdx+1).id;
+		return (prevId+nxtId)/2.0;
+
 	}
 
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
