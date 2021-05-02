@@ -93,9 +93,9 @@ public class Table implements Serializable {
 		Object pk = parse(clusteringKeyValue);
 		int idx = BinarySearch(pk);
 		Page p = (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
-		System.out.println("update " + clusteringKeyValue + "  found page " + p.toString());
+//		System.out.println("update " + clusteringKeyValue + "  found page " + p.toString());
 
-		System.out.println(table.get(0).min + " " + table.lastElement().max);
+//		System.out.println(table.get(0).min + " " + table.lastElement().max);
 		p.update(pk, columnNameValue);
 		DBApp.serialize(tableName + "_" + table.get(idx).id, p);
 	}
@@ -232,7 +232,7 @@ public class Table implements Serializable {
 
 	
 	public void createCSV() throws IOException {
-		System.out.println("dakhal ");
+//		System.out.println("dakhal ");
 		String path = "src\\main\\resources\\Basant\\"+this.tableName+"Table.csv";
 		FileWriter fw = new FileWriter(path);
 
@@ -251,7 +251,7 @@ public class Table implements Serializable {
 				
 				fw.write(str);
 			}
-
+			DBApp.serialize(tableName + "_" + t.id + "",p);
 		}
 		fw.close();
 	}
