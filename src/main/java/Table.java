@@ -196,18 +196,31 @@ public class Table implements Serializable {
 			return null;
 	}
 
+//	public int BinarySearch(Object searchkey, int hi, int lo) {
+//		int mid = (hi + lo) / 2;
+//
+//		if (lo >= hi)
+//			return mid;
+//
+//		if (GenericCompare(table.get(mid).max, searchkey) > 0 )
+//			return BinarySearch(searchkey, mid, lo);
+//		else
+//			return BinarySearch(searchkey, hi, mid + 1);
+//
+//	}
 	public int BinarySearch(Object searchkey, int hi, int lo) {
-		int mid = (hi + lo) / 2;
+		int mid = (hi + lo + 1) / 2;
 
 		if (lo >= hi)
 			return mid;
 
-		if (GenericCompare(table.get(mid).max, searchkey) > 0)
-			return BinarySearch(searchkey, mid, lo);
+		if (GenericCompare(table.get(mid).min, searchkey) < 0 )
+			return BinarySearch(searchkey, hi, mid);
 		else
-			return BinarySearch(searchkey, hi, mid + 1);
+			return BinarySearch(searchkey, mid-1, lo);
 
-	}
+	} // better optimization
+
 
 	public static class tuple4 implements Serializable {
 		Double id;
