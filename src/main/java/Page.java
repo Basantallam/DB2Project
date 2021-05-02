@@ -52,31 +52,16 @@ public class Page implements Serializable {
 
     }
 
-    public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue)  {
-        Object pk=parse(clusteringKeyValue);
-        int idx=BinarySearch(pk, records.size()-1,0 );
+    public void update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue)  {
+
+        int idx=BinarySearch(clusteringKeyValue, records.size()-1,0 );
         for (String s: columnNameValue.keySet()) {
             records.get(idx).row.replace(s,columnNameValue.get(s));
         }
 
     }
 
-    private Object parse(String clusteringKeyValue)  {
-        Object pk = records.get(0).pk;
-        Object res;
-        if (pk instanceof Integer)
-           return Integer.parseInt((String) clusteringKeyValue);
-        else if (pk instanceof Double)
-            return Double.parseDouble((String) clusteringKeyValue);
-        else if (pk instanceof  Date) {
-            try {
-              return   new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
-        return clusteringKeyValue;
-    }
+
 
     public int BinarySearch(Object searchkey, int hi, int lo) {
         int mid = (hi + lo + 1) / 2;

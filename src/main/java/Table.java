@@ -1,4 +1,5 @@
 import java.io.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -88,11 +89,27 @@ public class Table implements Serializable {
 
 	}
 
-	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
-		int idx = BinarySearch(columnNameValue.get(clusteringKeyValue));
+	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue)  {
+		Object pk =parse(clusteringKeyValue);
+		int idx = BinarySearch(pk);
 		Page p= (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
-		p.update(clusteringKeyValue,columnNameValue);
+		p.update(pk,columnNameValue);
 		DBApp.serialize(tableName + "_" + table.get(idx).id, p);
+	}
+	private Object parse(String clusteringKeyValue)  {
+		Object pk = table.get(0).min;
+		if (pk instanceof Integer)
+			return Integer.parseInt((String) clusteringKeyValue);
+		else if (pk instanceof Double)
+			return Double.parseDouble((String) clusteringKeyValue);
+		else if (pk instanceof  Date) {
+			try {
+				return   new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
+		return clusteringKeyValue;
 	}
 
 	public void delete(Hashtable<String, Object> columnNameValue) {
