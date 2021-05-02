@@ -28,20 +28,12 @@ public class Page implements Serializable {
 				return newPair;
 			else {
 				int i = LinearSearch(pkvalue);
-
-				records.insertElementAt(newPair, i); //full capacity+1
-
+				records.insertElementAt(newPair, i); // full capacity+1
 				return records.remove(DBApp.capacity);
-
 			}
-
 		} else {
 			int i = LinearSearch(pkvalue);
-
-			if (records.isEmpty()) {
-				records.add(0, newPair);
-			} else
-				records.add(i, newPair);
+			records.add(i, newPair);
 			return null;
 		}
 
@@ -51,12 +43,12 @@ public class Page implements Serializable {
 
 //		int idx = BinarySearch(clusteringKeyValue, records.size() - 1, 0);
 		int idx = LinearSearch(clusteringKeyValue);
-		
-		System.out.println(records.get(idx));
+
+		System.out.print("intended= " + clusteringKeyValue + "actual " + records.get(idx));
 		for (String s : columnNameValue.keySet()) {
 			(records.get(idx).row).replace(s, columnNameValue.get(s));
 		}
-		System.out.println("after update "+records.get(idx));
+		System.out.println(" after update " + records.get(idx));
 
 	}
 
@@ -67,6 +59,7 @@ public class Page implements Serializable {
 				break;
 		return i;
 	}
+
 	public int BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo + 1) / 2;
 		if (lo + 1 >= hi) {
@@ -129,7 +122,7 @@ public class Page implements Serializable {
 		}
 
 		public String toString() {
-			return pk.toString() + "";
+			return row.toString();
 		}
 	}
 

@@ -68,7 +68,7 @@ public class Table implements Serializable {
 				Page newPage = new Page(newID);
 				newPage.insert(returned.pk, returned.row);
 				tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
-				table.insertElementAt(newtuple, foundIdx + 1); 
+				table.insertElementAt(newtuple, foundIdx + 1);
 				DBApp.serialize(tableName + "_" + newID, newPage);
 			}
 
@@ -230,4 +230,30 @@ public class Table implements Serializable {
 
 	}
 
+	
+	public void createCSV() throws IOException {
+		System.out.println("dakhal ");
+		String path = "src\\main\\resources\\Basant\\"+this.tableName+"Table.csv";
+		FileWriter fw = new FileWriter(path);
+
+		for (int idx = 0; idx < table.size(); idx++) {
+			tuple4 t = table.get(idx);
+			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id + "");
+
+			for (Page.Pair pair : p.records) {
+				String str = "";
+				Hashtable h = pair.row;
+				Set<String> s = h.keySet();
+				for (String o : s) {
+					str += h.get(o).toString() + ", ";
+				}
+				str+="\n";
+				
+				fw.write(str);
+			}
+
+		}
+		fw.close();
+	}
+	
 }
