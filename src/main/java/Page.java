@@ -23,11 +23,7 @@ public class Page implements Serializable {
 	public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) {
 		Pair newPair = new Pair(pkvalue, colNameValue);
 
-		if (this.isEmpty()) {
-			records.add(new Pair(pkvalue, colNameValue));
-			return null;
-
-		} else if (this.isFull()) {
+		if (this.isFull()) {
 			if (Table.GenericCompare(records.lastElement().pk, pkvalue) < 0)
 				return newPair;
 			else {

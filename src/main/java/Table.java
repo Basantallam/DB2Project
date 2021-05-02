@@ -12,6 +12,7 @@ public class Table implements Serializable {
 			throws DBAppException, IOException {
 		tableName = strTableName;
 		this.table = new Vector<tuple4>();
+
 		Set<String> keys = htblColNameType.keySet();
 		if (strClusteringKeyColumn.equals("")) {
 			throw new DBAppException("please enter a primary key");
@@ -98,6 +99,9 @@ public class Table implements Serializable {
 		Object pk = parse(clusteringKeyValue);
 		int idx = BinarySearch(pk);
 		Page p = (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
+		System.out.println("update " + clusteringKeyValue + "  found page " + p.toString());
+
+		System.out.println(table.get(0).min + " " + table.lastElement().max);
 		p.update(pk, columnNameValue);
 		DBApp.serialize(tableName + "_" + table.get(idx).id, p);
 	}
@@ -201,17 +205,13 @@ public class Table implements Serializable {
 	public int BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo) / 2;
 
-		if (lo + 1 >= hi)
+		if (lo >= hi) 
 			return mid;
-
+		
 		if (GenericCompare(table.get(mid).min, searchkey) > 0)
 			return BinarySearch(searchkey, mid, lo);
 		else
 			return BinarySearch(searchkey, hi, mid + 1);
-
-	}
-
-	public static void main(String args[]) {
 
 	}
 
@@ -221,11 +221,12 @@ public class Table implements Serializable {
 		Object min;
 		Object max;
 
-		public  String print(String tableName) {
+		public String print(String tableName) {
 			Page p = (Page) DBApp.deserialize(tableName + "_" + id);
 
 			return p.toString();
 		}
+
 		public tuple4(Double id, Page page, Object min, Object max) {
 			this.id = id;
 			this.page = page;
