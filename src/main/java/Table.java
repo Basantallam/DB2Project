@@ -12,6 +12,9 @@ public class Table implements Serializable {
 			throws DBAppException, IOException {
 		tableName = strTableName;
 		this.table = new Vector<tuple4>();
+		table.add(new tuple4(Double.valueOf(0), new Page(Double.valueOf(0)), htblColNameMax.get(strClusteringKeyColumn),
+				htblColNameMax.get(strClusteringKeyColumn)));
+		DBApp.serialize(tableName + "_" + Double.valueOf(0), table.get(0).page);
 
 		Set<String> keys = htblColNameType.keySet();
 		if (strClusteringKeyColumn.equals("")) {
@@ -36,50 +39,39 @@ public class Table implements Serializable {
 //			System.out.print(t.print(tableName));
 //		System.out.println();
 		Object insertedPkValue = colNameValue.get(pk);
-		if (table.isEmpty()) {
-			tuple4 firstpage = new tuple4(Double.valueOf(0), new Page(Double.valueOf(0)), insertedPkValue,
-					insertedPkValue);
-			firstpage.page.insert(insertedPkValue, colNameValue);
-			table.add(firstpage);
-			DBApp.serialize(tableName + "_" + firstpage.id, firstpage.page);
-			firstpage.min=insertedPkValue;
-			firstpage.max=insertedPkValue;
 
-		} else {
+		int foundIdx = BinarySearch(insertedPkValue);
+		Page foundpage = (Page) DBApp.deserialize(tableName + "_" + table.get(foundIdx).id);
+		tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
+		Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
+		if (returned == null || returned.pk != insertedPkValue) {
+			foundTuple.min = foundpage.records.get(0).pk;
+			foundTuple.max = foundpage.records.lastElement().pk;
 
-			int foundIdx = BinarySearch(insertedPkValue);
-			Page foundpage = (Page) DBApp.deserialize(tableName + "_" + table.get(foundIdx).id);
-			tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
-			Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
-			if (returned == null || returned.pk != insertedPkValue) {
-				foundTuple.min = foundpage.records.get(0).pk;
-				foundTuple.max = foundpage.records.lastElement().pk;
+		}
+		DBApp.serialize(tableName + "_" + foundTuple.id, foundpage);
 
-			}
-			DBApp.serialize(tableName + "_" + foundTuple.id, foundpage);
-
-			if (returned != null) {
-				Boolean create = true;
-				if (table.size() > foundIdx + 1) {
-					int nxtIdx = foundIdx + 1;
-					Page nxtPage = (Page) DBApp.deserialize(tableName + "_" + table.get(nxtIdx).id);
-					if (!nxtPage.isFull()) {
-						create = false;
-						nxtPage.insert(returned.pk, returned.row);
-						table.get(nxtIdx).min = returned.pk;
-					}
-					DBApp.serialize(tableName + "_" + nxtPage.id, nxtPage);
+		if (returned != null) {
+			Boolean create = true;
+			if (table.size() > foundIdx + 1) {
+				int nxtIdx = foundIdx + 1;
+				Page nxtPage = (Page) DBApp.deserialize(tableName + "_" + table.get(nxtIdx).id);
+				if (!nxtPage.isFull()) {
+					create = false;
+					nxtPage.insert(returned.pk, returned.row);
+					table.get(nxtIdx).min = returned.pk;
 				}
-				if (create) {
-					double newID = CreateID(foundIdx); // TODO method
-					Page newPage = new Page(newID);
-					newPage.insert(returned.pk, returned.row);
-					tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
-					table.insertElementAt(newtuple, foundIdx + 1); // insertElementAt it shifts w kolo ??
-					DBApp.serialize(tableName + "_" + newID, newPage);
-				}
-
+				DBApp.serialize(tableName + "_" + nxtPage.id, nxtPage);
 			}
+			if (create) {
+				double newID = CreateID(foundIdx); // TODO method
+				Page newPage = new Page(newID);
+				newPage.insert(returned.pk, returned.row);
+				tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
+				table.insertElementAt(newtuple, foundIdx + 1); 
+				DBApp.serialize(tableName + "_" + newID, newPage);
+			}
+
 		}
 //		System.out.println();
 //		for(tuple4 t:table)
@@ -207,9 +199,9 @@ public class Table implements Serializable {
 	public int BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo) / 2;
 
-		if (lo >= hi) 
+		if (lo >= hi)
 			return mid;
-		
+
 		if (GenericCompare(table.get(mid).min, searchkey) > 0)
 			return BinarySearch(searchkey, mid, lo);
 		else

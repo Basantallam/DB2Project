@@ -33,9 +33,9 @@ public class Page implements Serializable {
 					if (Table.GenericCompare(records.get(i).pk, pkvalue) >= 0)
 						break;
 
-				records.insertElementAt(newPair, i);
+				records.insertElementAt(newPair, i); //full capacity+1
 
-				return records.remove(records.size() - 1);
+				return records.remove(DBApp.capacity);
 
 			}
 
@@ -44,8 +44,11 @@ public class Page implements Serializable {
 			for (i = 0; i < records.size(); i++)
 				if (Table.GenericCompare(records.get(i).pk, pkvalue) >= 0)
 					break;
-			
-			records.insertElementAt(newPair, i);
+
+			if (records.isEmpty()) {
+				records.add(0, newPair);
+			} else
+				records.add(i, newPair);
 			return null;
 		}
 
