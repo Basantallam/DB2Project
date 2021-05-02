@@ -44,11 +44,11 @@ public class Page implements Serializable {
 //		int idx = BinarySearch(clusteringKeyValue, records.size() - 1, 0);
 		int idx = LinearSearch(clusteringKeyValue);
 
-//		System.out.print("intended= " + clusteringKeyValue + "actual " + records.get(idx));
+
 		for (String s : columnNameValue.keySet()) {
 			(records.get(idx).row).replace(s, columnNameValue.get(s));
 		}
-//		System.out.println(" after update " + records.get(idx));
+
 
 	}
 

@@ -202,7 +202,7 @@ public class Table implements Serializable {
 		if (lo >= hi)
 			return mid;
 
-		if (GenericCompare(table.get(mid).min, searchkey) > 0)
+		if (GenericCompare(table.get(mid).max, searchkey) > 0)
 			return BinarySearch(searchkey, mid, lo);
 		else
 			return BinarySearch(searchkey, hi, mid + 1);
