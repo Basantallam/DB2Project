@@ -28,45 +28,44 @@ public class Table implements Serializable {
 
 		updateMetadata(strClusteringKeyColumn, htblColNameType, htblColNameMin, htblColNameMax);
 
-
 	}
 
-	public void insert(String pk, Hashtable<String, Object> colNameValue)  {
+	public void insert(String pk, Hashtable<String, Object> colNameValue) {
 
 		Object insertedPkValue = colNameValue.get(pk);
 		if (table.isEmpty()) {
-			tuple4 firstpage = new tuple4(Double.valueOf(0), new Page(Double.valueOf(0)), insertedPkValue, insertedPkValue);
+			tuple4 firstpage = new tuple4(Double.valueOf(0), new Page(Double.valueOf(0)), insertedPkValue,
+					insertedPkValue);
 			firstpage.page.insert(insertedPkValue, colNameValue);
 			table.add(firstpage);
 			DBApp.serialize(tableName + "_" + firstpage.id, firstpage.page);
 
 		} else {
-			
+
 			int foundIdx = BinarySearch(insertedPkValue);
 			Page foundpage = (Page) DBApp.deserialize(tableName + "_" + table.get(foundIdx).id);
 			tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
 			Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
-			if (returned==null || returned.pk !=insertedPkValue){
+			if (returned == null || returned.pk != insertedPkValue) {
 				foundTuple.min = foundpage.records.get(0).pk;
-				foundTuple.max= foundpage.records.lastElement().pk;
+				foundTuple.max = foundpage.records.lastElement().pk;
 
 			}
 			DBApp.serialize(tableName + "_" + foundTuple.id, foundpage);
 
-
-			if (returned!=null) {
+			if (returned != null) {
 				Boolean create = true;
-				if(table.size()>foundIdx+1){
-					int nxtIdx= foundIdx+1;
+				if (table.size() > foundIdx + 1) {
+					int nxtIdx = foundIdx + 1;
 					Page nxtPage = (Page) DBApp.deserialize(tableName + "_" + table.get(nxtIdx).id);
-					if (!nxtPage.isFull()){
+					if (!nxtPage.isFull()) {
 						create = false;
-						nxtPage.insert(returned.pk,returned.row);
-						table.get(nxtIdx).min=returned.pk;
+						nxtPage.insert(returned.pk, returned.row);
+						table.get(nxtIdx).min = returned.pk;
 					}
-					DBApp.serialize(tableName + "_" + nxtPage.id,nxtPage );
+					DBApp.serialize(tableName + "_" + nxtPage.id, nxtPage);
 				}
-				if (create){
+				if (create) {
 					double newID = CreateID(foundIdx); // TODO method
 					Page newPage = new Page(newID);
 					newPage.insert(returned.pk, returned.row);
@@ -75,7 +74,6 @@ public class Table implements Serializable {
 					DBApp.serialize(tableName + "_" + newID, newPage);
 				}
 
-
 			}
 		}
 
@@ -83,28 +81,30 @@ public class Table implements Serializable {
 
 	private double CreateID(int prevIdx) {
 		double prevId = table.get(prevIdx).id;
-		if(table.size()==prevIdx+1)return prevId+1;
-		double nxtId = table.get(prevIdx+1).id;
-		return (prevId+nxtId)/2.0;
+		if (table.size() == prevIdx + 1)
+			return prevId + 1;
+		double nxtId = table.get(prevIdx + 1).id;
+		return (prevId + nxtId) / 2.0;
 
 	}
 
-	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue)  {
-		Object pk =parse(clusteringKeyValue);
+	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) {
+		Object pk = parse(clusteringKeyValue);
 		int idx = BinarySearch(pk);
-		Page p= (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
-		p.update(pk,columnNameValue);
+		Page p = (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
+		p.update(pk, columnNameValue);
 		DBApp.serialize(tableName + "_" + table.get(idx).id, p);
 	}
-	private Object parse(String clusteringKeyValue)  {
+
+	private Object parse(String clusteringKeyValue) {
 		Object pk = table.get(0).min;
 		if (pk instanceof Integer)
 			return Integer.parseInt((String) clusteringKeyValue);
 		else if (pk instanceof Double)
 			return Double.parseDouble((String) clusteringKeyValue);
-		else if (pk instanceof  Date) {
+		else if (pk instanceof Date) {
 			try {
-				return   new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
+				return new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
@@ -119,11 +119,12 @@ public class Table implements Serializable {
 			if (p.isEmpty()) {
 				int idx = table.indexOf(t);
 				table.remove(idx);
-				new File("src/main/resources/data/"+tableName+"_"+t.id+".ser").delete();
-			}else{
-				t.min=p.records.firstElement().pk;
-				t.max=p.records.lastElement().pk;
-			}DBApp.serialize(tableName + "_" + t.id, p);
+				new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
+			} else {
+				t.min = p.records.firstElement().pk;
+				t.max = p.records.lastElement().pk;
+			}
+			DBApp.serialize(tableName + "_" + t.id, p);
 
 		}
 
@@ -164,7 +165,7 @@ public class Table implements Serializable {
 	}
 
 	public int BinarySearch(Object searchkey) {
-		int hi = table.size()-1; // idx
+		int hi = table.size() - 1; // idx
 		int lo = 0;// idx
 
 		return BinarySearch(searchkey, hi, lo);
@@ -181,29 +182,27 @@ public class Table implements Serializable {
 				return (double) ((Date) a).compareTo((Date) b);
 			else {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-				String formata = a instanceof Date? formatter.format(a):(String) a;
-				String formatb = b instanceof Date? formatter.format(b):(String) b;
+				String formata = a instanceof Date ? formatter.format(a) : (String) a;
+				String formatb = b instanceof Date ? formatter.format(b) : (String) b;
 				return (double) ((String) formata).compareTo((String) formatb);
 			}
 		} else if (a instanceof String)
 			return (double) ((String) a).compareTo((String) b);
-		else return null;
+		else
+			return null;
 	}
 
 	public int BinarySearch(Object searchkey, int hi, int lo) {
-		int mid = (hi + lo + 1) / 2;
-		if (lo+1 >= hi) {
-			return hi;
-		}
-		
-		if (GenericCompare(table.get(mid).min, searchkey) > 0)
-			return BinarySearch(searchkey, hi, mid - 1);
+		int mid = (hi + lo) / 2;
 
-		else if (GenericCompare(table.get(mid).max, searchkey) < 0)
-			return BinarySearch(searchkey, mid + 1, lo);
-
-		else
+		if (lo + 1 >= hi)
 			return mid;
+
+		if (GenericCompare(table.get(mid).min, searchkey) > 0)
+			return BinarySearch(searchkey, mid, lo);
+		else
+			return BinarySearch(searchkey, hi, mid + 1);
+
 	}
 
 	public static void main(String args[]) {
