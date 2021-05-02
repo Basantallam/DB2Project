@@ -31,7 +31,9 @@ public class Table implements Serializable {
 	}
 
 	public void insert(String pk, Hashtable<String, Object> colNameValue) {
-
+//		for(tuple4 t:table)
+//			System.out.print(t.print(tableName));
+//		System.out.println();
 		Object insertedPkValue = colNameValue.get(pk);
 		if (table.isEmpty()) {
 			tuple4 firstpage = new tuple4(Double.valueOf(0), new Page(Double.valueOf(0)), insertedPkValue,
@@ -76,6 +78,10 @@ public class Table implements Serializable {
 
 			}
 		}
+//		System.out.println();
+//		for(tuple4 t:table)
+//			System.out.print(t.print(tableName));
+//		System.out.println();
 
 	}
 
@@ -215,6 +221,11 @@ public class Table implements Serializable {
 		Object min;
 		Object max;
 
+		public  String print(String tableName) {
+			Page p = (Page) DBApp.deserialize(tableName + "_" + id);
+
+			return p.toString();
+		}
 		public tuple4(Double id, Page page, Object min, Object max) {
 			this.id = id;
 			this.page = page;
