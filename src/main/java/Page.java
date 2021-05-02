@@ -27,11 +27,7 @@ public class Page implements Serializable {
 			if (Table.GenericCompare(records.lastElement().pk, pkvalue) < 0)
 				return newPair;
 			else {
-				int i = 0;
-
-				for (i = 0; i < DBApp.capacity; i++)
-					if (Table.GenericCompare(records.get(i).pk, pkvalue) >= 0)
-						break;
+				int i = LinearSearch(pkvalue);
 
 				records.insertElementAt(newPair, i); //full capacity+1
 
@@ -40,10 +36,7 @@ public class Page implements Serializable {
 			}
 
 		} else {
-			int i = 0;
-			for (i = 0; i < records.size(); i++)
-				if (Table.GenericCompare(records.get(i).pk, pkvalue) >= 0)
-					break;
+			int i = LinearSearch(pkvalue);
 
 			if (records.isEmpty()) {
 				records.add(0, newPair);
@@ -56,13 +49,24 @@ public class Page implements Serializable {
 
 	public void update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) {
 
-		int idx = BinarySearch(clusteringKeyValue, records.size() - 1, 0);
+//		int idx = BinarySearch(clusteringKeyValue, records.size() - 1, 0);
+		int idx = LinearSearch(clusteringKeyValue);
+		
+		System.out.println(records.get(idx));
 		for (String s : columnNameValue.keySet()) {
-			records.get(idx).row.replace(s, columnNameValue.get(s));
+			(records.get(idx).row).replace(s, columnNameValue.get(s));
 		}
+		System.out.println("after update "+records.get(idx));
 
 	}
 
+	public int LinearSearch(Object searchkey) {
+		int i = 0;
+		for (i = 0; i < records.size(); i++)
+			if (Table.GenericCompare(records.get(i).pk, searchkey) >= 0)
+				break;
+		return i;
+	}
 	public int BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo + 1) / 2;
 		if (lo + 1 >= hi) {
