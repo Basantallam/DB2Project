@@ -64,16 +64,26 @@ public class Page implements Serializable {
 
 
     public int BinarySearch(Object searchkey, int hi, int lo) {
-        int mid = (hi + lo + 1) / 2;
+        int mid = (hi + lo+1) / 2;
         if (lo+1 >= hi) {
-            return hi;
+            if (Table.GenericCompare(records.get(lo).pk, searchkey) == 0)
+                return lo;
+            else if (Table.GenericCompare(records.get(hi).pk, searchkey) == 0)
+                return hi;
+            else{
+                if(lo+1==hi){
+                    return -1;
+                }
+                return BinarySearch(searchkey,lo,hi);
+
+            }
         }
 
         if (Table.GenericCompare(records.get(mid).pk, searchkey) > 0)
-            return BinarySearch(searchkey, hi, mid - 1);
+            return BinarySearch(searchkey, hi, mid );
 
         else if (Table.GenericCompare(records.get(mid).pk, searchkey) < 0)
-            return BinarySearch(searchkey, mid + 1, lo);
+            return BinarySearch(searchkey, mid , lo);
 
         else
             return mid;
