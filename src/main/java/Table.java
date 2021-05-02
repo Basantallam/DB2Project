@@ -42,6 +42,8 @@ public class Table implements Serializable {
 			firstpage.page.insert(insertedPkValue, colNameValue);
 			table.add(firstpage);
 			DBApp.serialize(tableName + "_" + firstpage.id, firstpage.page);
+			firstpage.min=insertedPkValue;
+			firstpage.max=insertedPkValue;
 
 		} else {
 

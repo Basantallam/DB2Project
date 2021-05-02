@@ -44,7 +44,7 @@ public class Page implements Serializable {
 			for (i = 0; i < records.size(); i++)
 				if (Table.GenericCompare(records.get(i).pk, pkvalue) >= 0)
 					break;
-
+			
 			records.insertElementAt(newPair, i);
 			return null;
 		}
