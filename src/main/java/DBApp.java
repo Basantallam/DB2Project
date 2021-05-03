@@ -1,6 +1,7 @@
 import java.io.*;
 import java.io.IOException;
 import java.lang.invoke.MethodType;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -138,7 +139,9 @@ public class DBApp implements DBAppInterface {
     @Override
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
-            checkinMeta(tableName,columnNameValue);
+           String pk = checkinMeta(tableName,columnNameValue);
+            if(!pk.equals(""))
+                throw new DBAppException("Primary Key is passed to be updated");
             Table table = (Table)deserialize(tableName);
             table.update(clusteringKeyValue, columnNameValue);
             serialize(tableName,table);
@@ -257,8 +260,8 @@ public class DBApp implements DBAppInterface {
         return obj;
     }
 
-    public static void main(String[] args) throws IOException {
-        //System.out.println(getCapacity());
-        //init();
+    public static void main(String[] args) throws IOException, ParseException {
+       Date d= new SimpleDateFormat("yyyy-MM-dd").parse("1999-06-31");
+        System.out.println(d);
     }
 }
