@@ -12,7 +12,8 @@ public class DBApp implements DBAppInterface {
     public void init() {
         DB = new HashSet<>();
         //creating the 'data' directory
-        String path = "src/main/resources/data2/";
+        //if you get an error copy el path mn 3ndk cuz ubuntu flips the slashes -iman
+        String path = "src/main/resources/data/";
         File file = new File(path);
         if (!file.exists())
             file.mkdir();
