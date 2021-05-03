@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.SortedSet;
@@ -15,6 +16,7 @@ public class Page implements Serializable {
 	public Page(Double id) {
 
 		records = new TreeSet<Pair>();
+		Collections.synchronizedSet(records); //to make set thread-safe
 		this.id = id;
 
 	}
