@@ -1,5 +1,6 @@
 import java.io.Serializable;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -45,16 +46,18 @@ public class Page implements Serializable {
 			for (String s : columnNameValue.keySet()) {
 				(foundRecord.row).replace(s, columnNameValue.get(s));
 			}
-
 	}
 
 	public Pair LinearSearch(Object searchkey) {
-		for (Pair p : records)
+		Iterator<Pair> it = records.iterator();
+		while (it.hasNext()) {
+			Pair p = it.next();
 			if (Table.GenericCompare(p.pk, searchkey) == 0)
 				return p;
+		}
 		return null;
 	}
-
+//HashSet does internal Binary Search
 //	public int BinarySearch(Object searchkey, int hi, int lo) {
 //		int mid = (hi + lo + 1) / 2;
 //		if (lo + 1 >= hi) {
@@ -82,7 +85,11 @@ public class Page implements Serializable {
 //	}
 
 	public void delete(Hashtable<String, Object> columnNameValue) {
-		for (Pair r : records) {
+
+		Iterator<Pair> it = records.iterator();
+		while (it.hasNext()) {
+			Pair r = it.next();
+
 			boolean and = true;
 			for (String s : columnNameValue.keySet()) {
 				if (r.row.get(s) == null || (!r.row.get(s).equals(columnNameValue.get(s)))) {
@@ -91,7 +98,7 @@ public class Page implements Serializable {
 				}
 			}
 			if (and)
-				records.remove(r);
+				it.remove();
 		}
 	}
 
