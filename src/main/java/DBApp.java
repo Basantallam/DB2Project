@@ -11,6 +11,11 @@ public class DBApp implements DBAppInterface {
 
     public void init() {
         DB = new HashSet<>();
+        //creating the 'data' directory
+        //if you get an error copy el path mn 3ndk cuz ubuntu flips the slashes -iman
+        String path = "src/main/resources/data/";
+        File file = new File(path);
+        file.mkdir();
 
         try {
             capacity = getCapacity();
@@ -22,14 +27,8 @@ public class DBApp implements DBAppInterface {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //creating the 'data' directory
-        //if you get an error copy el path mn 3ndk cuz ubuntu flips the slashes -iman
-        if (DB.isEmpty()){
-            String path = "src/main/resources/data/";
-            File file = new File(path);
-            file.mkdir();
 
-        }
+
     }
 
     private int getCapacity() throws IOException {
@@ -284,10 +283,15 @@ public class DBApp implements DBAppInterface {
         return obj;
     }
 
-    public static void main(String[] args) throws IOException {
-//       Date d= new SimpleDateFormat("yyyy-MM-dd").parse(new Date(1995 - 1900, 4 - 1, 1));
+    public static void main(String[] args) throws Exception {
+        DBApp dbApp = new DBApp();
+        dbApp.init();
 
-//       System.out.println(Integer.parseInt("a1"));
-//        System.out.println(d);
+        String dataDirPath = "src/main/resources/data";
+        File dataDir = new File(dataDirPath);
+
+        if (!dataDir.isDirectory() || !dataDir.exists()) {
+            throw new Exception("`data` Directory in Resources folder does not exist");
+        }
     }
 }
