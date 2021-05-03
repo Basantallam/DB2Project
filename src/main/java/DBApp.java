@@ -11,12 +11,7 @@ public class DBApp implements DBAppInterface {
 
     public void init() {
         DB = new HashSet<>();
-        //creating the 'data' directory
-        //if you get an error copy el path mn 3ndk cuz ubuntu flips the slashes -iman
-        String path = "src/main/resources/data/";
-        File file = new File(path);
-        if (!file.exists())
-            file.mkdir();
+
         try {
             capacity = getCapacity();
         } catch (Exception e) {
@@ -26,6 +21,14 @@ public class DBApp implements DBAppInterface {
             addtoDB();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        //creating the 'data' directory
+        //if you get an error copy el path mn 3ndk cuz ubuntu flips the slashes -iman
+        if (DB.isEmpty()){
+            String path = "src/main/resources/data/";
+            File file = new File(path);
+            file.mkdir();
+
         }
     }
 
