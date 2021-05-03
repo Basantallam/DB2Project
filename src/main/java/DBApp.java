@@ -7,17 +7,23 @@ import java.util.*;
 
 public class DBApp implements DBAppInterface {
     HashSet<String> DB;
-    public static int capacity ;
+    public static int capacity;
 
     public void init() {
         DB = new HashSet<>();
+        //creating the 'data' directory
+        String path = "src/main/resources/data2/";
+        File file = new File(path);
+        if (!file.exists())
+            file.mkdir();
         try {
             capacity = getCapacity();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-        }try {
+        }
+        try {
             addtoDB();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -49,8 +55,8 @@ public class DBApp implements DBAppInterface {
         if (!DB.contains(tableName)) {
             DB.add(tableName);
             try {
-                Table t = new Table( tableName,  clusteringKey,  colNameType, colNameMin, colNameMax);
-                serialize(tableName,t);
+                Table t = new Table(tableName, clusteringKey, colNameType, colNameMin, colNameMax);
+                serialize(tableName, t);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -67,12 +73,12 @@ public class DBApp implements DBAppInterface {
         if (DB.contains(tableName)) {
 
 
-            String pk= checkinMeta( tableName,  colNameValue);
-            if(pk.equals(""))
+            String pk = checkinMeta(tableName, colNameValue);
+            if (pk.equals(""))
                 throw new DBAppException("Primary Key is Not Found");
-            Table table= (Table) deserialize(tableName);
-            table.insert(pk ,colNameValue);
-            serialize(tableName,table);
+            Table table = (Table) deserialize(tableName);
+            table.insert(pk, colNameValue);
+            serialize(tableName, table);
 
 
         } else throw new DBAppException("Table does not exist in Database");
@@ -80,7 +86,7 @@ public class DBApp implements DBAppInterface {
 
     private String checkinMeta(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
         Hashtable test = (Hashtable) colNameValue.clone();
-        String pk="";
+        String pk = "";
         try {
             FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
             BufferedReader br = new BufferedReader(fr);
@@ -90,22 +96,30 @@ public class DBApp implements DBAppInterface {
 
                 String[] metadata = (line).split(", ");
 
-                if(metadata[0].equals(tableName)){
-                    if(metadata[3].equals("True")&& colNameValue.containsKey(metadata[1]))pk=metadata[1];
-                    if(colNameValue.containsKey(metadata[1])){
-                        if(GenericCompare(colNameValue.get(metadata[1]),metadata[5])<0
-                                ||GenericCompare(colNameValue.get(metadata[1]),metadata[6])>0){
+                if (metadata[0].equals(tableName)) {
+                    if (metadata[3].equals("True") && colNameValue.containsKey(metadata[1])) pk = metadata[1];
+                    if (colNameValue.containsKey(metadata[1])) {
+                        if (GenericCompare(colNameValue.get(metadata[1]), metadata[5]) < 0
+                                || GenericCompare(colNameValue.get(metadata[1]), metadata[6]) > 0) {
                             throw new DBAppException("Value is too big or too small ");
                         }
-                        String strColType=metadata[2];
-                        boolean ex=false;
-                        switch (strColType){
-                            case "java.lang.Integer":if(!(colNameValue.get(metadata[1]) instanceof Integer))ex=true;break;
-                            case "java.lang.String":if(!(colNameValue.get(metadata[1]) instanceof String))ex=true;break;
-                            case "java.lang.Date":if(!(colNameValue.get(metadata[1]) instanceof Date))ex=true;break;
-                            case "java.lang.Double":if(!(colNameValue.get(metadata[1]) instanceof Double))ex=true;break;
+                        String strColType = metadata[2];
+                        boolean ex = false;
+                        switch (strColType) {
+                            case "java.lang.Integer":
+                                if (!(colNameValue.get(metadata[1]) instanceof Integer)) ex = true;
+                                break;
+                            case "java.lang.String":
+                                if (!(colNameValue.get(metadata[1]) instanceof String)) ex = true;
+                                break;
+                            case "java.lang.Date":
+                                if (!(colNameValue.get(metadata[1]) instanceof Date)) ex = true;
+                                break;
+                            case "java.lang.Double":
+                                if (!(colNameValue.get(metadata[1]) instanceof Double)) ex = true;
+                                break;
                         }
-                        if(ex){
+                        if (ex) {
                             throw new DBAppException("column types not compatible");
                         }
                         test.remove(metadata[1]);
@@ -113,12 +127,13 @@ public class DBApp implements DBAppInterface {
                 }
             }
 
-            if(!test.isEmpty()){
+            if (!test.isEmpty()) {
                 throw new DBAppException("column name is not found");
             }
-        }catch(IOException e){
+        } catch (IOException e) {
 
-        }return pk;
+        }
+        return pk;
 
     }
 
@@ -126,30 +141,29 @@ public class DBApp implements DBAppInterface {
         if (a instanceof Integer)
             return (double) ((Integer) a).compareTo(Integer.parseInt((String) b));
         else if (a instanceof Double)
-            return (double) ((Double) a).compareTo(Double.parseDouble((String) b) );
-        else if (a instanceof Date){
+            return (double) ((Double) a).compareTo(Double.parseDouble((String) b));
+        else if (a instanceof Date) {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             String format = formatter.format(a);
             return (double) ((String) format).compareTo((String) b);
-        }
-        else
+        } else
             return (double) ((String) a).compareTo((String) b);
     }
 
     @Override
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
-           String pk = checkinMeta(tableName,columnNameValue);
-            if(!pk.equals(""))
+            String pk = checkinMeta(tableName, columnNameValue);
+            if (!pk.equals(""))
                 throw new DBAppException("Primary Key is passed to be updated");
-            Table table = (Table)deserialize(tableName);
+            Table table = (Table) deserialize(tableName);
             try {
                 table.update(clusteringKeyValue, columnNameValue);
             } catch (Exception e) {
-                serialize(tableName,table);
+                serialize(tableName, table);
                 throw new DBAppException("Primary Key Is NOt a Valid Type");
             }
-            serialize(tableName,table);
+            serialize(tableName, table);
         } else throw new DBAppException("Table does not exist in Database");
 
     }
@@ -157,10 +171,10 @@ public class DBApp implements DBAppInterface {
     @Override
     public void deleteFromTable(String tableName, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
-            checkinMeta(tableName,columnNameValue);
-            Table table = (Table)deserialize(tableName);
+            checkinMeta(tableName, columnNameValue);
+            Table table = (Table) deserialize(tableName);
             table.delete(columnNameValue);
-            serialize(tableName,table);
+            serialize(tableName, table);
 
         } else throw new DBAppException("Table does not exist in Database");
 
@@ -182,7 +196,7 @@ public class DBApp implements DBAppInterface {
 
         //resolving the select statement
 
-        Table table=null;
+        Table table = null;
         String column;
         String valueType;
 //        String[] s = new String [sqlTerms.length];
@@ -191,7 +205,7 @@ public class DBApp implements DBAppInterface {
             if (!(DB.contains(sqlTerms[i].strTableName)))
                 throw new DBAppException("Table does not exist in Database");
             else {
-                table = (Table)deserialize(sqlTerms[i].strTableName); //TODO hashset instead of hashtable table in serialized files
+                table = (Table) deserialize(sqlTerms[i].strTableName); //TODO hashset instead of hashtable table in serialized files
 //                if (!(table.htblColNameType.containsKey(sqlTerms[i].strColumnName)))
 //                    throw new DBAppException("Column" + sqlTerms[i].strColumnName + "does not exist in Table: " + sqlTerms[i].strTableName);
 //                else {
@@ -212,10 +226,10 @@ public class DBApp implements DBAppInterface {
         Iterator res = null;
         Page currPage;
         Hashtable currRec;
-        while(pagesItr.hasNext()){
-            currPage = (Page)pagesItr.next();
+        while (pagesItr.hasNext()) {
+            currPage = (Page) pagesItr.next();
             recs = (currPage.records).iterator();
-            while(recs.hasNext()){
+            while (recs.hasNext()) {
                 //removing records that violate the select statement
                 currRec = (Hashtable) recs.next();
 
@@ -231,16 +245,16 @@ public class DBApp implements DBAppInterface {
 
     }
 
-    public boolean checkCond(Hashtable rec, SQLTerm[] sqlTerms){
+    public boolean checkCond(Hashtable rec, SQLTerm[] sqlTerms) {
         //todo - iman
 
         return false;
     }
 
-    public static void serialize (String filename , Object obj){
+    public static void serialize(String filename, Object obj) {
         try {
             FileOutputStream fileOut =
-                    new FileOutputStream("src\\main\\resources\\data\\"+filename+".ser");
+                    new FileOutputStream("src\\main\\resources\\data\\" + filename + ".ser");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(obj);
             out.close();
@@ -250,10 +264,11 @@ public class DBApp implements DBAppInterface {
             i.printStackTrace();
         }
     }
-    public static Object deserialize(String filename){
+
+    public static Object deserialize(String filename) {
         Object obj;
         try {
-            FileInputStream fileIn = new FileInputStream("src\\main\\resources\\data\\"+filename+".ser");
+            FileInputStream fileIn = new FileInputStream("src\\main\\resources\\data\\" + filename + ".ser");
             ObjectInputStream in = new ObjectInputStream(fileIn);
             obj = in.readObject();
             in.close();
