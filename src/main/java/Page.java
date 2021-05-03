@@ -1,9 +1,7 @@
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.ListIterator;
-import java.util.TreeSet;
 import java.util.Vector;
 
 public class Page implements Serializable {
@@ -16,7 +14,7 @@ public class Page implements Serializable {
 
 	public Page(Double id) {
 
-		records = new Vector<Pair>();
+		records = new Vector<>();
 		this.id = id;
 
 	}
@@ -86,7 +84,7 @@ public class Page implements Serializable {
 //	}
 
 //	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
-//        // TODO delete the record
+//        // delete the record
 //        Iterator itr = records.iterator();
 //        while (itr.hasNext()) {
 //            Pair currRec = (Pair) itr.next();
@@ -143,7 +141,7 @@ public class Page implements Serializable {
 
 		@Override
 		public int compareTo(Pair p) {
-			return (Integer) Table.GenericCompare(this.pk, p.pk);
+			return  Table.GenericCompare(this.pk, p.pk);
 		}
 	}
 

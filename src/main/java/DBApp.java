@@ -1,7 +1,5 @@
 import java.io.*;
 import java.io.IOException;
-import java.lang.invoke.MethodType;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -148,7 +146,7 @@ public class DBApp implements DBAppInterface {
         else if (a instanceof Date) {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             String format = formatter.format(a);
-            return (double) ((String) format).compareTo((String) b);
+            return (double) ( format).compareTo((String) b);
         } else
             return (double) ((String) a).compareTo((String) b);
     }

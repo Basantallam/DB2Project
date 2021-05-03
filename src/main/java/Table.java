@@ -60,7 +60,7 @@ public class Table implements Serializable {
 				DBApp.serialize(tableName + "_" + nxtPage.id, nxtPage);
 			}
 			if (create) {
-				double newID = CreateID(foundIdx); // TODO method
+				double newID = CreateID(foundIdx);
 				Page newPage = new Page(newID);
 				newPage.insert(returned.pk, returned.row);
 				tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
@@ -93,9 +93,9 @@ public class Table implements Serializable {
 	private Object parse(String clusteringKeyValue) throws Exception {
 		Object pk = table.get(0).min;
 		if (pk instanceof Integer)
-			return Integer.parseInt((String) clusteringKeyValue);
+			return Integer.parseInt( clusteringKeyValue);
 		else if (pk instanceof Double)
-			return Double.parseDouble((String) clusteringKeyValue);
+			return Double.parseDouble( clusteringKeyValue);
 		else if (pk instanceof Date) {
 			return new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
 		}
@@ -174,7 +174,7 @@ public class Table implements Serializable {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 				String formata = a instanceof Date ? formatter.format(a) : (String) a;
 				String formatb = b instanceof Date ? formatter.format(b) : (String) b;
-				return ((String) formata).compareTo((String) formatb);
+				return ( formata).compareTo( formatb);
 			}
 		} else if (a instanceof String)
 			return ((String) a).compareTo((String) b);
