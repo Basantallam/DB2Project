@@ -143,7 +143,12 @@ public class DBApp implements DBAppInterface {
             if(!pk.equals(""))
                 throw new DBAppException("Primary Key is passed to be updated");
             Table table = (Table)deserialize(tableName);
-            table.update(clusteringKeyValue, columnNameValue);
+            try {
+                table.update(clusteringKeyValue, columnNameValue);
+            } catch (Exception e) {
+                serialize(tableName,table);
+                throw new DBAppException("Primary Key Is NOt a Valid Type");
+            }
             serialize(tableName,table);
         } else throw new DBAppException("Table does not exist in Database");
 
@@ -260,8 +265,10 @@ public class DBApp implements DBAppInterface {
         return obj;
     }
 
-    public static void main(String[] args) throws IOException, ParseException {
-       Date d= new SimpleDateFormat("yyyy-MM-dd").parse("1999-06-31");
-        System.out.println(d);
+    public static void main(String[] args) throws IOException {
+//       Date d= new SimpleDateFormat("yyyy-MM-dd").parse(new Date(1995 - 1900, 4 - 1, 1));
+
+//       System.out.println(Integer.parseInt("a1"));
+//        System.out.println(d);
     }
 }

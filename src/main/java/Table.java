@@ -89,7 +89,7 @@ public class Table implements Serializable {
 
 	}
 
-	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) {
+	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws Exception {
 		Object pk = parse(clusteringKeyValue);
 		int idx = BinarySearch(pk);
 		Page p = (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
@@ -100,18 +100,16 @@ public class Table implements Serializable {
 		DBApp.serialize(tableName + "_" + table.get(idx).id, p);
 	}
 
-	private Object parse(String clusteringKeyValue) {
+	private Object parse(String clusteringKeyValue) throws Exception {
 		Object pk = table.get(0).min;
 		if (pk instanceof Integer)
 			return Integer.parseInt((String) clusteringKeyValue);
 		else if (pk instanceof Double)
 			return Double.parseDouble((String) clusteringKeyValue);
 		else if (pk instanceof Date) {
-			try {
+
 				return new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
+
 		}
 		return clusteringKeyValue;
 	}
