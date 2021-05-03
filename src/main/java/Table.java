@@ -45,8 +45,8 @@ public class Table implements Serializable {
 		tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
 		Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
 		if (returned == null || returned.pk != insertedPkValue) {
-			foundTuple.min = foundpage.records.get(0).pk;
-			foundTuple.max = foundpage.records.lastElement().pk;
+			foundTuple.min = foundpage.records.first().pk;
+			foundTuple.max = foundpage.records.last().pk;
 
 		}
 		DBApp.serialize(tableName + "_" + foundTuple.id, foundpage);
@@ -123,8 +123,8 @@ public class Table implements Serializable {
 				table.remove(idx);
 				new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
 			} else {
-				t.min = p.records.firstElement().pk;
-				t.max = p.records.lastElement().pk;
+				t.min = p.records.first().pk;
+				t.max = p.records.last().pk;
 				DBApp.serialize(tableName + "_" + t.id, p);
 			}
 
@@ -170,29 +170,28 @@ public class Table implements Serializable {
 	public int BinarySearch(Object searchkey) {
 		int hi = table.size() - 1; // idx
 		int lo = 0;// idx
-
 		return BinarySearch(searchkey, hi, lo);
 
 	}
 
-	public static Double GenericCompare(Object a, Object b) {
+	public static int GenericCompare(Object a, Object b) {
 		if (a instanceof Integer)
-			return (double) ((Integer) a).compareTo((Integer) b);
+			return ((Integer) a).compareTo((Integer) b);
 		else if (a instanceof Double)
-			return (double) ((Double) a).compareTo((Double) b);
+			return ((Double) a).compareTo((Double) b);
 		else if (a instanceof Date || b instanceof Date) {
 			if (a instanceof Date && b instanceof Date)
-				return (double) ((Date) a).compareTo((Date) b);
+				return ((Date) a).compareTo((Date) b);
 			else {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 				String formata = a instanceof Date ? formatter.format(a) : (String) a;
 				String formatb = b instanceof Date ? formatter.format(b) : (String) b;
-				return (double) ((String) formata).compareTo((String) formatb);
+				return ((String) formata).compareTo((String) formatb);
 			}
 		} else if (a instanceof String)
-			return (double) ((String) a).compareTo((String) b);
+			return ((String) a).compareTo((String) b);
 		else
-			return null;
+			return 0;
 	}
 
 //	public int BinarySearch(Object searchkey, int hi, int lo) {

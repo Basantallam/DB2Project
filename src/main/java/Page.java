@@ -1,13 +1,11 @@
 import java.io.Serializable;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Hashtable;
-import java.util.Vector;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class Page implements Serializable {
 	Double id;
-	Vector<Pair> records;
+	SortedSet<Pair> records;
 
 	public String toString() {
 		return records.toString() + "";
@@ -15,7 +13,7 @@ public class Page implements Serializable {
 
 	public Page(Double id) {
 
-		records = new Vector<Pair>();
+		records = new TreeSet<Pair>();
 		this.id = id;
 
 	}
@@ -24,16 +22,16 @@ public class Page implements Serializable {
 		Pair newPair = new Pair(pkvalue, colNameValue);
 
 		if (this.isFull()) {
-			if (Table.GenericCompare(records.lastElement().pk, pkvalue) < 0)
+			if (Table.GenericCompare(records.last().pk, pkvalue) < 0)
 				return newPair;
 			else {
-				int i = LinearSearch(pkvalue);
-				records.insertElementAt(newPair, i); // full capacity+1
-				return records.remove(DBApp.capacity);
+				Pair lastpair = records.last();
+				records.add(newPair); // full capacity+1
+				records.remove(lastpair);
+				return lastpair;
 			}
 		} else {
-			int i = LinearSearch(pkvalue);
-			records.add(i, newPair);
+			records.add(newPair);
 			return null;
 		}
 
@@ -42,54 +40,49 @@ public class Page implements Serializable {
 	public void update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) {
 
 //		int idx = BinarySearch(clusteringKeyValue, records.size() - 1, 0);
-		int idx = LinearSearch(clusteringKeyValue);
-
-
-		for (String s : columnNameValue.keySet()) {
-			(records.get(idx).row).replace(s, columnNameValue.get(s));
-		}
-
-
-	}
-
-	public int LinearSearch(Object searchkey) {
-		int i = 0;
-		for (i = 0; i < records.size(); i++)
-			if (Table.GenericCompare(records.get(i).pk, searchkey) >= 0)
-				break;
-		return i;
-	}
-
-	public int BinarySearch(Object searchkey, int hi, int lo) {
-		int mid = (hi + lo + 1) / 2;
-		if (lo + 1 >= hi) {
-			if (Table.GenericCompare(records.get(lo).pk, searchkey) == 0)
-				return lo;
-			else if (Table.GenericCompare(records.get(hi).pk, searchkey) == 0)
-				return hi;
-			else {
-				if (lo + 1 == hi) {
-					return -1;
-				}
-				return BinarySearch(searchkey, lo, hi);
-
+		Pair foundRecord = LinearSearch(clusteringKeyValue);
+		if (foundRecord != null)
+			for (String s : columnNameValue.keySet()) {
+				(foundRecord.row).replace(s, columnNameValue.get(s));
 			}
-		}
 
-		if (Table.GenericCompare(records.get(mid).pk, searchkey) > 0)
-			return BinarySearch(searchkey, hi, mid);
-
-		else if (Table.GenericCompare(records.get(mid).pk, searchkey) < 0)
-			return BinarySearch(searchkey, mid, lo);
-
-		else
-			return mid;
 	}
+
+	public Pair LinearSearch(Object searchkey) {
+		for (Pair p : records)
+			if (Table.GenericCompare(p.pk, searchkey) == 0)
+				return p;
+		return null;
+	}
+
+//	public int BinarySearch(Object searchkey, int hi, int lo) {
+//		int mid = (hi + lo + 1) / 2;
+//		if (lo + 1 >= hi) {
+//			if (Table.GenericCompare(records.get(lo).pk, searchkey) == 0)
+//				return lo;
+//			else if (Table.GenericCompare(records.get(hi).pk, searchkey) == 0)
+//				return hi;
+//			else {
+//				if (lo + 1 == hi) {
+//					return -1;
+//				}
+//				return BinarySearch(searchkey, lo, hi);
+//
+//			}
+//		}
+//
+//		if (Table.GenericCompare(records.get(mid).pk, searchkey) > 0)
+//			return BinarySearch(searchkey, hi, mid);
+//
+//		else if (Table.GenericCompare(records.get(mid).pk, searchkey) < 0)
+//			return BinarySearch(searchkey, mid, lo);
+//
+//		else
+//			return mid;
+//	}
 
 	public void delete(Hashtable<String, Object> columnNameValue) {
-		int i = records.size() - 1;
-		while (i >= 0) {
-			Pair r = records.get(i);
+		for (Pair r : records) {
 			boolean and = true;
 			for (String s : columnNameValue.keySet()) {
 				if (r.row.get(s) == null || (!r.row.get(s).equals(columnNameValue.get(s)))) {
@@ -99,9 +92,7 @@ public class Page implements Serializable {
 			}
 			if (and)
 				records.remove(r);
-			i--;
 		}
-
 	}
 
 	public boolean isEmpty() {
@@ -112,7 +103,7 @@ public class Page implements Serializable {
 		return records.size() == DBApp.capacity;
 	}
 
-	public static class Pair implements Serializable {
+	public static class Pair implements Serializable, Comparable<Pair> {
 		Object pk;
 		Hashtable<String, Object> row;
 
@@ -123,6 +114,11 @@ public class Page implements Serializable {
 
 		public String toString() {
 			return row.toString();
+		}
+
+		@Override
+		public int compareTo(Pair p) {
+			return (Integer) Table.GenericCompare(this.pk, p.pk);
 		}
 	}
 
