@@ -2,12 +2,13 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.SortedSet;
+import java.util.ListIterator;
 import java.util.TreeSet;
+import java.util.Vector;
 
 public class Page implements Serializable {
 	Double id;
-	SortedSet<Pair> records;
+	Vector<Pair> records;
 
 	public String toString() {
 		return records.toString() + "";
@@ -15,20 +16,18 @@ public class Page implements Serializable {
 
 	public Page(Double id) {
 
-		records = new TreeSet<Pair>();
-		Collections.synchronizedSet(records); //to make set thread-safe
+		records = new Vector<Pair>();
 		this.id = id;
 
 	}
 
 	public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) {
 		Pair newPair = new Pair(pkvalue, colNameValue);
-
 		if (this.isFull()) {
-			if (Table.GenericCompare(records.last().pk, pkvalue) < 0)
+			if (Table.GenericCompare(records.lastElement().pk, pkvalue) < 0)
 				return newPair;
 			else {
-				Pair lastpair = records.last();
+				Pair lastpair = records.lastElement();
 				records.add(newPair); // full capacity+1
 				records.remove(lastpair);
 				return lastpair;
@@ -42,7 +41,6 @@ public class Page implements Serializable {
 
 	public void update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) {
 
-//		int idx = BinarySearch(clusteringKeyValue, records.size() - 1, 0);
 		Pair foundRecord = LinearSearch(clusteringKeyValue);
 		if (foundRecord != null)
 			for (String s : columnNameValue.keySet()) {
@@ -59,7 +57,8 @@ public class Page implements Serializable {
 		}
 		return null;
 	}
-//HashSet does internal Binary Search
+	
+//TreeSet does internal Binary Search
 //	public int BinarySearch(Object searchkey, int hi, int lo) {
 //		int mid = (hi + lo + 1) / 2;
 //		if (lo + 1 >= hi) {
@@ -86,11 +85,28 @@ public class Page implements Serializable {
 //			return mid;
 //	}
 
+//	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
+//        // TODO delete the record
+//        Iterator itr = records.iterator();
+//        while (itr.hasNext()) {
+//            Pair currRec = (Pair) itr.next();
+//            Boolean toDelete = true;
+//            Set<String> keys = columnNameValue.keySet();
+//            for (String key : keys)
+//                if(!(currRec.row.get(key).equals(columnNameValue.get(key))))
+//                    toDelete=false;
+//            if(!toDelete)
+//                records.remove(currRec);
+//
+//        }
+//    }
 	public void delete(Hashtable<String, Object> columnNameValue) {
 
-		Iterator<Pair> it = records.iterator();
-		while (it.hasNext()) {
-			Pair r = it.next();
+		ListIterator<Pair> it = 
+	            records.listIterator( records.size() );
+	 		 		
+		while (it.hasPrevious()) {
+			Pair r = it.previous();
 
 			boolean and = true;
 			for (String s : columnNameValue.keySet()) {

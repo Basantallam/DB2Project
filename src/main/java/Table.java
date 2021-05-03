@@ -1,5 +1,4 @@
 import java.io.*;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -15,7 +14,6 @@ public class Table implements Serializable {
 		table.add(new tuple4(Double.valueOf(0), new Page(Double.valueOf(0)), htblColNameMax.get(strClusteringKeyColumn),
 				htblColNameMax.get(strClusteringKeyColumn)));
 		DBApp.serialize(tableName + "_" + Double.valueOf(0), table.get(0).page);
-
 		Set<String> keys = htblColNameType.keySet();
 		if (strClusteringKeyColumn.equals("")) {
 			throw new DBAppException("please enter a primary key");
@@ -35,9 +33,7 @@ public class Table implements Serializable {
 	}
 
 	public void insert(String pk, Hashtable<String, Object> colNameValue) {
-//		for(tuple4 t:table)
-//			System.out.print(t.print(tableName));
-//		System.out.println();
+
 		Object insertedPkValue = colNameValue.get(pk);
 
 		int foundIdx = BinarySearch(insertedPkValue);
@@ -45,8 +41,8 @@ public class Table implements Serializable {
 		tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
 		Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
 		if (returned == null || returned.pk != insertedPkValue) {
-			foundTuple.min = foundpage.records.first().pk;
-			foundTuple.max = foundpage.records.last().pk;
+			foundTuple.min = foundpage.records.firstElement().pk;
+			foundTuple.max = foundpage.records.lastElement().pk;
 
 		}
 		DBApp.serialize(tableName + "_" + foundTuple.id, foundpage);
@@ -73,10 +69,6 @@ public class Table implements Serializable {
 			}
 
 		}
-//		System.out.println();
-//		for(tuple4 t:table)
-//			System.out.print(t.print(tableName));
-//		System.out.println();
 
 	}
 
@@ -93,9 +85,7 @@ public class Table implements Serializable {
 		Object pk = parse(clusteringKeyValue);
 		int idx = BinarySearch(pk);
 		Page p = (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
-//		System.out.println("update " + clusteringKeyValue + "  found page " + p.toString());
 
-//		System.out.println(table.get(0).min + " " + table.lastElement().max);
 		p.update(pk, columnNameValue);
 		DBApp.serialize(tableName + "_" + table.get(idx).id, p);
 	}
@@ -107,10 +97,9 @@ public class Table implements Serializable {
 		else if (pk instanceof Double)
 			return Double.parseDouble((String) clusteringKeyValue);
 		else if (pk instanceof Date) {
-
-				return new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
-
+			return new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
 		}
+
 		return clusteringKeyValue;
 	}
 
@@ -123,11 +112,10 @@ public class Table implements Serializable {
 				table.remove(idx);
 				new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
 			} else {
-				t.min = p.records.first().pk;
-				t.max = p.records.last().pk;
+				t.min = p.records.firstElement().pk;
+				t.max = p.records.lastElement().pk;
 				DBApp.serialize(tableName + "_" + t.id, p);
 			}
-
 
 		}
 
@@ -212,13 +200,12 @@ public class Table implements Serializable {
 		if (lo >= hi)
 			return mid;
 
-		if (GenericCompare(table.get(mid).min, searchkey) < 0 )
+		if (GenericCompare(table.get(mid).min, searchkey) < 0)
 			return BinarySearch(searchkey, hi, mid);
 		else
-			return BinarySearch(searchkey, mid-1, lo);
+			return BinarySearch(searchkey, mid - 1, lo);
 
 	} // better optimization
-
 
 	public static class tuple4 implements Serializable {
 		Double id;
@@ -241,10 +228,8 @@ public class Table implements Serializable {
 
 	}
 
-	
 	public void createCSV() throws IOException {
-//		System.out.println("dakhal ");
-		String path = "src\\main\\resources\\Basant\\"+this.tableName+"Table.csv";
+		String path = "src\\main\\resources\\Basant\\" + this.tableName + "Table.csv";
 		FileWriter fw = new FileWriter(path);
 
 		for (int idx = 0; idx < table.size(); idx++) {
@@ -258,13 +243,13 @@ public class Table implements Serializable {
 				for (String o : s) {
 					str += h.get(o).toString() + ", ";
 				}
-				str+="\n";
-				
+				str += "\n";
+
 				fw.write(str);
 			}
-			DBApp.serialize(tableName + "_" + t.id + "",p);
+			DBApp.serialize(tableName + "_" + t.id + "", p);
 		}
 		fw.close();
 	}
-	
+
 }
