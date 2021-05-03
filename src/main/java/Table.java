@@ -125,8 +125,9 @@ public class Table implements Serializable {
 			} else {
 				t.min = p.records.firstElement().pk;
 				t.max = p.records.lastElement().pk;
+				DBApp.serialize(tableName + "_" + t.id, p);
 			}
-			DBApp.serialize(tableName + "_" + t.id, p);
+
 
 		}
 
