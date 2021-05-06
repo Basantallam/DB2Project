@@ -103,10 +103,11 @@ public class Table implements Serializable {
 		return clusteringKeyValue;
 	}
 
-	public void delete(Hashtable<String, Object> columnNameValue) {
+	public void delete(String pk, Hashtable<String, Object> columnNameValue) {
+		if(pk.equals(""))
 		for (tuple4 t : table) {
 			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-			p.delete(columnNameValue);
+			p.delete(null, columnNameValue);
 			if (p.isEmpty()) {
 				int idx = table.indexOf(t);
 				table.remove(idx);
@@ -118,6 +119,23 @@ public class Table implements Serializable {
 			}
 
 		}
+		else{
+			Object pkValue= columnNameValue.get(pk);
+			int idx=BinarySearch(pkValue);
+			tuple4 t=table.get(idx);
+			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
+			p.delete( pkValue,columnNameValue);
+			if (p.isEmpty()) {
+				table.remove(idx);
+				new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
+			} else {
+				t.min = p.records.firstElement().pk;
+				t.max = p.records.lastElement().pk;
+				DBApp.serialize(tableName + "_" + t.id, p);
+			}
+
+		}
+
 
 	}
 

@@ -172,9 +172,9 @@ public class DBApp implements DBAppInterface {
     @Override
     public void deleteFromTable(String tableName, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
-            checkinMeta(tableName, columnNameValue);
+           String pk= checkinMeta(tableName, columnNameValue);
             Table table = (Table) deserialize(tableName);
-            table.delete(columnNameValue);
+            table.delete(pk,columnNameValue);
             serialize(tableName, table);
 
         } else throw new DBAppException("Table does not exist in Database");
@@ -284,12 +284,20 @@ public class DBApp implements DBAppInterface {
     public static void main(String[] args) throws Exception {
         DBApp dbApp = new DBApp();
         dbApp.init();
-
-        String dataDirPath = "src/main/resources/data";
-        File dataDir = new File(dataDirPath);
-
-        if (!dataDir.isDirectory() || !dataDir.exists()) {
-            throw new Exception("`data` Directory in Resources folder does not exist");
-        }
+//
+//        String dataDirPath = "src/main/resources/data";
+//        File dataDir = new File(dataDirPath);
+//
+//        if (!dataDir.isDirectory() || !dataDir.exists()) {
+//            throw new Exception("`data` Directory in Resources folder does not exist");
+//        }
+//        try{
+//            for(String tableName : dbApp.DB){
+//                Table table = (Table) DBApp.deserialize(tableName);
+//                table.createCSV();
+//                DBApp.serialize(tableName,table);
+//            }}catch (IOException e){
+//            e.printStackTrace();
+//        }
     }
 }

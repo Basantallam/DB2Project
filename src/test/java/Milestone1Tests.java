@@ -118,13 +118,7 @@ public class Milestone1Tests {
         insertCoursesRecords(dbApp, limit);
         insertTranscriptsRecords(dbApp, limit);
         insertPCsRecords(dbApp, limit);
-//        try{
-//        for(String tableName : dbApp.DB){
-//            Table table = (Table) DBApp.deserialize(tableName);
-//            table.createCSV();
-//        }}catch (IOException e){
-//            e.printStackTrace();
-//        }
+
 
         dbApp = null;
     }
