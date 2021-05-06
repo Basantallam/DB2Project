@@ -21,20 +21,19 @@ public class Page implements Serializable {
 
 	public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) {
 		Pair newPair = new Pair(pkvalue, colNameValue);
-
 		if (this.isFull()) {
 			if (Table.GenericCompare(records.lastElement().pk, pkvalue) < 0)
 				return newPair;
 			else {
 
 				int i = LinearSearch(pkvalue);
-//						BinarySearch(pkvalue,records.size()-1,0);
+						BinarySearch(pkvalue,records.size()-1,0);
 				records.insertElementAt(newPair, i); // full capacity+1
 				return records.remove(DBApp.capacity);
 			}
 		} else {
 			int i = LinearSearch(pkvalue);
-//					BinarySearch(pkvalue,records.size()-1,0);
+					BinarySearch(pkvalue,records.size()-1,0);
 			records.add(i, newPair);
 			return null;
 		}
@@ -97,18 +96,18 @@ public class Page implements Serializable {
 //		else
 //			return mid;
 //	}
-//public int BinarySearch(Object searchkey, int hi, int lo) {
-//	int mid = (hi + lo + 1) / 2;
-//
-//	if (lo >= hi)
-//		return mid;
-//
-//	if (Table.GenericCompare(records.get(mid), searchkey) < 0)
-//		return BinarySearch(searchkey, hi, mid);
-//	else
-//		return BinarySearch(searchkey, mid - 1, lo);
-//
-//}
+	public int BinarySearch(Object searchkey, int hi, int lo) {
+		int mid = (hi + lo) / 2;
+
+		if (lo >= hi)
+			return mid;
+
+		if (Table.GenericCompare(records.get(mid).pk, searchkey) > 0 )
+			return BinarySearch(searchkey, mid, lo);
+		else
+			return BinarySearch(searchkey, hi, mid + 1);
+
+	}
 
 //	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
 //        // delete the record
@@ -130,20 +129,20 @@ public class Page implements Serializable {
 		ListIterator<Pair> it = 
 	            records.listIterator( records.size() );
 	 		 		
-		while (it.hasPrevious()) {
-			Pair r = it.previous();
+			while (it.hasPrevious()) {
+				Pair r = it.previous();
 
-			boolean and = true;
-			for (String s : columnNameValue.keySet()) {
-				if (r.row.get(s) == null || (!r.row.get(s).equals(columnNameValue.get(s)))) {
-					and = false;
-					break;
+				boolean and = true;
+				for (String s : columnNameValue.keySet()) {
+					if (r.row.get(s) == null || (!r.row.get(s).equals(columnNameValue.get(s)))) {
+						and = false;
+						break;
+					}
 				}
+				if (and)
+					it.remove();
 			}
-			if (and)
-				it.remove();
 		}
-	}
 		else{
 			int idx=Collections.binarySearch(records,new Pair(pkValue,null));
 			if(idx>-1 && idx < records.size()) {
