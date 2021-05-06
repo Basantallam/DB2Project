@@ -118,8 +118,6 @@ public class Milestone1Tests {
         insertCoursesRecords(dbApp, limit);
         insertTranscriptsRecords(dbApp, limit);
         insertPCsRecords(dbApp, limit);
-
-
         dbApp = null;
     }
 
@@ -608,8 +606,6 @@ public class Milestone1Tests {
             row.put("course_id", fields[1]);
             row.put("course_name", fields[2]);
             row.put("hours", Integer.parseInt(fields[3]));
-
-
 
             dbApp.insertIntoTable("courses", row);
             row.clear();
