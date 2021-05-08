@@ -195,60 +195,108 @@ public class DBApp implements DBAppInterface {
             if (!(arrayOperators[i].equals("AND") || arrayOperators[i].equals("OR") || arrayOperators[i].equals("XOR")))
                 throw new DBAppException("Star operator must be one of AND, OR, XOR!");
 
+        //todo - check if index exists
         //resolving the select statement
 
         Table table = null;
-        String column;
-        String valueType;
-//        String[] s = new String [sqlTerms.length];
-
         for (int i = 0; i < sqlTerms.length; i++) {
             if (!(DB.contains(sqlTerms[i].strTableName)))
                 throw new DBAppException("Table does not exist in Database");
             else {
                 table = (Table) deserialize(sqlTerms[i].strTableName); //TODO hashset instead of hashtable table in serialized files
-//                if (!(table.htblColNameType.containsKey(sqlTerms[i].strColumnName)))
-//                    throw new DBAppException("Column" + sqlTerms[i].strColumnName + "does not exist in Table: " + sqlTerms[i].strTableName);
-//                else {
-//                    column = sqlTerms[i].strColumnName;
-//                    valueType = (sqlTerms[i].objValue.getClass()).toString();
-//                    if (!(table.htblColNameType.get(column).equals(valueType)))
-//                        throw new DBAppException("Value has an incorrect data type");
-//                    else {
-//                        //todo
-//
-//                    }
-//
-//                }  //todo checking in meta
+                if (!(colInTable(sqlTerms[i].strTableName, sqlTerms[i].strColumnName, sqlTerms[i].objValue)))
+                    throw new DBAppException("Invalid input, check column name and the value's data type");
+                //resolveOneStatement(table,sqlTerms[i]);
+                //todo continue here, create "methodY" - iman
             }
         }
+
+        return null;
+
+    }
+
+    public Iterator resolveOneStatement(Table table, SQLTerm term) {
         Iterator pagesItr = (table.table).iterator();
         Iterator recs = null;
-        Iterator res = null;
         Page currPage;
-        Hashtable currRec;
+        Page.Pair currRec;
+
         while (pagesItr.hasNext()) {
             currPage = (Page) pagesItr.next();
             recs = (currPage.records).iterator();
             while (recs.hasNext()) {
                 //removing records that violate the select statement
-                currRec = (Hashtable) recs.next();
-
-//                if(checkCond(currRec,) )
-//                    recs.remove();
-                //todo
-
+                currRec = (Page.Pair) recs.next();
+                if (!(checkCond(currRec, term.strColumnName, term.objValue, term.strOperator)))
+                    recs.remove();
             }
-//            add the remainder of recs to res here
         }
-
-        return res;
-
+        return recs;
     }
 
-    public boolean checkCond(Hashtable rec, SQLTerm[] sqlTerms) {
-        //todo - iman
+    public boolean checkCond(Page.Pair rec, String col, Object value, String operator) {
+        Object recVal = rec.row.get(col);
+        switch (operator) {
+            case ">":
+                if (GenericCompare(recVal, value) > 0)
+                    return true;
+            case ">=":
+                if (GenericCompare(recVal, value) >= 0)
+                    return true;
+            case "<":
+                if (GenericCompare(recVal, value) < 0)
+                    return true;
+            case "<=":
+                if (GenericCompare(recVal, value) <= 0)
+                    return true;
+            case "=":
+                if (GenericCompare(recVal, value) == 0)
+                    return true;
+            case "!=":
+                if (GenericCompare(recVal, value) != 0)
+                    return true;
+        }
 
+        return false;
+    }
+
+    public boolean colInTable(String table, String column, Object value) throws DBAppException {
+        //check col exists + check value type
+        try {
+            FileReader fr = new FileReader("src/main/resources/metadata.csv");
+            BufferedReader br = new BufferedReader(fr);
+
+            while (br.ready()) {
+                String line = br.readLine();
+                String[] metadata = (line).split(", ");
+
+                if (metadata[0].equals(table) && metadata[1].equals(column)) {
+                    String strColType = metadata[2];
+                    boolean ex = false;
+                    switch (strColType) {
+                        case "java.lang.Integer":
+                            if (!(value instanceof Integer)) ex = true;
+                            break;
+                        case "java.lang.String":
+                            if (!(value instanceof String)) ex = true;
+                            break;
+                        case "java.lang.Date":
+                            if (!(value instanceof Date)) ex = true;
+                            break;
+                        case "java.lang.Double":
+                            if (!(value instanceof Double)) ex = true;
+                            break;
+                    }
+                    if (ex)
+                        throw new DBAppException("column types not compatible");
+                    else
+                        return true;
+                }
+
+            }
+        } catch (IOException e) {
+
+        }
         return false;
     }
 
