@@ -81,6 +81,7 @@ public class Table implements Serializable {
 
 	}
 
+
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws Exception {
 		Object pk = parse(clusteringKeyValue);
 		int idx = BinarySearch(pk);

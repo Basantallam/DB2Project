@@ -146,7 +146,7 @@ public class DBApp implements DBAppInterface {
         else if (a instanceof Date) {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
             String format = formatter.format(a);
-            return (double) ( format).compareTo((String) b);
+            return (double) (format).compareTo((String) b);
         } else
             return (double) ((String) a).compareTo((String) b);
     }
@@ -172,9 +172,9 @@ public class DBApp implements DBAppInterface {
     @Override
     public void deleteFromTable(String tableName, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
-           String pk= checkinMeta(tableName, columnNameValue);
+            String pk = checkinMeta(tableName, columnNameValue);
             Table table = (Table) deserialize(tableName);
-            table.delete(pk,columnNameValue);
+            table.delete(pk, columnNameValue);
             serialize(tableName, table);
 
         } else throw new DBAppException("Table does not exist in Database");
@@ -185,37 +185,86 @@ public class DBApp implements DBAppInterface {
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
 
         //validating input
-        for (int i = 0; i < sqlTerms.length; i++)
-            if ((sqlTerms[i].strOperator).equals(">") || (sqlTerms[i].strOperator).equals(">=") ||
-                    (sqlTerms[i].strOperator).equals("<") || (sqlTerms[i].strOperator).equals("<=") ||
-                    (sqlTerms[i].strOperator).equals("=") || (sqlTerms[i].strOperator).equals("!="))
-                throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
+//        for (int i = 0; i < sqlTerms.length; i++)
+//            if ((sqlTerms[i].strOperator).equals(">") || (sqlTerms[i].strOperator).equals(">=") ||
+//                    (sqlTerms[i].strOperator).equals("<") || (sqlTerms[i].strOperator).equals("<=") ||
+//                    (sqlTerms[i].strOperator).equals("=") || (sqlTerms[i].strOperator).equals("!="))
+//                throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
 
-        for (int i = 0; i < arrayOperators.length; i++)
-            if (!(arrayOperators[i].equals("AND") || arrayOperators[i].equals("OR") || arrayOperators[i].equals("XOR")))
-                throw new DBAppException("Star operator must be one of AND, OR, XOR!");
+//        for (int i = 0; i < arrayOperators.length; i++)
+//            if (!(arrayOperators[i].equals("AND") || arrayOperators[i].equals("OR") || arrayOperators[i].equals("XOR")))
+//                throw new DBAppException("Star operator must be one of AND, OR, XOR!");
+
+        Table table = (Table) deserialize(sqlTerms[0].strTableName);
+        if (!(DB.contains(table))) // based on the fact that only one table is included in a select statement
+            throw new DBAppException("Table does not exist in Database");
 
         //todo - check if index exists
         //resolving the select statement
 
-        Table table = null;
-        for (int i = 0; i < sqlTerms.length; i++) {
-            if (!(DB.contains(sqlTerms[i].strTableName)))
-                throw new DBAppException("Table does not exist in Database");
-            else {
-                table = (Table) deserialize(sqlTerms[i].strTableName); //TODO hashset instead of hashtable table in serialized files
-                if (!(colInTable(sqlTerms[i].strTableName, sqlTerms[i].strColumnName, sqlTerms[i].objValue)))
-                    throw new DBAppException("Invalid input, check column name and the value's data type");
-                //resolveOneStatement(table,sqlTerms[i]);
-                //todo continue here, create "methodY" - iman
+        for (int i = 0; i < sqlTerms.length -1 ; i++) {
+            if (!(colInTable(sqlTerms[i].strTableName, sqlTerms[i].strColumnName, sqlTerms[i].objValue)))
+                throw new DBAppException("Invalid input, check column name and the value's data type");
+            Iterator i1 = resolveOneStatement(table, sqlTerms[i]);
+            Iterator i2 = resolveOneStatement(table, sqlTerms[i + 1]);
+            switch (arrayOperators[i]){
+                case("AND"):
+                    return ANDing(i1,i2);
+                case("OR"):
+                    return ORing(i1,i2);
+                case("XOR"):
+                    return XORing(i1,i2);
+                default:
+                    throw new DBAppException("Star operator must be one of AND, OR, XOR!");
             }
         }
-
         return null;
-
+    }
+    public Iterator ANDing(Iterator i1, Iterator i2){
+        List<Object> l1 = new ArrayList<>();
+        i1.forEachRemaining(l1::add);
+        List<Object> l2 = new ArrayList<>();
+        i2.forEachRemaining(l2::add);
+        ListIterator  res = null;
+        while(!(l1.isEmpty())){
+            if(l2.contains(l1.get(0)))
+                res.add(l1.get(0));
+            l1.remove(0);
+        }
+        return res;
+    }
+    public Iterator ORing(Iterator i1, Iterator i2){
+        ListIterator res = (ListIterator) i1;
+        Object curr;
+        while(i2.hasNext()){
+            curr = i2.next();
+            res.add(curr);
+        }
+        Iterator res2 = (Iterator) res;
+        return res2;
+    }
+    public Iterator XORing(Iterator i1, Iterator i2){
+        List<Object> l1 = new ArrayList<>();
+        i1.forEachRemaining(l1::add);
+        List<Object> l2 = new ArrayList<>();
+        i2.forEachRemaining(l2::add);
+        ListIterator  res =null;
+        while(!(l1.isEmpty())){
+            if(!(l2.contains(l1.get(0))))
+                res.add(l1.get(0));
+            l1.remove(0);
+        }
+        i1.forEachRemaining(l1::add);
+        i2.forEachRemaining(l2::add);
+        while(!(l2.isEmpty())){
+            if(!(l1.contains(l2.get(0))))
+                res.add(l2.get(0));
+            l2.remove(0);
+        }
+        return res;
     }
 
-    public Iterator resolveOneStatement(Table table, SQLTerm term) {
+    public Iterator resolveOneStatement(Table table, SQLTerm term) throws DBAppException {
         Iterator pagesItr = (table.table).iterator();
         Iterator recs = null;
         Page currPage;
@@ -234,7 +283,7 @@ public class DBApp implements DBAppInterface {
         return recs;
     }
 
-    public boolean checkCond(Page.Pair rec, String col, Object value, String operator) {
+    public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
         Object recVal = rec.row.get(col);
         switch (operator) {
             case ">":
@@ -255,9 +304,10 @@ public class DBApp implements DBAppInterface {
             case "!=":
                 if (GenericCompare(recVal, value) != 0)
                     return true;
+            default:
+                throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
         }
 
-        return false;
     }
 
     public boolean colInTable(String table, String column, Object value) throws DBAppException {
