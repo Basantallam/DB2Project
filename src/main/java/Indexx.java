@@ -11,7 +11,7 @@ public class Indexx implements Serializable {
 		
 		System.out.println((Arrays.deepToString(idx.buckets)));//3d
 		System.out.println(Arrays.deepToString((Object[]) idx.buckets[0]));//2d
-		System.out.println((((Object[]) idx.buckets[0])[0])); //1d
+		System.out.println(Arrays.toString((Object[])(((Object[]) idx.buckets[0])[0]))); //1d
 	}
 	public Indexx(String[] columnNames) {
 		this.columnNames = columnNames;
