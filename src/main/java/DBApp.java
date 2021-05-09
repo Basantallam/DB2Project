@@ -66,7 +66,13 @@ public class DBApp implements DBAppInterface {
 
     @Override
     public void createIndex(String tableName, String[] columnNames) throws DBAppException {
-        //part2
+        if (DB.contains(tableName)) {
+            //do I need to check if Names exists??
+            Table table = (Table) deserialize(tableName);
+            table.createIndex(columnNames);
+            serialize(tableName, table);
+        //todo update metadata
+        } else throw new DBAppException("Table does not exist in Database");
     }
 
     @Override

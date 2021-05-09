@@ -5,12 +5,14 @@ import java.util.*;
 public class Table implements Serializable {
 	String tableName;
 	Vector<tuple4> table;
+	Vector<Index> index;
 
 	public Table(String strTableName, String strClusteringKeyColumn, Hashtable<String, String> htblColNameType,
 			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
 			throws DBAppException, IOException {
 		tableName = strTableName;
 		this.table = new Vector<tuple4>();
+		this.index= new Vector<Index>();
 		table.add(new tuple4(Double.valueOf(0), new Page(Double.valueOf(0)), htblColNameMax.get(strClusteringKeyColumn),
 				htblColNameMax.get(strClusteringKeyColumn)));
 		DBApp.serialize(tableName + "_" + Double.valueOf(0), table.get(0).page);
@@ -225,6 +227,14 @@ public class Table implements Serializable {
 			return BinarySearch(searchkey, mid - 1, lo);
 
 	} // better optimization
+
+	public void createIndex(String[] columnNames) {
+//		for ( Index i:index) {
+//			i.columnNames
+//		}  //do we create checks to see if it exists??
+		Index i =new Index(columnNames);
+		index.add(i);
+	}
 
 	public static class tuple4 implements Serializable {
 		Double id;
