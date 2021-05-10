@@ -231,7 +231,7 @@ public class Table implements Serializable {
 //		for ( Index i:index) {
 //			i.columnNames
 //		}  //do we create checks to see if it exists??
-		Index i = new Index(columnNames);
+		Index i = new Index(this.tableName,columnNames);
 		index.add(i);
 	}
 
