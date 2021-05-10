@@ -41,12 +41,12 @@ public class Indexx implements Serializable {
 	}
 
 	public static void main(String[] args) {
-		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=3
+		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
 		Indexx idx = new Indexx(stringarr);
 
-		System.out.println((Arrays.deepToString(idx.buckets)));// 3d
-		System.out.println(Arrays.deepToString((Object[]) idx.buckets[0]));// 2d
-		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.buckets[0])[0]))); // 1d
+		System.out.println((Arrays.deepToString(idx.buckets)));// 4d
+		System.out.println(Arrays.deepToString((Object[]) idx.buckets[0]));// 3d
+		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.buckets[0])[0]))); // 2d
 		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.buckets[0])[0])))); // 1d
 	}
 }
