@@ -12,7 +12,7 @@ public class Table implements Serializable {
 			throws DBAppException, IOException {
 		tableName = strTableName;
 		this.table = new Vector<tuple4>();
-		this.index= new Vector<Indexx>();
+		this.index = new Vector<Indexx>();
 		table.add(new tuple4(Double.valueOf(0), new Page(Double.valueOf(0)), htblColNameMax.get(strClusteringKeyColumn),
 				htblColNameMax.get(strClusteringKeyColumn)));
 		DBApp.serialize(tableName + "_" + Double.valueOf(0), table.get(0).page);
@@ -83,7 +83,6 @@ public class Table implements Serializable {
 
 	}
 
-
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws Exception {
 		Object pk = parse(clusteringKeyValue);
 		int idx = BinarySearch(pk);
@@ -96,9 +95,9 @@ public class Table implements Serializable {
 	private Object parse(String clusteringKeyValue) throws Exception {
 		Object pk = table.get(0).min;
 		if (pk instanceof Integer)
-			return Integer.parseInt( clusteringKeyValue);
+			return Integer.parseInt(clusteringKeyValue);
 		else if (pk instanceof Double)
-			return Double.parseDouble( clusteringKeyValue);
+			return Double.parseDouble(clusteringKeyValue);
 		else if (pk instanceof Date) {
 			return new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
 		}
@@ -107,12 +106,28 @@ public class Table implements Serializable {
 	}
 
 	public void delete(String pk, Hashtable<String, Object> columnNameValue) {
-		if(pk.equals(""))
-		for (tuple4 t : table) {
+		if (pk.equals(""))
+			for (tuple4 t : table) {
+				Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
+				p.delete(null, columnNameValue);
+				if (p.isEmpty()) {
+					int idx = table.indexOf(t);
+					table.remove(idx);
+					new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
+				} else {
+					t.min = p.records.firstElement().pk;
+					t.max = p.records.lastElement().pk;
+					DBApp.serialize(tableName + "_" + t.id, p);
+				}
+
+			}
+		else {
+			Object pkValue = columnNameValue.get(pk);
+			int idx = BinarySearch(pkValue);
+			tuple4 t = table.get(idx);
 			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-			p.delete(null, columnNameValue);
+			p.delete(pkValue, columnNameValue);
 			if (p.isEmpty()) {
-				int idx = table.indexOf(t);
 				table.remove(idx);
 				new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
 			} else {
@@ -122,23 +137,6 @@ public class Table implements Serializable {
 			}
 
 		}
-		else{
-			Object pkValue= columnNameValue.get(pk);
-			int idx=BinarySearch(pkValue);
-			tuple4 t=table.get(idx);
-			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-			p.delete( pkValue,columnNameValue);
-			if (p.isEmpty()) {
-				table.remove(idx);
-				new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
-			} else {
-				t.min = p.records.firstElement().pk;
-				t.max = p.records.lastElement().pk;
-				DBApp.serialize(tableName + "_" + t.id, p);
-			}
-
-		}
-
 
 	}
 
@@ -162,11 +160,11 @@ public class Table implements Serializable {
 			s += tableName + ", ";
 			s += key + ", ";
 			s += htblColNameType.get(key) + ", ";
-			if (pk.equals(key)) {
+			if (pk.equals(key))
 				s += "True, ";
-			} else {
+			else
 				s += "False, ";
-			}
+
 			s += "False, ";
 			s += "" + htblColNameMin.get(key) + ", ";
 			s += "" + htblColNameMax.get(key);
@@ -174,6 +172,7 @@ public class Table implements Serializable {
 		}
 		fw.write(s);
 		fw.close();
+		br.close();
 	}
 
 	public int BinarySearch(Object searchkey) {
@@ -195,7 +194,7 @@ public class Table implements Serializable {
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 				String formata = a instanceof Date ? formatter.format(a) : (String) a;
 				String formatb = b instanceof Date ? formatter.format(b) : (String) b;
-				return ( formata).compareTo( formatb);
+				return (formata).compareTo(formatb);
 			}
 		} else if (a instanceof String)
 			return ((String) a).compareTo((String) b);
@@ -232,7 +231,7 @@ public class Table implements Serializable {
 //		for ( Index i:index) {
 //			i.columnNames
 //		}  //do we create checks to see if it exists??
-		Indexx i =new Indexx(columnNames);
+		Indexx i = new Indexx(columnNames);
 		index.add(i);
 	}
 
