@@ -12,7 +12,7 @@ public class Indexx implements Serializable {
 		Object[] temp = new Object[10];
 		Object[] temp1 = new Object[10];
 		for (int i = 0; i < 10; i++) {
-			temp[i] = new Integer(i);
+			temp[i] = new Object();
 		}
 		for (int i = 1; i < n; i++) {
 			for (int j = 0; j < 10; j++)
@@ -20,7 +20,7 @@ public class Indexx implements Serializable {
 			temp = temp1;
 			temp1 = new Object[10];
 		}
-		((Object[]) ((Object[]) ((Object[]) temp[0])[0])[0])[0] = Integer.valueOf(100);
+//		((Object[]) ((Object[]) ((Object[]) temp[0])[0])[0])[0] = Integer.valueOf(100); tested deepClone
 		this.buckets = temp;
 		this.fill();
 	}
