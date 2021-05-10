@@ -12,8 +12,9 @@ public class Index implements Serializable {
 		this.columnNames = columnNames;
 		int n = columnNames.length;
 
-		Vector<BucketInfo>[] temp = new Vector[10];
-        Vector<BucketInfo>[] temp1 = new Vector[10];
+		Object[] temp = new Vector[10];
+        Object[] temp1 = new Object[10];
+        
 		for (int i = 0; i < 10; i++) {
 			temp[i] = new Vector<>();
 		}
@@ -21,7 +22,7 @@ public class Index implements Serializable {
 			for (int j = 0; j < 10; j++)
 				temp1[j] = deepClone(temp);
 			temp = temp1;
-			temp1 = new Vector[10];
+			temp1 = new Object[10];
 		}
 //		((Object[]) ((Object[]) ((Object[]) temp[0])[0])[0])[0] = Integer.valueOf(100); tested deepClone
 		this.cell = temp;
@@ -55,12 +56,12 @@ public class Index implements Serializable {
 
 	public static void main(String[] args) {
 		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
-//		Index idx = new Index(stringarr);
+		Index idx = new Index("tablename",stringarr);
 
-		System.out.println((Arrays.deepToString(idx.buckets)));// 4d
-		System.out.println(Arrays.deepToString((Object[]) idx.buckets[0]));// 3d
-		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.buckets[0])[0]))); // 2d
-		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.buckets[0])[0])))); // 1d
+		System.out.println((Arrays.deepToString(idx.cell)));// 4d
+		System.out.println(Arrays.deepToString((Object[]) idx.cell[0]));// 3d
+		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.cell[0])[0]))); // 2d
+		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.cell[0])[0])))); // 1d
 	}
 
     private class BucketInfo {
