@@ -69,6 +69,14 @@ public class Index implements Serializable {
 	public void insert(Hashtable<String, Object> colNameValue, Double id) { //todo
 	}
 
+	public void update(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow, Hashtable<String, Object> updatedValues, double pageId) {
+	Boolean update = false;
+		for(String s:columnNames)
+		 	if(updatedValues.containsKey(s)){update=true; break;}
+		if(!update)return;
+		//update
+	}
+
 	private class BucketInfo implements Serializable {
 	    long id;
 	    transient Bucket bucket;

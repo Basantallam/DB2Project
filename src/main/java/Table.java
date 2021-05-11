@@ -121,10 +121,13 @@ public class Table implements Serializable {
 
 		DBApp.serialize(tableName + "_" + pageId, p);
 		if(updatedrows!=null){
-			Vector old = new Vector<Hashtable>();
-			old.add(updatedrows.get(0));
-			indicesDelete(old,pageId);
-			indicesInsert(updatedrows.get(1),pageId);
+			updateIndices(updatedrows.get(0),updatedrows.get(1),columnNameValue,pageId);
+		}
+	}
+
+	private void updateIndices(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow, Hashtable<String, Object> updatedValues, double pageId) {
+		for(Index i:index){
+			i.update(oldRow,newRow,updatedValues,pageId);
 		}
 	}
 
