@@ -134,7 +134,7 @@ public class Table implements Serializable {
 	private void indicesDelete(Vector<Hashtable<String, Object>> deletedRows, double pageId) {
 		for (Hashtable<String,Object> row:deletedRows)
 		for(Index i:index){
-			i.insert(row,pageId);
+			i.delete(row,pageId);
 		}
 	}
 

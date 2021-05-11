@@ -11,6 +11,10 @@ public class Bucket  implements Serializable {
         Bucket = new Vector<tuple>();
     }
 
+    public void delete(Hashtable<String, Object> row, double pageId) {
+    }
+
+
     private class tuple {
         Hashtable value;
         double pageid;

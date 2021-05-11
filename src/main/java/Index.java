@@ -77,6 +77,20 @@ public class Index implements Serializable {
 		//update
 	}
 
+	public void delete(Hashtable<String, Object> row, double pageId) {
+//		todo extract value from row related to the index
+//		binary search the cell
+//		binary search the bucket
+//		deserialize bucket
+//		Bucket foundBucket  = null;
+//		foundBucket.delete(row, pageId);
+//		check to delete bucket
+//		serialize it
+
+
+
+	}
+
 	private class BucketInfo implements Serializable {
 	    long id;
 	    transient Bucket bucket;
