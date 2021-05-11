@@ -42,12 +42,13 @@ public class Table implements Serializable {
 			//todo indexinsert
 		}
 		else foundIdx = BinarySearch(insertedPkValue);
-		Page foundpage = (Page) DBApp.deserialize(tableName + "_" + table.get(foundIdx).id);
+		double foundPageId =table.get(foundIdx).id;
+		Page foundpage = (Page) DBApp.deserialize(tableName + "_" + foundPageId);
 		tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
 		Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
 
 		if (returned == null || returned.pk != insertedPkValue) {
-			indicesInsert(colNameValue,foundpage.id);
+			indicesInsert(colNameValue,foundPageId);
 			foundTuple.min = foundpage.records.firstElement().pk;
 			foundTuple.max = foundpage.records.lastElement().pk;
 
@@ -64,7 +65,7 @@ public class Table implements Serializable {
 					nxtPage.insert(returned.pk, returned.row);
 					if (returned.pk == insertedPkValue)
 					indicesInsert(returned.row, nxtPage.id);
-					else indicesUpdate(returned.row, nxtPage.id);
+					else indicesUpdate(returned.row, foundPageId,nxtPage.id);
 					table.get(nxtIdx).min = returned.pk;
 				}
 				DBApp.serialize(tableName + "_" + nxtPage.id, nxtPage);
@@ -74,7 +75,7 @@ public class Table implements Serializable {
 				Page newPage = new Page(newID);
 				newPage.insert(returned.pk, returned.row);
 				if (returned.pk == insertedPkValue) indicesInsert(returned.row, newID);
-				else indicesUpdate(returned.row, newID);
+				else indicesUpdate(returned.row, foundPageId,newID);
 				tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
 				table.insertElementAt(newtuple, foundIdx + 1);
 				DBApp.serialize(tableName + "_" + newID, newPage);
@@ -85,9 +86,9 @@ public class Table implements Serializable {
 
 	}
 
-	private void indicesUpdate(Hashtable<String, Object> row, Double id) {
+	private void indicesUpdate(Hashtable<String, Object> row, Double oldId, Double newId) {
 		for(Index i:index){
-			i.updateAddress(row,id);
+			i.updateAddress(row,oldId,newId);
 		}
 	}
 

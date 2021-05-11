@@ -63,7 +63,7 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
 	}
 
-	public void updateAddress(Hashtable<String, Object> row, Double id) {//todo
+	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {//todo
 	}
 
 	public void insert(Hashtable<String, Object> colNameValue, Double id) { //todo
