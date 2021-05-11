@@ -34,15 +34,20 @@ public class Table implements Serializable {
 
 	}
 
-	public void insert(String pk, Hashtable<String, Object> colNameValue) {
+	public void insert(String pk, Hashtable<String, Object> colNameValue, boolean useIndex) {
 
 		Object insertedPkValue = colNameValue.get(pk);
-
-		int foundIdx = BinarySearch(insertedPkValue);
+		int foundIdx=0;
+		if(useIndex){
+			//todo indexinsert
+		}
+		else foundIdx = BinarySearch(insertedPkValue);
 		Page foundpage = (Page) DBApp.deserialize(tableName + "_" + table.get(foundIdx).id);
 		tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
 		Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
+
 		if (returned == null || returned.pk != insertedPkValue) {
+			indicesInsert(colNameValue,foundpage.id);
 			foundTuple.min = foundpage.records.firstElement().pk;
 			foundTuple.max = foundpage.records.lastElement().pk;
 
@@ -57,6 +62,9 @@ public class Table implements Serializable {
 				if (!nxtPage.isFull()) {
 					create = false;
 					nxtPage.insert(returned.pk, returned.row);
+					if (returned.pk == insertedPkValue)
+					indicesInsert(returned.row, nxtPage.id);
+					else indicesUpdate(returned.row, nxtPage.id);
 					table.get(nxtIdx).min = returned.pk;
 				}
 				DBApp.serialize(tableName + "_" + nxtPage.id, nxtPage);
@@ -65,6 +73,8 @@ public class Table implements Serializable {
 				double newID = CreateID(foundIdx);
 				Page newPage = new Page(newID);
 				newPage.insert(returned.pk, returned.row);
+				if (returned.pk == insertedPkValue) indicesInsert(returned.row, newID);
+				else indicesUpdate(returned.row, newID);
 				tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
 				table.insertElementAt(newtuple, foundIdx + 1);
 				DBApp.serialize(tableName + "_" + newID, newPage);
@@ -72,6 +82,19 @@ public class Table implements Serializable {
 
 		}
 
+
+	}
+
+	private void indicesUpdate(Hashtable<String, Object> row, Double id) {
+		for(Index i:index){
+			i.updateAddress(row,id);
+		}
+	}
+
+	private void indicesInsert(Hashtable<String, Object> colNameValue, Double id) {
+		for(Index i:index){
+			i.insert(colNameValue,id);
+		}
 	}
 
 	private double CreateID(int prevIdx) {
@@ -83,13 +106,32 @@ public class Table implements Serializable {
 
 	}
 
-	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws Exception {
+	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue, boolean useIndex) throws Exception {
 		Object pk = parse(clusteringKeyValue);
-		int idx = BinarySearch(pk);
+		int idx=0;
+		if(useIndex){
+			//todo update using Index
+		}
+		else idx = BinarySearch(pk);
+		double pageId=table.get(idx).id;
 		Page p = (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
 
-		p.update(pk, columnNameValue);
-		DBApp.serialize(tableName + "_" + table.get(idx).id, p);
+		Vector<Hashtable<String, Object>> updatedrows =p.update(pk, columnNameValue);
+
+		DBApp.serialize(tableName + "_" + pageId, p);
+		if(updatedrows!=null){
+			Vector old = new Vector<Hashtable>();
+			old.add(updatedrows.get(0));
+			indicesDelete(old,pageId);
+			indicesInsert(updatedrows.get(1),pageId);
+		}
+	}
+
+	private void indicesDelete(Vector<Hashtable<String, Object>> deletedRows, double pageId) {
+		for (Hashtable<String,Object> row:deletedRows)
+		for(Index i:index){
+			i.insert(row,pageId);
+		}
 	}
 
 	private Object parse(String clusteringKeyValue) throws Exception {
@@ -105,11 +147,17 @@ public class Table implements Serializable {
 		return clusteringKeyValue;
 	}
 
-	public void delete(String pk, Hashtable<String, Object> columnNameValue) {
+	public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
+		if(useIndex){
+			//todo delete using Index
+		}
+		else
 		if (pk.equals(""))
 			for (tuple4 t : table) {
 				Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-				p.delete(null, columnNameValue);
+				Vector<Hashtable<String,Object>> deletedrows  = p.delete(null, columnNameValue);
+				indicesDelete(deletedrows, p.id);
+
 				if (p.isEmpty()) {
 					int idx = table.indexOf(t);
 					table.remove(idx);
@@ -126,7 +174,8 @@ public class Table implements Serializable {
 			int idx = BinarySearch(pkValue);
 			tuple4 t = table.get(idx);
 			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-			p.delete(pkValue, columnNameValue);
+			Vector<Hashtable<String,Object>> deletedrows  = p.delete(null, columnNameValue);
+			indicesDelete(deletedrows, p.id);
 			if (p.isEmpty()) {
 				table.remove(idx);
 				new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
@@ -227,12 +276,18 @@ public class Table implements Serializable {
 
 	} // better optimization
 
-	public void createIndex(String[] columnNames) {
-//		for ( Index i:index) {
-//			i.columnNames
-//		}  //do we create checks to see if it exists??
-		Index i = new Index(this.tableName,columnNames);
+	public Boolean createIndex(String[] columnNames, Hashtable<String, DBApp.minMax> ranges)  {
+		if(checkifexists(columnNames)==false) return false;
+
+
+		Index i = new Index(this.tableName,columnNames , ranges ,this.table);
 		index.add(i);
+		return true;
+	}
+
+	private boolean checkifexists(String[] columnNames)  {
+		//todo
+		return true;
 	}
 
 	public static class tuple4 implements Serializable {

@@ -3,9 +3,11 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 public class Bucket  implements Serializable {
+    long id;
     Vector<tuple> Bucket;
 
-    public Bucket() {
+    public Bucket(long id) {
+        this.id=id;
         Bucket = new Vector<tuple>();
     }
 

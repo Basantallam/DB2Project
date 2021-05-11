@@ -40,17 +40,24 @@ public class Page implements Serializable {
 
 	}
 
-	public void update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) {
+	public Vector<Hashtable<String, Object>> update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) {
 
+		Vector<Hashtable<String, Object>> updatedRows  ;
 //		Pair foundRecord = LinearSearch(clusteringKeyValue);
 		int idx=Collections.binarySearch(records,new Pair(clusteringKeyValue,null));
 		if(idx>-1 && idx < records.size()) {
 			Pair foundRecord = records.get(idx);
-			if (foundRecord != null)
+			if (foundRecord != null){
+				updatedRows = new Vector<>();
+				updatedRows.add((Hashtable<String, Object>) foundRecord.row.clone());
 				for (String s : columnNameValue.keySet()) {
 					(foundRecord.row).replace(s, columnNameValue.get(s));
 				}
+				updatedRows.add(foundRecord.row);
+			return updatedRows;
+			}
 		}
+		return null;
 	}
 	public int LinearSearch(Object searchkey) {
 		int i = 0;
@@ -124,7 +131,9 @@ public class Page implements Serializable {
 //
 //        }
 //    }
-	public void delete(Object pkValue, Hashtable<String, Object> columnNameValue) {
+	public Vector<Hashtable<String, Object>> delete(Object pkValue, Hashtable<String, Object> columnNameValue) {
+		Vector<Hashtable<String, Object>> deletedRows = new Vector<>();
+
 		if(pkValue==null){
 		ListIterator<Pair> it = 
 	            records.listIterator( records.size() );
@@ -139,8 +148,11 @@ public class Page implements Serializable {
 						break;
 					}
 				}
-				if (and)
+				if (and){
+//					deletedRows.add(r.row);
+					//todo add deleted rows
 					it.remove();
+				}
 			}
 		}
 		else{
@@ -153,10 +165,14 @@ public class Page implements Serializable {
 						break;
 					}
 				}
-				if (and)
+				if (and){
+					deletedRows.add(records.get(idx).row);
 					records.remove(idx);
+
+				}
 			}
 		}
+		return deletedRows;
 	}
 
 	public boolean isEmpty() {

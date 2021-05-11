@@ -14,6 +14,9 @@ public class DBApp implements DBAppInterface {
         String path = "src/main/resources/data/";
         File file = new File(path);
         file.mkdir();
+//        String pathcsv = "src/main/resources/";
+//        File mata = new File(pathcsv); //todo csv dynamically
+
 
         try {
             capacity = getCapacity();
@@ -67,12 +70,20 @@ public class DBApp implements DBAppInterface {
     @Override
     public void createIndex(String tableName, String[] columnNames) throws DBAppException {
         if (DB.contains(tableName)) {
-            //do I need to check if Names exists??
+         Hashtable<String,minMax>  ranges= checkNameExists(tableName,columnNames);
             Table table = (Table) deserialize(tableName);
-            table.createIndex(columnNames);
+           boolean except= table.createIndex(columnNames ,ranges);
             serialize(tableName, table);
-        //todo update metadata
+            if(!except) throw new DBAppException("Index exists in Database");
+         updatemetaindex (tableName,columnNames);//todo update metadata
         } else throw new DBAppException("Table does not exist in Database");
+    }
+
+    private Hashtable<String, minMax> checkNameExists(String tableName, String[] columnNames) {
+        return null; //todo
+    }
+
+    private void updatemetaindex(String tableName, String[] columnNames) {
     }
 
     @Override
@@ -80,20 +91,25 @@ public class DBApp implements DBAppInterface {
         if (DB.contains(tableName)) {
 
 
-            String pk = checkinMeta(tableName, colNameValue);
+            Vector res = checkinMeta(tableName, colNameValue);
+            String pk = (String) res.get(0);
+            Vector<String> indexed = (Vector<String>) res.get(1);
+            // update and insert
+            boolean useIndex = res.contains(pk);
             if (pk.equals(""))
                 throw new DBAppException("Primary Key is Not Found");
             Table table = (Table) deserialize(tableName);
-            table.insert(pk, colNameValue);
+            table.insert(pk, colNameValue, useIndex);
             serialize(tableName, table);
 
 
         } else throw new DBAppException("Table does not exist in Database");
     }
 
-    private String checkinMeta(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
+    private Vector checkinMeta(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
         Hashtable test = (Hashtable) colNameValue.clone();
         String pk = "";
+        Vector<String> indexed = new Vector();
         try {
             FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
             BufferedReader br = new BufferedReader(fr);
@@ -104,6 +120,7 @@ public class DBApp implements DBAppInterface {
                 String[] metadata = (line).split(", ");
 
                 if (metadata[0].equals(tableName)) {
+                    //todo if indexed add name to indexed
                     if (metadata[3].equals("True") && colNameValue.containsKey(metadata[1])) pk = metadata[1];
                     if (colNameValue.containsKey(metadata[1])) {
                         if (GenericCompare(colNameValue.get(metadata[1]), metadata[5]) < 0
@@ -140,7 +157,10 @@ public class DBApp implements DBAppInterface {
         } catch (IOException e) {
 
         }
-        return pk;
+        Vector res= new Vector();
+        res.add(pk);
+        res.add(indexed);
+        return res;
 
     }
 
@@ -160,12 +180,15 @@ public class DBApp implements DBAppInterface {
     @Override
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
-            String pk = checkinMeta(tableName, columnNameValue);
+            Vector res = checkinMeta(tableName, columnNameValue);
+            String pk = (String) res.get(0);
+            Vector<String> indexed = (Vector<String>) res.get(1);
+            boolean useIndex = res.contains(pk);
             if (!pk.equals(""))
                 throw new DBAppException("Primary Key is passed to be updated");
             Table table = (Table) deserialize(tableName);
             try {
-                table.update(clusteringKeyValue, columnNameValue);
+                table.update(clusteringKeyValue, columnNameValue,useIndex);
             } catch (Exception e) {
                 serialize(tableName, table);
                 throw new DBAppException("Primary Key Is NOt a Valid Type");
@@ -178,13 +201,23 @@ public class DBApp implements DBAppInterface {
     @Override
     public void deleteFromTable(String tableName, Hashtable<String, Object> columnNameValue) throws DBAppException {
         if (DB.contains(tableName)) {
-            String pk = checkinMeta(tableName, columnNameValue);
+            Vector res = checkinMeta(tableName, columnNameValue);
+            String pk = (String) res.get(0);
+            Boolean useIndex =false;
+            if(res.size()>1)useIndex=true;
             Table table = (Table) deserialize(tableName);
-            table.delete(pk, columnNameValue);
+            table.delete(pk, columnNameValue, useIndex);
             serialize(tableName, table);
 
         } else throw new DBAppException("Table does not exist in Database");
 
+    }
+
+    private Boolean useIndexOr(Vector<String> indexThere, Hashtable<String, Object> columnNameValue) {// search Or /Xor
+        for(String s:columnNameValue.keySet()){
+            if(!indexThere.contains(s)) return false;
+        }
+        return true;
     }
 
     @Override
@@ -403,5 +436,40 @@ public class DBApp implements DBAppInterface {
 //            }}catch (IOException e){
 //            e.printStackTrace();
 //        }
+    }
+//    When to use Index:
+//    Age = 20 and city = Egypt
+//            (any index is okay)
+//
+//    Age = 20 or city = Egypt
+//            (must have all even in separate indices)
+//    Age = 20 xor city = Egypt
+//            (must have all even in separate indices)
+//
+//    Indices :
+//            1. age / salary
+//  2. salary/city
+//    When to use Index:
+//    Age = 20 and city = Egypt
+//            (any index is okay)
+//
+//    Age = 20 or city = Egypt
+//            (must have all even in separate indices)
+//    Age = 20 xor city = Egypt
+//            (must have all even in separate indices)
+//
+//    Indices :
+//            1. age / salary
+//  2. salary/city
+
+
+    public class minMax {
+        Object max;
+        Object min;
+
+        public minMax(Object max, Object min) {
+            this.max = max;
+            this.min = min;
+        }
     }
 }
