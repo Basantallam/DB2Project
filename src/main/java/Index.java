@@ -176,7 +176,8 @@ public class Index implements Serializable {
 			}
 		if (!update)
 			return;
-		// update
+		delete(oldRow,pageId);
+		insert(newRow,pageId);
 	}
 
 	public void delete(Hashtable<String, Object> row, double pageId) {
