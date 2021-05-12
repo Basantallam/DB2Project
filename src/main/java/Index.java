@@ -3,7 +3,6 @@ import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
-import DBApp.minMax;
 
 public class Index implements Serializable {
 	int serialID;
@@ -43,9 +42,8 @@ public class Index implements Serializable {
 
 		for (int ptr = 0; ptr < IndexDimension; ptr++) {
 			String col = columnNames.get(ptr);
-			if (set.contains(col)) {
-				arrangedRanges.add(ranges.get(col));
-			}
+			if (set.contains(col))
+				arrangedRanges.add(ranges.get(col));		
 		}
 		return arrangedRanges;
 	}
@@ -66,14 +64,19 @@ public class Index implements Serializable {
 	}
 
 	public Vector<Integer> getCell(Hashtable<String, Object> values) {
-		Object[] extracted = extract(values);
-		for (int i = 0; i < columnNames.size(); i++) {
-
+		Vector<Integer> coordinates=new Vector<Integer>();
+		Object[] arrangedValues = arrangeValues(values);
+		
+		for (int i = 0; i < columnNames.size(); i++) { 
+			Object min = ranges.get(i).min;
+			Object value = arrangedValues[i];
+			int idx=(Table.GenericCompare(value,min)/10); //O(1)
+			coordinates.add(idx);
 		}
-		return null;
+		return coordinates;
 	}
 
-	public Object[] extract(Hashtable<String, Object> values) {
+	public Object[] arrangeValues(Hashtable<String, Object> values) {
 		Set<String> set = values.keySet();
 		int IndexDimension = columnNames.size();
 		Object[] extracted = new Object[IndexDimension];
