@@ -149,20 +149,19 @@ public class Index implements Serializable {
 			Object y = ((Object[]) cell)[x];
 			cell = y;
 		}
-		for (BucketInfo bi : (Vector<BucketInfo>) cell) {
-			Bucket b;
-			if (bi.size < DBApp.indexCapacity) {
-				b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
-			} else {
-				BucketInfo buc = new BucketInfo();
-				b = new Bucket(buc.id);
-			}
-			Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
-
-			b.insert(arrangedHash, id);
-			DBApp.serialize(tableName + "_b_" + bi.id, b);
+		BucketInfo bi = ((Vector<BucketInfo>)cell).lastElement();
+		Bucket b;
+		if (bi.size < DBApp.indexCapacity)
+			b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+		 else {
+			bi = new BucketInfo();
+			b = new Bucket(bi.id);
 		}
+		Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
 
+		b.insert(arrangedHash, id);
+		DBApp.serialize(tableName + "_b_" + bi.id, b);
+		bi.size++;
 	}
 
 	public void update(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow,
