@@ -124,7 +124,20 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
 	}
 
-	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {// todo
+	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {
+		Vector cellIdx = getCell(row);
+		Object cell = grid[(Integer) cellIdx.get(0)];
+		for (int i = 1; i < cellIdx.size(); i++) {
+			int x = (Integer) cellIdx.get(i);
+			Object y = ((Object[]) cell)[x];
+			cell = y;
+		}for (BucketInfo bi : (Vector<BucketInfo>) cell) {
+			Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+			Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
+			boolean f=b.updateAddress(arrangedHash,oldId,newId);
+			DBApp.serialize(tableName + "_b_" + bi.id, b);
+			if(f)break;
+		}
 	}
 
 	public void insert(Hashtable<String, Object> colNameValue, Double id) { // todo binary search cell and bucket then
@@ -136,20 +149,19 @@ public class Index implements Serializable {
 			Object y = ((Object[]) cell)[x];
 			cell = y;
 		}
-		for (BucketInfo bi : (Vector<BucketInfo>) cell) {
-			Bucket b;
-			if (bi.size < DBApp.indexCapacity) {
-				b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
-			} else {
-				BucketInfo buc = new BucketInfo();
-				b = new Bucket(buc.id);
-			}
-			Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
-
-			b.insert(arrangedHash, id);
-			DBApp.serialize(tableName + "_b_" + bi.id, b);
+		BucketInfo bi = ((Vector<BucketInfo>)cell).lastElement();
+		Bucket b;
+		if (bi.size < DBApp.indexCapacity)
+			b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+		 else {
+			bi = new BucketInfo();
+			b = new Bucket(bi.id);
 		}
+		Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
 
+		b.insert(arrangedHash, id);
+		DBApp.serialize(tableName + "_b_" + bi.id, b);
+		bi.size++;
 	}
 
 	public void update(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow,

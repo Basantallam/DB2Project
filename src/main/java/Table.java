@@ -71,7 +71,7 @@ public class Table implements Serializable {
 					}
 					table.get(nxtIdx).min = returned.pk;
 				}
-				DBApp.serialize(tableName + "_" + nxtPage.id, nxtPage);
+
 			}
 			if (create) {
 				double newID = CreateID(foundIdx);
