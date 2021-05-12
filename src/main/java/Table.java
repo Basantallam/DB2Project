@@ -281,7 +281,7 @@ public class Table implements Serializable {
 	} // better optimization
 
 	public Boolean createIndex(String[] columnNames, Hashtable<String, DBApp.minMax> ranges)  {
-		if(checkifexists(columnNames)==false) return false;
+		if(checkExists(columnNames)) return false; // check if index already exists
 
 
 		Index i = new Index(this.tableName,columnNames , ranges ,this.table);
@@ -289,9 +289,9 @@ public class Table implements Serializable {
 		return true;
 	}
 
-	private boolean checkifexists(String[] columnNames)  {
+	private boolean checkExists(String[] columnNames)  {
 		//todo
-		return true;
+		return false;
 	}
 
 	public static class tuple4 implements Serializable {

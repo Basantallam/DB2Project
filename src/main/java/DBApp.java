@@ -15,7 +15,7 @@ public class DBApp implements DBAppInterface {
         File file = new File(path);
         file.mkdir();
 //        String pathcsv = "src/main/resources/";
-//        File mata = new File(pathcsv); //todo csv dynamically
+//        File mata = new File(pathcsv); //todo metadata.csv dynamically
 
 
         try {
@@ -70,7 +70,7 @@ public class DBApp implements DBAppInterface {
     @Override
     public void createIndex(String tableName, String[] columnNames) throws DBAppException {
         if (DB.contains(tableName)) {
-         Hashtable<String,minMax>  ranges= checkNameExists(tableName,columnNames);
+         Hashtable<String,minMax>  ranges= checkNameExists(tableName,columnNames);//columns not repeated and exist and return  range of every column
             Table table = (Table) deserialize(tableName);
            boolean except= table.createIndex(columnNames ,ranges);
             serialize(tableName, table);
@@ -120,9 +120,10 @@ public class DBApp implements DBAppInterface {
                 String[] metadata = (line).split(", ");
 
                 if (metadata[0].equals(tableName)) {
-                    //todo if indexed add name to indexed
-                    if (metadata[3].equals("True") && colNameValue.containsKey(metadata[1])) pk = metadata[1];
+
                     if (colNameValue.containsKey(metadata[1])) {
+                        if (metadata[4].equals("True"))indexed.add( metadata[1]);
+                        if (metadata[3].equals("True"))pk = metadata[1];
                         if (GenericCompare(colNameValue.get(metadata[1]), metadata[5]) < 0
                                 || GenericCompare(colNameValue.get(metadata[1]), metadata[6]) > 0) {
                             throw new DBAppException("Value is too big or too small ");
