@@ -302,16 +302,16 @@ public class DBApp implements DBAppInterface {
 
 		// validating input
 //        for (int i = 0; i < sqlTerms.length; i++)
-//            if ((sqlTerms[i].strOperator).equals(">") || (sqlTerms[i].strOperator).equals(">=") ||
-//                    (sqlTerms[i].strOperator).equals("<") || (sqlTerms[i].strOperator).equals("<=") ||
-//                    (sqlTerms[i].strOperator).equals("=") || (sqlTerms[i].strOperator).equals("!="))
+//            if ((sqlTerms[i]._strOperator).equals(">") || (sqlTerms[i]._strOperator).equals(">=") ||
+//                    (sqlTerms[i]._strOperator).equals("<") || (sqlTerms[i]._strOperator).equals("<=") ||
+//                    (sqlTerms[i]._strOperator).equals("=") || (sqlTerms[i]._strOperator).equals("!="))
 //                throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
 
 //        for (int i = 0; i < arrayOperators.length; i++)
 //            if (!(arrayOperators[i].equals("AND") || arrayOperators[i].equals("OR") || arrayOperators[i].equals("XOR")))
 //                throw new DBAppException("Star operator must be one of AND, OR, XOR!");
 
-		Table table = (Table) deserialize(sqlTerms[0].strTableName);
+		Table table = (Table) deserialize(sqlTerms[0]._strTableName);
 		if (!(DB.contains(table))) // based on the fact that only one table is included in a select statement
 			throw new DBAppException("Table does not exist in Database");
 
@@ -319,7 +319,7 @@ public class DBApp implements DBAppInterface {
 		// resolving the select statement
 
 		for (int i = 0; i < sqlTerms.length - 1; i++) {
-			if (!(colInTable(sqlTerms[i].strTableName, sqlTerms[i].strColumnName, sqlTerms[i].objValue)))
+			if (!(colInTable(sqlTerms[i]._strTableName, sqlTerms[i]._strColumnName, sqlTerms[i]._objValue)))
 				throw new DBAppException("Invalid input, check column name and the value's data type");
 			Iterator i1 = resolveOneStatement(table, sqlTerms[i]);
 			Iterator i2 = resolveOneStatement(table, sqlTerms[i + 1]);
@@ -395,7 +395,7 @@ public class DBApp implements DBAppInterface {
 			while (recs.hasNext()) {
 				// removing records that violate the select statement
 				currRec = (Page.Pair) recs.next();
-				if (!(checkCond(currRec, term.strColumnName, term.objValue, term.strOperator)))
+				if (!(checkCond(currRec, term._strColumnName, term._objValue, term._strOperator)))
 					recs.remove();
 			}
 		}
