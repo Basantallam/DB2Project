@@ -3,13 +3,12 @@ import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
-import DBApp.minMax;
 
 public class Index implements Serializable {
 	int serialID;
 	String tableName;
 	Vector<String> columnNames;
-	Vector<DBApp.minMax> ranges;
+	Hashtable<String, DBApp.minMax> ranges;
 	Object[] grid;
 
 	public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges,
@@ -17,8 +16,9 @@ public class Index implements Serializable {
 		this.tableName = tableName;
 		for (int i = 0; i < columnNames.length; i++)
 			this.columnNames.add(columnNames[i]);
+
 		int n = columnNames.length;
-		this.ranges = arrangeRanges(ranges);
+		this.ranges = ranges; // O(1) to find cell index
 
 		Object[] temp = new Vector[10];// todo of type
 		Object[] temp1 = new Object[10];
@@ -32,6 +32,7 @@ public class Index implements Serializable {
 			temp = temp1;
 			temp1 = new Object[10];
 		}
+//		((Object[]) ((Object[]) ((Object[]) temp[0])[0])[0])[0] = Integer.valueOf(100); tested deepClone
 		this.grid = temp;
 		this.fill(table);
 	}
