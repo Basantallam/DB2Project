@@ -297,8 +297,8 @@ public class Table implements Serializable {
 		HashSet<String> columns = new HashSet<>();
 		Collections.addAll(columns, columnNames);
 		loop :for(Index i :index){
-			if(i.columnNames.length== columns.size()){
-				for (int j = 0; j <i.columnNames.length ; j++)
+			if(i.columnNames.size()== columns.size()){
+				for (int j = 0; j <i.columnNames.size() ; j++)
 					if(!columns.contains(columnNames[j]))continue loop;
 				return true;
 			}

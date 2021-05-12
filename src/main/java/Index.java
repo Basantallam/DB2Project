@@ -1,26 +1,28 @@
 import java.io.Serializable;
 
 import java.util.Hashtable;
+import java.util.Set;
 import java.util.Vector;
 
 public class Index implements Serializable {
 	int serialID;
-    String tableName;
-	String[] columnNames;
+	String tableName;
+	Vector<String> columnNames;
 	Hashtable<String, DBApp.minMax> ranges;
 	Object[] grid;
 
+	public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges,
+			Vector<Table.tuple4> table) {
+		this.tableName = tableName;
+		for (int i = 0; i < columnNames.length; i++)
+			this.columnNames.add(columnNames[i]);
 
-	public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges, Vector<Table.tuple4> table) {
-	    this.tableName=tableName;
-		this.columnNames = columnNames;
 		int n = columnNames.length;
-		this.ranges=ranges; //O(1) to find cell index
+		this.ranges = ranges; // O(1) to find cell index
 
+		Object[] temp = new Vector[10];// todo of type
+		Object[] temp1 = new Object[10];
 
-		Object[] temp = new Vector[10];//todo of type
-        Object[] temp1 = new Object[10];
-        
 		for (int i = 0; i < 10; i++) {
 			temp[i] = new Vector<BucketInfo>();
 		}
@@ -35,10 +37,11 @@ public class Index implements Serializable {
 		this.fill(table);
 	}
 
-    private void fillRanges(Hashtable<String,DBApp.minMax> ranges) {
-    }
+	private void fillRanges(Hashtable<String, DBApp.minMax> ranges) {
+		
+	}
 
-    public Object deepClone(Object[] org) {
+	public Object deepClone(Object[] org) {
 		Object[] clone = new Object[org.length];
 		if (org[0] instanceof Object[]) {
 			for (int i = 0; i < org.length; i++)
@@ -50,15 +53,33 @@ public class Index implements Serializable {
 	}
 
 	private void fill(Vector<Table.tuple4> table) {
-    //todo
+		// todo
 	}
-	public Vector getCell(Hashtable<String,Object> values){
-//		extract()
-	}
-	
-	public Object[] extract(Hashtable<String,Object>  values) {
+
+	public Vector<Integer> getCell(Hashtable<String, Object> values) {
+		Object[] extracted = extract(values);
 		
+		
+		
+		return null;
 	}
+
+	public Object[] extract(Hashtable<String, Object> values) {
+		Set<String> set = values.keySet();
+		int IndexDimension = columnNames.size();
+		Object[] extracted = new Object[IndexDimension];
+
+		for (int ptr = 0; ptr < IndexDimension; ptr++) {
+			String col = columnNames.get(ptr);
+			if (set.contains(col)) {
+				extracted[ptr] = values.get(col);
+			} else {
+				extracted[ptr] = 0;
+			}
+		}
+		return extracted;
+	}
+
 	public static void main(String[] args) {
 //		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
 //		Index idx = new Index("tablename",stringarr, new Hashtable<>(), this.table);
@@ -68,18 +89,24 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
 	}
 
-	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {//todo
+	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {// todo
 	}
 
-	public void insert(Hashtable<String, Object> colNameValue, Double id) { //todo  binary search cell and bucket then overflow
+	public void insert(Hashtable<String, Object> colNameValue, Double id) { // todo binary search cell and bucket then
+																			// overflow
 	}
 
-	public void update(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow, Hashtable<String, Object> updatedValues, double pageId) {
-	Boolean update = false;
-		for(String s:columnNames)
-		 	if(updatedValues.containsKey(s)){update=true; break;}
-		if(!update)return;
-		//update
+	public void update(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow,
+			Hashtable<String, Object> updatedValues, double pageId) {
+		Boolean update = false;
+		for (String s : columnNames)
+			if (updatedValues.containsKey(s)) {
+				update = true;
+				break;
+			}
+		if (!update)
+			return;
+		// update
 	}
 
 	public void delete(Hashtable<String, Object> row, double pageId) {
@@ -91,24 +118,21 @@ public class Index implements Serializable {
 //		check to delete bucket
 //		serialize it
 
-
-
 	}
 
 	private class BucketInfo implements Serializable {
-	    long id;
-	    transient Bucket bucket;
+		long id;
+		transient Bucket bucket;
 //	    Object max;
 //	    Object min;
 
-        public BucketInfo() {
+		public BucketInfo() {
 
 			this.id = ++serialID;
-            this.bucket = new Bucket(id);
+			this.bucket = new Bucket(id);
 //            this.max = null;
 //            this.min = null;
-        }
-    }
-
+		}
+	}
 
 }
