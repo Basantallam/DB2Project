@@ -63,7 +63,13 @@ public class Index implements Serializable {
 	}
 
 	private void fill(Vector<Table.tuple4> table) {
-		// todo
+		for(Table.tuple4 t:table){
+			double pageId= t.id;
+			Page page = (Page) DBApp.deserialize(tableName+"_"+pageId);
+			for (Page.Pair r :page.records)
+				insert(r.row,pageId);
+			DBApp.serialize(tableName+"_"+pageId,page);
+		}
 	}
 
 	public Vector<Integer> getCell(Hashtable<String, Object> values) {
@@ -132,7 +138,7 @@ public class Index implements Serializable {
 		}
 		for (BucketInfo bi : (Vector<BucketInfo>) cell) {
 			Bucket b;
-			if (bi.size < 100) {
+			if (bi.size < DBApp.indexCapacity) {
 				b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
 			} else {
 				BucketInfo buc = new BucketInfo();

@@ -5,6 +5,7 @@ import java.util.*;
 public class DBApp implements DBAppInterface {
 	HashSet<String> DB;
 	public static int capacity;
+	public static int indexCapacity;
 
 	public void init() {
 		DB = new HashSet<>();
