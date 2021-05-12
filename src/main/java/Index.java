@@ -3,12 +3,13 @@ import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
+import DBApp.minMax;
 
 public class Index implements Serializable {
 	int serialID;
 	String tableName;
 	Vector<String> columnNames;
-	Hashtable<String, DBApp.minMax> ranges;
+	Vector<DBApp.minMax> ranges;
 	Object[] grid;
 
 	public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges,
@@ -16,9 +17,8 @@ public class Index implements Serializable {
 		this.tableName = tableName;
 		for (int i = 0; i < columnNames.length; i++)
 			this.columnNames.add(columnNames[i]);
-
 		int n = columnNames.length;
-		this.ranges = ranges; // O(1) to find cell index
+		this.ranges = arrangeRanges(ranges);
 
 		Object[] temp = new Vector[10];// todo of type
 		Object[] temp1 = new Object[10];
@@ -32,13 +32,22 @@ public class Index implements Serializable {
 			temp = temp1;
 			temp1 = new Object[10];
 		}
-//		((Object[]) ((Object[]) ((Object[]) temp[0])[0])[0])[0] = Integer.valueOf(100); tested deepClone
 		this.grid = temp;
 		this.fill(table);
 	}
 
-	private void fillRanges(Hashtable<String, DBApp.minMax> ranges) {
-		
+	private Vector<DBApp.minMax> arrangeRanges(Hashtable<String, DBApp.minMax> ranges) {
+		Set<String> set = ranges.keySet();
+		int IndexDimension = columnNames.size();
+		Vector<DBApp.minMax> arrangedRanges = new Vector<DBApp.minMax>();
+
+		for (int ptr = 0; ptr < IndexDimension; ptr++) {
+			String col = columnNames.get(ptr);
+			if (set.contains(col)) {
+				arrangedRanges.add(ranges.get(col));
+			}
+		}
+		return arrangedRanges;
 	}
 
 	public Object deepClone(Object[] org) {
@@ -58,9 +67,9 @@ public class Index implements Serializable {
 
 	public Vector<Integer> getCell(Hashtable<String, Object> values) {
 		Object[] extracted = extract(values);
-		
-		
-		
+		for (int i = 0; i < columnNames.size(); i++) {
+
+		}
 		return null;
 	}
 

@@ -545,7 +545,7 @@ public class DBApp implements DBAppInterface {
 //            1. age / salary
 //  2. salary/city
 
-	public class minMax {
+	public static class minMax {
 		Object max;
 		Object min;
 
