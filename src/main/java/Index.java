@@ -52,11 +52,13 @@ public class Index implements Serializable {
 	private void fill(Vector<Table.tuple4> table) {
     //todo
 	}
-
+	public Vector getCell(Hashtable<String,Object> values){
+//		extract()
+	}
+	
 	public static void main(String[] args) {
 //		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
 //		Index idx = new Index("tablename",stringarr, new Hashtable<>(), this.table);
-//
 //		System.out.println((Arrays.deepToString(idx.grid)));// 4d
 //		System.out.println(Arrays.deepToString((Object[]) idx.grid[0]));// 3d
 //		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.grid[0])[0]))); // 2d
