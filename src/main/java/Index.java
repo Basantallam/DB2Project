@@ -7,7 +7,7 @@ public class Index implements Serializable {
 	int serialID;
     String tableName;
 	String[] columnNames;
-	Object[][] nRanges;
+	Hashtable<String, DBApp.minMax> ranges;
 	Object[] grid;
 
 
@@ -15,8 +15,8 @@ public class Index implements Serializable {
 	    this.tableName=tableName;
 		this.columnNames = columnNames;
 		int n = columnNames.length;
-		this.nRanges= new Object[n][10];
-		fillRanges(ranges);
+		this.ranges=ranges; //O(1) to find cell index
+
 
 		Object[] temp = new Vector[10];//todo of type
         Object[] temp1 = new Object[10];
@@ -66,7 +66,7 @@ public class Index implements Serializable {
 	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {//todo
 	}
 
-	public void insert(Hashtable<String, Object> colNameValue, Double id) { //todo
+	public void insert(Hashtable<String, Object> colNameValue, Double id) { //todo  binary search cell and bucket then overflow
 	}
 
 	public void update(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow, Hashtable<String, Object> updatedValues, double pageId) {
@@ -79,8 +79,7 @@ public class Index implements Serializable {
 
 	public void delete(Hashtable<String, Object> row, double pageId) {
 //		todo extract value from row related to the index
-//		binary search the cell
-//		binary search the bucket
+//		binary search the bucket if sorted
 //		deserialize bucket
 //		Bucket foundBucket  = null;
 //		foundBucket.delete(row, pageId);
@@ -94,15 +93,15 @@ public class Index implements Serializable {
 	private class BucketInfo implements Serializable {
 	    long id;
 	    transient Bucket bucket;
-	    Object max;
-	    Object min;
+//	    Object max;
+//	    Object min;
 
         public BucketInfo() {
 
 			this.id = ++serialID;
             this.bucket = new Bucket(id);
-            this.max = null;
-            this.min = null;
+//            this.max = null;
+//            this.min = null;
         }
     }
 
