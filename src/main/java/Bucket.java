@@ -17,7 +17,8 @@ public class Bucket implements Serializable {
 	}
 
 	public void insert(Hashtable<String, Object> colNameValue, Double id) {
-
+        Record r = new Record(colNameValue,id);
+        records.add(r);
 	}
 
 	public boolean updateAddress(double oldAddess, double newAddress, Hashtable<String, Object> values) {
