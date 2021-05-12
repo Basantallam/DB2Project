@@ -294,7 +294,15 @@ public class Table implements Serializable {
 	}
 
 	private boolean checkExists(String[] columnNames)  {
-		//todo
+		HashSet<String> columns = new HashSet<>();
+		Collections.addAll(columns, columnNames);
+		loop :for(Index i :index){
+			if(i.columnNames.length== columns.size()){
+				for (int j = 0; j <i.columnNames.length ; j++)
+					if(!columns.contains(columnNames[j]))continue loop;
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -329,7 +337,7 @@ public class Table implements Serializable {
 
 			for (Page.Pair pair : p.records) {
 				String str = "";
-				Hashtable h = pair.row;
+				Hashtable<String, Object> h = pair.row;
 				Set<String> s = h.keySet();
 				for (String o : s) {
 					str += h.get(o).toString() + ", ";
