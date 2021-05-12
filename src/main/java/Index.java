@@ -124,7 +124,20 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
 	}
 
-	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {// todo
+	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {
+		Vector cellIdx = getCell(row);
+		Object cell = grid[(Integer) cellIdx.get(0)];
+		for (int i = 1; i < cellIdx.size(); i++) {
+			int x = (Integer) cellIdx.get(i);
+			Object y = ((Object[]) cell)[x];
+			cell = y;
+		}for (BucketInfo bi : (Vector<BucketInfo>) cell) {
+			Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+			Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
+			boolean f=b.updateAddress(arrangedHash,oldId,newId);
+			DBApp.serialize(tableName + "_b_" + bi.id, b);
+			if(f)break;
+		}
 	}
 
 	public void insert(Hashtable<String, Object> colNameValue, Double id) { // todo binary search cell and bucket then
