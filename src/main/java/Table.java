@@ -56,7 +56,7 @@ public class Table implements Serializable {
 		DBApp.serialize(tableName + "_" + foundTuple.id, foundpage);
 
 		if (returned != null) {
-			Boolean create = true;
+			boolean create = true;
 			if (table.size() > foundIdx + 1) {
 				int nxtIdx = foundIdx + 1;
 				Page nxtPage = (Page) DBApp.deserialize(tableName + "_" + table.get(nxtIdx).id);
@@ -65,7 +65,10 @@ public class Table implements Serializable {
 					nxtPage.insert(returned.pk, returned.row);
 					if (returned.pk == insertedPkValue)
 					indicesInsert(returned.row, nxtPage.id);
-					else indicesUpdate(returned.row, foundPageId,nxtPage.id);
+					else{
+						indicesInsert(returned.row, foundPageId);
+						indicesUpdate(returned.row, foundPageId,nxtPage.id);
+					}
 					table.get(nxtIdx).min = returned.pk;
 				}
 				DBApp.serialize(tableName + "_" + nxtPage.id, nxtPage);
@@ -75,7 +78,8 @@ public class Table implements Serializable {
 				Page newPage = new Page(newID);
 				newPage.insert(returned.pk, returned.row);
 				if (returned.pk == insertedPkValue) indicesInsert(returned.row, newID);
-				else indicesUpdate(returned.row, foundPageId,newID);
+				else{ indicesInsert(returned.row, foundPageId);
+					indicesUpdate(returned.row, foundPageId,newID);}
 				tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
 				table.insertElementAt(newtuple, foundIdx + 1);
 				DBApp.serialize(tableName + "_" + newID, newPage);
