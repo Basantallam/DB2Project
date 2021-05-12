@@ -8,7 +8,7 @@ public class Index implements Serializable {
 	int serialID;
 	String tableName;
 	Vector<String> columnNames;
-	Vector<DBApp.minMax> ranges;
+	Hashtable<String, DBApp.minMax> ranges;
 	Object[] grid;
 
 	public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges,
@@ -16,8 +16,9 @@ public class Index implements Serializable {
 		this.tableName = tableName;
 		for (int i = 0; i < columnNames.length; i++)
 			this.columnNames.add(columnNames[i]);
+
 		int n = columnNames.length;
-		this.ranges = arrangeRanges(ranges);
+		this.ranges = ranges; // O(1) to find cell index
 
 		Object[] temp = new Vector[10];// todo of type
 		Object[] temp1 = new Object[10];
@@ -31,6 +32,7 @@ public class Index implements Serializable {
 			temp = temp1;
 			temp1 = new Object[10];
 		}
+//		((Object[]) ((Object[]) ((Object[]) temp[0])[0])[0])[0] = Integer.valueOf(100); tested deepClone
 		this.grid = temp;
 		this.fill(table);
 	}
@@ -101,11 +103,29 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
 	}
 
-	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {// todo
+	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {//todo
 	}
 
-	public void insert(Hashtable<String, Object> colNameValue, Double id) { // todo binary search cell and bucket then
-																			// overflow
+	public void insert(Hashtable<String, Object> colNameValue, Double id) { //todo  binary search cell and bucket then overflow
+		Vector cellIdx =getCell(colNameValue);
+		Object cell =grid[(Integer) cellIdx.get(0)];
+		for (int i = 1; i < cellIdx.size(); i++) {
+			int x=(Integer) cellIdx.get(i);
+			Object y=((Object[]) cell)[x];
+			cell =y;
+		}
+		for (BucketInfo bi:(Vector<BucketInfo>)cell) {
+			Bucket b;
+			if(bi.size<100){
+				b = (Bucket) DBApp.deserialize(tableName + "_b_"+ bi.id);
+			}else{
+				BucketInfo buc=new BucketInfo();
+				b=new Bucket(buc.id);
+			}
+			b.insert(colNameValue,id);
+			DBApp.serialize(tableName + "_b_" + bi.id, b);
+		}
+
 	}
 
 	public void update(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow,
@@ -133,18 +153,20 @@ public class Index implements Serializable {
 	}
 
 	private class BucketInfo implements Serializable {
-		long id;
-		transient Bucket bucket;
+	    long id;
+	    int size;
+	    transient Bucket bucket;
 //	    Object max;
 //	    Object min;
 
-		public BucketInfo() {
-
+        public BucketInfo() {
+			this.size=0;
 			this.id = ++serialID;
-			this.bucket = new Bucket(id);
+            this.bucket = new Bucket(id);
 //            this.max = null;
 //            this.min = null;
-		}
-	}
+        }
+    }
+
 
 }
