@@ -102,6 +102,8 @@ public class Index implements Serializable {
 	}
 
 	public Hashtable<String, Object> arrangeHashtable(Hashtable<String, Object> values) {
+		//takhod kol el record teraga3 el values eli fel Index columns bass
+
 		Set<String> set = values.keySet();
 		int IndexDimension = columnNames.size();
 		Hashtable<String, Object> extracted = new Hashtable<String, Object>();

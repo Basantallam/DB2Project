@@ -21,14 +21,19 @@ public class Bucket implements Serializable {
 	}
 
 	public boolean updateAddress(double oldAddess, double newAddress, Hashtable<String, Object> values) {
+	
 		for (Record r : records) {
-
+			if (r.values.equals(values) && r.pageid == oldAddess) {
+				r.pageid = newAddress;
+			
+				return true;
+				
+			}
 		}
 		return false;
-
 	}
 
-	private class Record implements Comparable<Record> {
+	private class Record {
 		Hashtable values;
 		double pageid;
 
@@ -37,15 +42,5 @@ public class Bucket implements Serializable {
 			this.pageid = pageid;
 		}
 
-		@Override
-		public int compareTo(Record o) {
-			Set<String> set = values.keySet();
-			for (String col : set) {
-				if (o.values.containsKey(col) && 0 == Table.GenericCompare(o.values.get(col), this.values.get(col))) {
-					
-				}
-			}
-			return 0;
-		}
 	}
 }
