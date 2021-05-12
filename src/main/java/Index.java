@@ -56,6 +56,9 @@ public class Index implements Serializable {
 //		extract()
 	}
 	
+	public Object[] extract(Hashtable<String,Object>  values) {
+		
+	}
 	public static void main(String[] args) {
 //		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
 //		Index idx = new Index("tablename",stringarr, new Hashtable<>(), this.table);
