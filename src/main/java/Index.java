@@ -1,5 +1,5 @@
 import java.io.Serializable;
-
+import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
@@ -32,9 +32,10 @@ public class Index implements Serializable {
 			temp = temp1;
 			temp1 = new Object[10];
 		}
-//		((Object[]) ((Object[]) ((Object[]) temp[0])[0])[0])[0] = Integer.valueOf(100); tested deepClone
+
 		this.grid = temp;
 		this.fill(table);
+
 	}
 
 	private Vector<DBApp.minMax> arrangeRanges(Hashtable<String, DBApp.minMax> ranges) {
@@ -45,7 +46,7 @@ public class Index implements Serializable {
 		for (int ptr = 0; ptr < IndexDimension; ptr++) {
 			String col = columnNames.get(ptr);
 			if (set.contains(col))
-				arrangedRanges.add(ranges.get(col));		
+				arrangedRanges.add(ranges.get(col));
 		}
 		return arrangedRanges;
 	}
@@ -66,13 +67,13 @@ public class Index implements Serializable {
 	}
 
 	public Vector<Integer> getCell(Hashtable<String, Object> values) {
-		Vector<Integer> coordinates=new Vector<Integer>();
+		Vector<Integer> coordinates = new Vector<Integer>();
 		Object[] arrangedValues = arrangeValues(values);
-		
-		for (int i = 0; i < columnNames.size(); i++) { 
+
+		for (int i = 0; i < columnNames.size(); i++) {
 			Object min = ranges.get(i).min;
 			Object value = arrangedValues[i];
-			int idx=(Table.GenericCompare(value,min)/10); //O(1)
+			int idx = (Table.GenericCompare(value, min) / 10); // O(1)
 			coordinates.add(idx);
 		}
 		return coordinates;
@@ -94,6 +95,20 @@ public class Index implements Serializable {
 		return extracted;
 	}
 
+	public Hashtable<String, Object> arrangeHashtable(Hashtable<String, Object> values) {
+		Set<String> set = values.keySet();
+		int IndexDimension = columnNames.size();
+		Hashtable<String, Object> extracted = new Hashtable<String, Object>();
+
+		for (int ptr = 0; ptr < IndexDimension; ptr++) {
+			String col = columnNames.get(ptr);
+			if (set.contains(col))
+				extracted.put(col, values.get(col));
+
+		}
+		return extracted;
+	}
+
 	public static void main(String[] args) {
 //		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
 //		Index idx = new Index("tablename",stringarr, new Hashtable<>(), this.table);
@@ -103,26 +118,29 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
 	}
 
-	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {//todo
+	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {// todo
 	}
 
-	public void insert(Hashtable<String, Object> colNameValue, Double id) { //todo  binary search cell and bucket then overflow
-		Vector cellIdx =getCell(colNameValue);
-		Object cell =grid[(Integer) cellIdx.get(0)];
+	public void insert(Hashtable<String, Object> colNameValue, Double id) { // todo binary search cell and bucket then
+																			// overflow
+		Vector cellIdx = getCell(colNameValue);
+		Object cell = grid[(Integer) cellIdx.get(0)];
 		for (int i = 1; i < cellIdx.size(); i++) {
-			int x=(Integer) cellIdx.get(i);
-			Object y=((Object[]) cell)[x];
-			cell =y;
+			int x = (Integer) cellIdx.get(i);
+			Object y = ((Object[]) cell)[x];
+			cell = y;
 		}
-		for (BucketInfo bi:(Vector<BucketInfo>)cell) {
+		for (BucketInfo bi : (Vector<BucketInfo>) cell) {
 			Bucket b;
-			if(bi.size<100){
-				b = (Bucket) DBApp.deserialize(tableName + "_b_"+ bi.id);
-			}else{
-				BucketInfo buc=new BucketInfo();
-				b=new Bucket(buc.id);
+			if (bi.size < 100) {
+				b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+			} else {
+				BucketInfo buc = new BucketInfo();
+				b = new Bucket(buc.id);
 			}
-			b.insert(colNameValue,id);
+			Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
+
+			b.insert(arrangedHash, id);
 			DBApp.serialize(tableName + "_b_" + bi.id, b);
 		}
 
@@ -153,20 +171,19 @@ public class Index implements Serializable {
 	}
 
 	private class BucketInfo implements Serializable {
-	    long id;
-	    int size;
-	    transient Bucket bucket;
+		long id;
+		int size;
+		transient Bucket bucket;
 //	    Object max;
 //	    Object min;
 
-        public BucketInfo() {
-			this.size=0;
+		public BucketInfo() {
+			this.size = 0;
 			this.id = ++serialID;
-            this.bucket = new Bucket(id);
+			this.bucket = new Bucket(id);
 //            this.max = null;
 //            this.min = null;
-        }
-    }
-
+		}
+	}
 
 }

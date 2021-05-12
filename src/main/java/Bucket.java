@@ -12,9 +12,11 @@ public class Bucket  implements Serializable {
     }
 
     public void delete(Hashtable<String, Object> row, double pageId) {
+    	
     }
 
     public void insert(Hashtable<String, Object> colNameValue, Double id) {
+    	
     }
 
 
