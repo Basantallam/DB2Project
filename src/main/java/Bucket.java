@@ -20,7 +20,7 @@ public class Bucket implements Serializable {
 
 	}
 
-	public boolean updateAddress(long oldAddess, long newAddress, Hashtable<String, Object> values) {
+	public boolean updateAddress(double oldAddess, double newAddress, Hashtable<String, Object> values) {
 		for (Record r : records) {
 
 		}
@@ -42,7 +42,7 @@ public class Bucket implements Serializable {
 			Set<String> set = values.keySet();
 			for (String col : set) {
 				if (o.values.containsKey(col) && 0 == Table.GenericCompare(o.values.get(col), this.values.get(col))) {
-
+					
 				}
 			}
 			return 0;

@@ -63,12 +63,12 @@ public class Index implements Serializable {
 	}
 
 	private void fill(Vector<Table.tuple4> table) {
-		for(Table.tuple4 t:table){
-			double pageId= t.id;
-			Page page = (Page) DBApp.deserialize(tableName+"_"+pageId);
-			for (Page.Pair r :page.records)
-				insert(r.row,pageId);
-			DBApp.serialize(tableName+"_"+pageId,page);
+		for (Table.tuple4 t : table) {
+			double pageId = t.id;
+			Page page = (Page) DBApp.deserialize(tableName + "_" + pageId);
+			for (Page.Pair r : page.records)
+				insert(r.row, pageId);
+			DBApp.serialize(tableName + "_" + pageId, page);
 		}
 	}
 
@@ -131,12 +131,14 @@ public class Index implements Serializable {
 			int x = (Integer) cellIdx.get(i);
 			Object y = ((Object[]) cell)[x];
 			cell = y;
-		}for (BucketInfo bi : (Vector<BucketInfo>) cell) {
+		}
+		for (BucketInfo bi : (Vector<BucketInfo>) cell) {
 			Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
 			Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
-			boolean f=b.updateAddress(arrangedHash,oldId,newId);
+			boolean f = b.updateAddress(oldId, newId, arrangedHash);
 			DBApp.serialize(tableName + "_b_" + bi.id, b);
-			if(f)break;
+			if (f)
+				break;
 		}
 	}
 
@@ -149,11 +151,11 @@ public class Index implements Serializable {
 			Object y = ((Object[]) cell)[x];
 			cell = y;
 		}
-		BucketInfo bi = ((Vector<BucketInfo>)cell).lastElement();
+		BucketInfo bi = ((Vector<BucketInfo>) cell).lastElement();
 		Bucket b;
 		if (bi.size < DBApp.indexCapacity)
 			b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
-		 else {
+		else {
 			bi = new BucketInfo();
 			b = new Bucket(bi.id);
 		}
