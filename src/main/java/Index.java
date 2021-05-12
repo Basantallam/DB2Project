@@ -99,11 +99,29 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
 	}
 
-	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {// todo
+	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {//todo
 	}
 
-	public void insert(Hashtable<String, Object> colNameValue, Double id) { // todo binary search cell and bucket then
-																			// overflow
+	public void insert(Hashtable<String, Object> colNameValue, Double id) { //todo  binary search cell and bucket then overflow
+		Vector cellIdx =getCell(colNameValue);
+		Object cell =grid[(Integer) cellIdx.get(0)];
+		for (int i = 1; i < cellIdx.size(); i++) {
+			int x=(Integer) cellIdx.get(i);
+			Object y=((Object[]) cell)[x];
+			cell =y;
+		}
+		for (BucketInfo bi:(Vector<BucketInfo>)cell) {
+			Bucket b;
+			if(bi.size<100){
+				b = (Bucket) DBApp.deserialize(tableName + "_b_"+ bi.id);
+			}else{
+				BucketInfo buc=new BucketInfo();
+				b=new Bucket(buc.id);
+			}
+			b.insert(colNameValue,id);
+			DBApp.serialize(tableName + "_b_" + bi.id, b);
+		}
+
 	}
 
 	public void update(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow,
@@ -131,18 +149,20 @@ public class Index implements Serializable {
 	}
 
 	private class BucketInfo implements Serializable {
-		long id;
-		transient Bucket bucket;
+	    long id;
+	    int size;
+	    transient Bucket bucket;
 //	    Object max;
 //	    Object min;
 
-		public BucketInfo() {
-
+        public BucketInfo() {
+			this.size=0;
 			this.id = ++serialID;
-			this.bucket = new Bucket(id);
+            this.bucket = new Bucket(id);
 //            this.max = null;
 //            this.min = null;
-		}
-	}
+        }
+    }
+
 
 }

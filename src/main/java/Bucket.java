@@ -4,14 +4,17 @@ import java.util.Vector;
 
 public class Bucket  implements Serializable {
     long id;
-    Vector<tuple> Bucket;
+    Vector<tuple> bucket;
 
     public Bucket(long id) {
         this.id=id;
-        Bucket = new Vector<tuple>();
+        bucket = new Vector<tuple>();
     }
 
     public void delete(Hashtable<String, Object> row, double pageId) {
+    }
+
+    public void insert(Hashtable<String, Object> colNameValue, Double id) {
     }
 
 

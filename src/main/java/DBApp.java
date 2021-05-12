@@ -77,7 +77,7 @@ public class DBApp implements DBAppInterface {
 			serialize(tableName, table);
 			if (!except)
 				throw new DBAppException("Index exists in Database");
-			updatemetaindex(tableName, columnNames);// todo update metadata
+			updatemetaindex(tableName, columnNames);
 		} else
 			throw new DBAppException("Table does not exist in Database");
 	}
