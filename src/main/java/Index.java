@@ -106,7 +106,7 @@ public class Index implements Serializable {
 	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {//todo
 	}
 
-	public void insert(Hashtable<String, Object> colNameValue, Double id) { //todo  binary search cell and bucket then overflow
+	public void insert(Hashtable<String, Object> colNameValue, Double id) {
 		Vector cellIdx =getCell(colNameValue);
 		Object cell =grid[(Integer) cellIdx.get(0)];
 		for (int i = 1; i < cellIdx.size(); i++) {
@@ -118,9 +118,11 @@ public class Index implements Serializable {
 			Bucket b;
 			if(bi.size<100){
 				b = (Bucket) DBApp.deserialize(tableName + "_b_"+ bi.id);
+				bi.size++;
 			}else{
 				BucketInfo buc=new BucketInfo();
 				b=new Bucket(buc.id);
+				buc.size++;
 			}
 			b.insert(colNameValue,id);
 			DBApp.serialize(tableName + "_b_" + bi.id, b);
