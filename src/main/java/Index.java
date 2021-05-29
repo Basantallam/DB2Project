@@ -74,32 +74,32 @@ public class Index implements Serializable {
 
 	public Vector<Integer> getCell(Hashtable<String, Object> values) {
 		Vector<Integer> coordinates = new Vector<Integer>();
-		Object[] arrangedValues = arrangeValues(values);
+		Hashtable<String, Object> indexValues = extractValues(values);
 
 		for (int i = 0; i < columnNames.size(); i++) {
-			String currName=columnNames.get(i);
+			String currName = columnNames.get(i);
 			Object min = ranges.get(currName).min;
-			Object value = arrangedValues[i];
+			Object value = indexValues.get(currName);
 			int idx = (Table.GenericCompare(value, min) / 10); // O(1)
 			coordinates.add(idx);
 		}
 		return coordinates;
 	}
 
-	public Object[] arrangeValues(Hashtable<String, Object> values) {
+	public Hashtable<String, Object> extractValues(Hashtable<String, Object> values) {
+		//extracts index columns from the entire hashtable
 		Set<String> set = values.keySet();
-		int IndexDimension = columnNames.size();
-		Object[] extracted = new Object[IndexDimension];
+		Hashtable<String, Object> extractedValues = new Hashtable<String, Object>();
 
-		for (int ptr = 0; ptr < IndexDimension; ptr++) {
+		for (int ptr = 0; ptr < columnNames.size(); ptr++) {
 			String col = columnNames.get(ptr);
 			if (set.contains(col)) {
-				extracted[ptr] = values.get(col);
+				extractedValues.put(col,values.get(col));
 			} else {
-				extracted[ptr] = 0;
+				extractedValues.put(col,ranges.get(col).min);
 			}
 		}
-		return extracted;
+		return extractedValues;
 	}
 
 	public Hashtable<String, Object> arrangeHashtable(Hashtable<String, Object> values) {
