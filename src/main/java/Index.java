@@ -77,7 +77,8 @@ public class Index implements Serializable {
 		Object[] arrangedValues = arrangeValues(values);
 
 		for (int i = 0; i < columnNames.size(); i++) {
-			Object min = ranges.get(i).min;
+			String currName=columnNames.get(i);
+			Object min = ranges.get(currName).min;
 			Object value = arrangedValues[i];
 			int idx = (Table.GenericCompare(value, min) / 10); // O(1)
 			coordinates.add(idx);
