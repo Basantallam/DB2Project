@@ -26,16 +26,12 @@ public class Page implements Serializable {
 				return newPair;
 			else {
 
-				int i =
-//						LinearSearch(pkvalue);
-						BinarySearch(pkvalue,records.size()-1,0); //todo if it is working
+				int i = BinarySearch(pkvalue,records.size()-1,0); //todo if it is working
 				records.insertElementAt(newPair, i); // full capacity+1
 				return records.remove(DBApp.capacity);
 			}
 		} else {
-			int i =
-//					LinearSearch(pkvalue);
-					BinarySearch(pkvalue,records.size()-1,0);
+			int i = BinarySearch(pkvalue,records.size()-1,0);
 			records.add(i, newPair);
 			return null;
 		}

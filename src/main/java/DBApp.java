@@ -156,7 +156,6 @@ public class DBApp implements DBAppInterface {
 	@Override
 	public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
 		if (DB.contains(tableName)) {
-
 			Vector res = checkinMeta(tableName, colNameValue);
 			String pk = (String) res.get(0);
 			Vector<String> indexed = (Vector<String>) res.get(1);

@@ -10,7 +10,7 @@ public class Index implements Serializable {
 	Vector<String> columnNames;
 	Hashtable<String, DBApp.minMax> ranges;
 	Object[] grid;
-
+	String clusteringCol;
 	public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges,
 				 Vector<Table.tuple4> table) {
 		this.tableName = tableName;
@@ -22,7 +22,7 @@ public class Index implements Serializable {
 
 		Object[] temp = new Vector[10];// todo of type
 		Object[] temp1 = new Object[10];
-
+		clusteringCol=""; //todo
 		for (int i = 0; i < 10; i++) {
 			temp[i] = new Vector<BucketInfo>();
 		}
@@ -86,7 +86,10 @@ public class Index implements Serializable {
 				coordinates.add(0);
 			} else {
 				int cellWidth=(Table.GenericCompare(max,min)+1)/10; //range el cell kam raqam
-				int idx = (Table.GenericCompare(value, min) / cellWidth); // O(1)
+				int idx = (Table.GenericCompare(value, min) / (cellWidth)); // O(1)
+				if(Table.GenericCompare(value, min) % (cellWidth)>0){
+					idx++; //ceil
+				}
 				coordinates.add(idx);
 			}
 		}
@@ -117,6 +120,7 @@ public class Index implements Serializable {
 		Vector<BucketInfo> cell = getCell(row);
 
 		for (BucketInfo bi : cell) {
+			//todo binary search
 			Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
 			Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
 			boolean updated = b.updateAddress(oldId, newId, arrangedHash);
@@ -126,24 +130,65 @@ public class Index implements Serializable {
 		}
 	}
 
-	public void insert(Hashtable<String, Object> colNameValue, Double id) { // todo binary search cell and bucket then
-		// overflow
+	public int BinarySearchCell(Vector<BucketInfo> cell,Object searchkey, int hi, int lo) {
+	//binary search within one cell
+		int mid = (hi + lo + 1) / 2;
+
+		if (lo >= hi)
+			return mid;
+
+		if (Table.GenericCompare(cell.get(mid).min, searchkey) < 0)
+			return BinarySearchCell(cell,searchkey, hi, mid);
+		else
+			return BinarySearchCell(cell,searchkey, mid - 1, lo);
+
+	}
+	public void insert(Hashtable<String, Object> colNameValue, Double id) {
+		// todo binary search cell and bucket then overflow
 		Vector<BucketInfo> cell = getCell(colNameValue);
 
-		BucketInfo bi = cell.lastElement();
-		Bucket b;
-		if (bi.size < DBApp.indexCapacity)
-			b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
-		else {
-			bi = new BucketInfo();
-			b = new Bucket(bi.id);
-			cell.add(bi);
-		}
-		Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
+		int bucketInfoIdx = BinarySearchCell(cell,colNameValue.get(clusteringCol),0,cell.size()-1);
+		BucketInfo foundBI = cell.get(bucketInfoIdx);
+		Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + foundBI.id);
 
-		b.insert(arrangedHash, id);
-		DBApp.serialize(tableName + "_b_" + bi.id, b);
-		bi.size++;
+		Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
+		Bucket.Record returned = b.insert(arrangedHash, id);
+
+		if (returned==null || !(returned.values.get(clusteringCol).equals(colNameValue.get(clusteringCol)))){
+			foundBI.max= b.records.lastElement().values.get(clusteringCol);
+			foundBI.min= b.records.firstElement().values.get(clusteringCol);
+		}
+		DBApp.serialize(tableName + "_b_" + foundBI.id, b);
+		foundBI.size++;
+		if(returned!=null){
+			boolean create = true;
+			if (cell.size()-1 > bucketInfoIdx ) {
+				int nxtIdx = bucketInfoIdx + 1;
+				Bucket nxtBucket = (Bucket) DBApp.deserialize(tableName + "_" + cell.get(nxtIdx).id);
+				if (!nxtBucket.isFull()) {
+					create = false;
+					nxtBucket.insert(returned.values,id);
+				}
+					cell.get(nxtIdx).min = returned.values.get(clusteringCol);
+				}
+
+		if (create) {
+			int newID = CreateBucketID();
+			Bucket newBucket = new Bucket(newID);
+			newBucket.insert(returned.values, id);
+
+			BucketInfo newBI = new BucketInfo();
+			newBI.bucket = newBucket;
+			newBI.size++;
+			cell.insertElementAt(newBI, bucketInfoIdx + 1);
+			DBApp.serialize(tableName + "_b_" + foundBI.id+1, b);
+		}
+		}
+	}
+
+	private int CreateBucketID() {
+		//todo ++ or double
+		return 0;
 	}
 
 	public Vector<BucketInfo> getCell(Hashtable<String, Object> colNameValue) {
@@ -182,19 +227,25 @@ public class Index implements Serializable {
 
 	}
 
+	public Vector<Double> narrowPageRange() {
+//		vector containing min and max pages
+		//min el awal w ba3den hi
+		return null; //todo
+	}
+
 	private class BucketInfo implements Serializable {
 		long id;
 		int size;
 		transient Bucket bucket;
-//	    Object max;
-//	    Object min;
+	    Object max;
+	    Object min;
 
 		public BucketInfo() {
 			this.size = 0;
 			this.id = ++serialID;
 			this.bucket = new Bucket(id);
-//            this.max = null;
-//            this.min = null;
+            this.max = null;
+            this.min = null;
 		}
 	}
 

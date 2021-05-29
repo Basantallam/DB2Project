@@ -38,20 +38,25 @@ public class Table implements Serializable {
 
 		Object insertedPkValue = colNameValue.get(pk);
 		int foundIdx=0;
+		int hi = table.size() - 1; // idx
+		int lo = 0;// idx
 		if(useIndex){
-			//todo indexinsert
+			//todo choose index to use
+			Index chosenIndex = chooseIndex();
+			Vector<Double> narrowedDown = chosenIndex.narrowPageRange();
+			 lo=PageIDtoIdx(narrowedDown.firstElement());
+			 hi=PageIDtoIdx(narrowedDown.firstElement());
 		}
-		else foundIdx = BinarySearch(insertedPkValue);
-		double foundPageId =table.get(foundIdx).id;
+		foundIdx = BinarySearch(insertedPkValue,hi,lo);
+		double foundPageId = table.get(foundIdx).id;
 		Page foundpage = (Page) DBApp.deserialize(tableName + "_" + foundPageId);
 		tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
 		Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
 
-		if (returned == null || returned.pk != insertedPkValue) {
-			indicesInsert(colNameValue,foundPageId);
+		if (returned == null || returned.pk != insertedPkValue) { //mesh el mafroud !(.equals) badal (!=)
+			indicesInsert(colNameValue,foundPageId); //insert fel indices el new record
 			foundTuple.min = foundpage.records.firstElement().pk;
 			foundTuple.max = foundpage.records.lastElement().pk;
-
 		}
 		DBApp.serialize(tableName + "_" + foundTuple.id, foundpage);
 
@@ -64,10 +69,9 @@ public class Table implements Serializable {
 					create = false;
 					nxtPage.insert(returned.pk, returned.row);
 					if (returned.pk == insertedPkValue)
-					indicesInsert(returned.row, nxtPage.id);
+				    	indicesInsert(returned.row, nxtPage.id);//insert fel indices el new record
 					else{
-						indicesInsert(returned.row, foundPageId);
-						indicesUpdate(returned.row, foundPageId,nxtPage.id);
+						indicesUpdate(returned.row, foundPageId,nxtPage.id);  //insert fel indices bel shifted record
 					}
 					table.get(nxtIdx).min = returned.pk;
 				}
@@ -88,6 +92,16 @@ public class Table implements Serializable {
 		}
 
 
+	}
+
+	private int PageIDtoIdx(Double targetPageID) {
+		return 0;
+		//TODO Binary search for the page ID
+	}
+
+	public  Index chooseIndex() {
+		//todo
+	return null;
 	}
 
 	private void indicesUpdate(Hashtable<String, Object> row, Double oldId, Double newId) {
@@ -114,10 +128,16 @@ public class Table implements Serializable {
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue, boolean useIndex) throws Exception {
 		Object pk = parse(clusteringKeyValue);
 		int idx=0;
+		int hi = table.size() - 1; // idx
+		int lo = 0;// idx
+
 		if(useIndex){
-			//todo update using Index
+			//todo update using Index?
+			//todo change hi and lo of binary search
 		}
-		else idx = BinarySearch(pk);
+		idx = BinarySearch(pk,hi,lo);
+
+
 		double pageId=table.get(idx).id;
 		Page p = (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
 
@@ -179,7 +199,9 @@ public class Table implements Serializable {
 			}
 		else {
 			Object pkValue = columnNameValue.get(pk);
-			int idx = BinarySearch(pkValue);
+			int hi = table.size() - 1; // idx
+			int lo = 0;// idx
+			int idx = BinarySearch(pkValue,hi , lo);
 			tuple4 t = table.get(idx);
 			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
 			Vector<Hashtable<String,Object>> deletedrows  = p.delete(null, columnNameValue);
@@ -232,12 +254,7 @@ public class Table implements Serializable {
 		br.close();
 	}
 
-	public int BinarySearch(Object searchkey) {
-		int hi = table.size() - 1; // idx
-		int lo = 0;// idx
-		return BinarySearch(searchkey, hi, lo);
 
-	}
 
 	public static int GenericCompare(Object a, Object b) {
 		if (a instanceof Integer)
@@ -259,18 +276,7 @@ public class Table implements Serializable {
 			return 0;
 	}
 
-//	public int BinarySearch(Object searchkey, int hi, int lo) {
-//		int mid = (hi + lo) / 2;
-//
-//		if (lo >= hi)
-//			return mid;
-//
-//		if (GenericCompare(table.get(mid).max, searchkey) > 0 )
-//			return BinarySearch(searchkey, mid, lo);
-//		else
-//			return BinarySearch(searchkey, hi, mid + 1);
-//
-//	}
+
 	public int BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo + 1) / 2;
 
@@ -282,7 +288,7 @@ public class Table implements Serializable {
 		else
 			return BinarySearch(searchkey, mid - 1, lo);
 
-	} // better optimization
+	}
 
 	public Boolean createIndex(String[] columnNames, Hashtable<String, DBApp.minMax> ranges)  {
 		if(checkExists(columnNames)) return false; // check if index already exists
