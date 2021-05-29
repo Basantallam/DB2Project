@@ -18,13 +18,14 @@ public class Bucket implements Serializable {
 
 	public void insert(Hashtable<String, Object> colNameValue, Double id) {
         Record r = new Record(colNameValue,id);
+        //bucket should be sorted mesh ba insert w khalas
         records.add(r);
 	}
 
-	public boolean updateAddress(double oldAddess, double newAddress, Hashtable<String, Object> values) {
+	public boolean updateAddress(double oldAddress, double newAddress, Hashtable<String, Object> values) {
 	
 		for (Record r : records) {
-			if (r.values.equals(values) && r.pageid == oldAddess) {
+			if (r.values.equals(values) && r.pageid == oldAddress) {
 				r.pageid = newAddress;
 			
 				return true;

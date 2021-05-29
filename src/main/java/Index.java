@@ -12,7 +12,7 @@ public class Index implements Serializable {
 	Object[] grid;
 
 	public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges,
-			Vector<Table.tuple4> table) {
+				 Vector<Table.tuple4> table) {
 		this.tableName = tableName;
 		for (int i = 0; i < columnNames.length; i++)
 			this.columnNames.add(columnNames[i]);
@@ -72,35 +72,27 @@ public class Index implements Serializable {
 		}
 	}
 
-	public Vector<Integer> getCell(Hashtable<String, Object> values) {
+	public Vector<Integer> getCellCoordinates(Hashtable<String, Object> values) {
 		Vector<Integer> coordinates = new Vector<Integer>();
-		Hashtable<String, Object> indexValues = extractValues(values);
+		Hashtable<String, Object> colValues = arrangeHashtable(values);
 
 		for (int i = 0; i < columnNames.size(); i++) {
-			String currName = columnNames.get(i);
-			Object min = ranges.get(currName).min;
-			Object value = indexValues.get(currName);
-			int idx = (Table.GenericCompare(value, min) / 10); // O(1)
-			coordinates.add(idx);
+			String colName = columnNames.get(i);
+			Object min = ranges.get(colName).min;
+			Object max = ranges.get(colName).max;
+
+			Object value = colValues.get(colName);
+			if (value == null) {
+				coordinates.add(0);
+			} else {
+				int cellWidth=(Table.GenericCompare(max,min)+1)/10; //range el cell kam raqam
+				int idx = (Table.GenericCompare(value, min) / cellWidth); // O(1)
+				coordinates.add(idx);
+			}
 		}
 		return coordinates;
 	}
 
-	public Hashtable<String, Object> extractValues(Hashtable<String, Object> values) {
-		//extracts index columns from the entire hashtable
-		Set<String> set = values.keySet();
-		Hashtable<String, Object> extractedValues = new Hashtable<String, Object>();
-
-		for (int ptr = 0; ptr < columnNames.size(); ptr++) {
-			String col = columnNames.get(ptr);
-			if (set.contains(col)) {
-				extractedValues.put(col,values.get(col));
-			} else {
-				extractedValues.put(col,ranges.get(col).min);
-			}
-		}
-		return extractedValues;
-	}
 
 	public Hashtable<String, Object> arrangeHashtable(Hashtable<String, Object> values) {
 		//takhod kol el record teraga3 el values eli fel Index columns bass
@@ -111,56 +103,41 @@ public class Index implements Serializable {
 
 		for (int ptr = 0; ptr < IndexDimension; ptr++) {
 			String col = columnNames.get(ptr);
-			if (set.contains(col))
+			if (set.contains(col)) {
 				extracted.put(col, values.get(col));
-
+			} else {
+				extracted.put(col, null);
+			}
 		}
 		return extracted;
 	}
 
-	public static void main(String[] args) {
-//		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
-//		Index idx = new Index("tablename",stringarr, new Hashtable<>(), this.table);
-//		System.out.println((Arrays.deepToString(idx.grid)));// 4d
-//		System.out.println(Arrays.deepToString((Object[]) idx.grid[0]));// 3d
-//		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.grid[0])[0]))); // 2d
-//		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
-	}
 
 	public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {
-		Vector cellIdx = getCell(row);
-		Object cell = grid[(Integer) cellIdx.get(0)];
-		for (int i = 1; i < cellIdx.size(); i++) {
-			int x = (Integer) cellIdx.get(i);
-			Object y = ((Object[]) cell)[x];
-			cell = y;
-		}
-		for (BucketInfo bi : (Vector<BucketInfo>) cell) {
+		Vector<BucketInfo> cell = getCell(row);
+
+		for (BucketInfo bi : cell) {
 			Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
 			Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
-			boolean f = b.updateAddress(oldId, newId, arrangedHash);
+			boolean updated = b.updateAddress(oldId, newId, arrangedHash);
 			DBApp.serialize(tableName + "_b_" + bi.id, b);
-			if (f)
+			if (updated)
 				break;
 		}
 	}
 
 	public void insert(Hashtable<String, Object> colNameValue, Double id) { // todo binary search cell and bucket then
-																			// overflow
-		Vector cellIdx = getCell(colNameValue);
-		Object cell = grid[(Integer) cellIdx.get(0)];
-		for (int i = 1; i < cellIdx.size(); i++) {
-			int x = (Integer) cellIdx.get(i);
-			Object y = ((Object[]) cell)[x];
-			cell = y;
-		}
-		BucketInfo bi = ((Vector<BucketInfo>) cell).lastElement();
+		// overflow
+		Vector<BucketInfo> cell = getCell(colNameValue);
+
+		BucketInfo bi = cell.lastElement();
 		Bucket b;
 		if (bi.size < DBApp.indexCapacity)
 			b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
 		else {
 			bi = new BucketInfo();
 			b = new Bucket(bi.id);
+			cell.add(bi);
 		}
 		Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
 
@@ -169,8 +146,19 @@ public class Index implements Serializable {
 		bi.size++;
 	}
 
+	public Vector<BucketInfo> getCell(Hashtable<String, Object> colNameValue) {
+		Vector cellIdx = getCellCoordinates(colNameValue);
+		Object cell = grid[(Integer) cellIdx.get(0)];
+		for (int i = 1; i < cellIdx.size(); i++) {
+			int x = (Integer) cellIdx.get(i);
+			Object y = ((Object[]) cell)[x];
+			cell = y;
+		}
+		return (Vector<BucketInfo>) cell;
+	}
+
 	public void update(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow,
-			Hashtable<String, Object> updatedValues, double pageId) {
+					   Hashtable<String, Object> updatedValues, double pageId) {
 		Boolean update = false;
 		for (String s : columnNames)
 			if (updatedValues.containsKey(s)) { //todo if ranges different
@@ -179,8 +167,8 @@ public class Index implements Serializable {
 			}
 		if (!update)
 			return;
-		delete(oldRow,pageId);
-		insert(newRow,pageId);
+		delete(oldRow, pageId);
+		insert(newRow, pageId);
 	}
 
 	public void delete(Hashtable<String, Object> row, double pageId) {
@@ -210,4 +198,12 @@ public class Index implements Serializable {
 		}
 	}
 
+	public static void main(String[] args) {
+//		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
+//		Index idx = new Index("tablename",stringarr, new Hashtable<>(), this.table);
+//		System.out.println((Arrays.deepToString(idx.grid)));// 4d
+//		System.out.println(Arrays.deepToString((Object[]) idx.grid[0]));// 3d
+//		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.grid[0])[0]))); // 2d
+//		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
+	}
 }
