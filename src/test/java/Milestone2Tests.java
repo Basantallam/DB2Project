@@ -1,4 +1,5 @@
 import org.junit.jupiter.api.*;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Date;
@@ -122,11 +123,13 @@ public class Milestone2Tests {
 
         SQLTerm[] arrSQLTerms;
         arrSQLTerms = new SQLTerm[2];
+        arrSQLTerms[0] = new SQLTerm();
         arrSQLTerms[0]._strTableName = "students";
         arrSQLTerms[0]._strColumnName= "first_name";
         arrSQLTerms[0]._strOperator = "=";
         arrSQLTerms[0]._objValue ="John";
 
+        arrSQLTerms[1] = new SQLTerm();
         arrSQLTerms[1]._strTableName = "students";
         arrSQLTerms[1]._strColumnName= "gpa";
         arrSQLTerms[1]._strOperator = "=";
@@ -178,12 +181,13 @@ public class Milestone2Tests {
 
         SQLTerm[] arrSQLTerms;
         arrSQLTerms = new SQLTerm[2];
+        arrSQLTerms[0] = new SQLTerm();
         arrSQLTerms[0]._strTableName = "students";
         arrSQLTerms[0]._strColumnName= "first_name";
         arrSQLTerms[0]._strOperator = "=";
         arrSQLTerms[0]._objValue =row.get("first_name");
 
-
+        arrSQLTerms[1] = new SQLTerm();
         arrSQLTerms[1]._strTableName = "students";
         arrSQLTerms[1]._strColumnName= "gpa";
         arrSQLTerms[1]._strOperator = "<=";
@@ -235,12 +239,13 @@ public class Milestone2Tests {
 
         SQLTerm[] arrSQLTerms;
         arrSQLTerms = new SQLTerm[2];
+        arrSQLTerms[0] = new SQLTerm();
         arrSQLTerms[0]._strTableName = "students";
         arrSQLTerms[0]._strColumnName= "first_name";
         arrSQLTerms[0]._strOperator = "=";
         arrSQLTerms[0]._objValue =row.get("first_name");
 
-
+        arrSQLTerms[1] = new SQLTerm();
         arrSQLTerms[1]._strTableName = "students";
         arrSQLTerms[1]._strColumnName= "gpa";
         arrSQLTerms[1]._strOperator = "=";
