@@ -393,66 +393,71 @@ public class Table implements Serializable {
 		return (Vector) recs;
 	}
 
-	public Vector applyOp(Vector curr, Vector next, String arrayOperator) throws DBAppException {
-		//todo -iman
+	public Vector applyOp(Vector curr, Vector next, String arrayOperator, boolean useIndex) throws DBAppException {
 		switch (arrayOperator) {
 			case ("AND"):
-				return ANDing(curr, next);
+				return ANDing(curr, next, useIndex);
 			case ("OR"):
-				return ORing(curr, next);
+				return ORing(curr, next, useIndex);
 			case ("XOR"):
-				return XORing(curr, next);
+				return XORing(curr, next, useIndex);
 			default:
 				throw new DBAppException("Star operator must be one of AND, OR, XOR!");
 		}
 
 	}
 
-	public Vector ANDing(Vector i1, Vector i2) {
-		List<Object> l1 = new ArrayList<>();
-//			i1.forEachRemaining(l1::add);
-		List<Object> l2 = new ArrayList<>();
-//			i2.forEachRemaining(l2::add);
+	public Vector ANDing(Vector i1, Vector i2, boolean useIndex) {
+
 		Vector res = null;
-		while (!(l1.isEmpty())) {
-			if (l2.contains(l1.get(0)))
-				res.add(l1.get(0));
-			l1.remove(0);
+		if(!useIndex) {
+			Iterator it1 = i1.iterator();
+			Iterator it2 = i2.iterator();
+			while (it1.hasNext()) {
+				if (i2.contains(it1.next()))
+					res.add(it1.next());
+			}
+		}
+		else{
+			//todo - w index
 		}
 		return res;
 	}
 
-	public Vector ORing(Vector i1, Vector i2) {
-		Vector res = i1;
-		Object curr;
-//			while (i2.hasNext()) {
-//				curr = i2.next();
-//				res.add(curr);
-//			}
+	public Vector ORing(Vector i1, Vector i2, boolean useIndex) {
+		if(!useIndex) {
+			Object curr;
+			Iterator it2 = i2.iterator();
+			while (it2.hasNext()) {
+				curr = it2.next();
+				i1.add(curr);
+			}
+		}
+		else{
+			//todo w index
+		}
 
-		return res;
+		return i1;
 	}
 
-	public Vector XORing(Vector i1, Vector i2) {
-//			List<Object> l1 = new ArrayList<>();
-//			i1.forEachRemaining(l1::add);
-//			List<Object> l2 = new ArrayList<>();
-//			i2.forEachRemaining(l2::add);
-//			ListVector res = null;
-//			while (!(l1.isEmpty())) {
-//				if (!(l2.contains(l1.get(0))))
-//					res.add(l1.get(0));
-//				l1.remove(0);
-//			}
-//			i1.forEachRemaining(l1::add);
-//			i2.forEachRemaining(l2::add);
-//			while (!(l2.isEmpty())) {
-//				if (!(l1.contains(l2.get(0))))
-//					res.add(l2.get(0));
-//				l2.remove(0);
-//			}
-//			return res;
-		return null;
+	public Vector XORing(Vector i1, Vector i2, boolean useIndex) {
+		Vector res = null;
+		if(!useIndex) {
+			Iterator it1 = i1.iterator();
+			Iterator it2 = i2.iterator();
+			while (it1.hasNext()) {
+				if (!(i2.contains(it1.next())))
+					res.add(it1.next());
+			}
+			while (it2.hasNext()) {
+				if (!(i1.contains(it2.next())))
+					res.add(it2.next());
+			}
+		}
+		else{
+			//todo w index
+		}
+		return res;
 	}
 
 	public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {

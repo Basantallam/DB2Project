@@ -313,17 +313,12 @@ public class DBApp implements DBAppInterface {
 				throw new DBAppException("Invalid input, check column name and the value's data type");
 
 			Vector next = table.resolveOneStatement(sqlTerms[i+1]);
-			curr = table.applyOp(curr,next,arrayOperators[i]);
+			curr = table.applyOp(curr,next,arrayOperators[i],false);
+			//todo fix the false, how to determine index?
 			// todo - iman -continue
 		}
-		return null;
+		return curr.iterator();
 	}
-
-
-
-
-
-
 
 	public boolean colInTable(String table, String column, Object value) throws DBAppException {
 		// check col exists + check value type
