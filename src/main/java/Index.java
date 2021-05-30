@@ -12,7 +12,7 @@ public class Index implements Serializable {
 	Object[] grid;
 	String clusteringCol;
 	public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges,
-				 Vector<Table.tuple4> table) {
+				 Vector<Table.tuple4> table, String clusteringCol) {
 		this.tableName = tableName;
 		for (int i = 0; i < columnNames.length; i++)
 			this.columnNames.add(columnNames[i]);
@@ -22,7 +22,7 @@ public class Index implements Serializable {
 
 		Object[] temp = new Vector[10];// todo of type
 		Object[] temp1 = new Object[10];
-		clusteringCol = ""; //todo
+		this.clusteringCol = clusteringCol; //todo
 		for (int i = 0; i < 10; i++) {
 			temp[i] = new Vector<BucketInfo>();
 		}
@@ -174,7 +174,7 @@ public class Index implements Serializable {
 
 		if (create) {
 			int newID = CreateBucketID(); // 7asa malhash lazma la2eno by3ml el id wel new bucket f bucket info f ana bas a3mel new bucket info wa5od el bucket el fih
-			Bucket newBucket = new Bucket(newID);
+			Bucket newBucket = new Bucket(newID,clusteringCol);
 			newBucket.insert(returned.values, id);
 
 			BucketInfo newBI = new BucketInfo();
@@ -243,7 +243,7 @@ public class Index implements Serializable {
 		public BucketInfo() {
 			this.size = 0;
 			this.id = ++serialID;
-			this.bucket = new Bucket(id);
+			this.bucket = new Bucket(id,clusteringCol);
             this.max = null;
             this.min = null;
 		}

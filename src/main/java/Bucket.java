@@ -8,9 +8,10 @@ public class Bucket implements Serializable {
 	Vector<Record> records;
 	String clusteringCol;
 
-	public Bucket(long id) {
+	public Bucket(long id,String clust) {
 		this.id = id;
 		records = new Vector<Record>();
+		clusteringCol=clust;
 	}
 
 	public void delete(Hashtable<String, Object> row, double pageId) {

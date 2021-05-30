@@ -6,7 +6,7 @@ public class Table implements Serializable {
 	String tableName;
 	Vector<tuple4> table;
 	Vector<Index> index;
-
+	String clusteringCol;
 	public Table(String strTableName, String strClusteringKeyColumn, Hashtable<String, String> htblColNameType,
 			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
 			throws DBAppException, IOException {
@@ -20,7 +20,7 @@ public class Table implements Serializable {
 		if (strClusteringKeyColumn.equals("")) {
 			throw new DBAppException("please enter a primary key");
 		}
-
+		clusteringCol=strClusteringKeyColumn;
 		for (String key : keys) {
 			if (!(htblColNameType.get(key).equals("java.lang.Integer")
 					|| htblColNameType.get(key).equals("java.lang.String")
@@ -307,7 +307,7 @@ public class Table implements Serializable {
 		if(checkExists(columnNames)) return false; // check if index already exists
 
 
-		Index i = new Index(this.tableName,columnNames , ranges ,this.table);
+		Index i = new Index(this.tableName,columnNames , ranges ,this.table, this.clusteringCol);
 		index.add(i);
 		return true;
 	}
