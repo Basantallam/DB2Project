@@ -95,10 +95,21 @@ public class Table implements Serializable {
 	}
 
 	private int PageIDtoIdx(Double targetPageID) {
-		return 0;
-		//TODO Binary search for the page ID
+		return BinarySearchPageID(table.size()-1,0,targetPageID);
+		// Binary search for the page ID
 	}
-
+	public int BinarySearchPageID(int hi, int lo, Double targetID){
+		int mid = (hi+lo+1)/2;
+		if(hi<=lo){
+			//add extra condition to check id is correct?
+			return mid;
+		}
+		if(table.get(mid).id<targetID){
+			return BinarySearchPageID(hi, mid,targetID);
+		}else{
+			return BinarySearchPageID(mid-1,lo,targetID);
+		}
+	}
 	public  Index chooseIndex() {
 		//todo
 	return null;

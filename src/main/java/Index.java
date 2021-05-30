@@ -22,7 +22,7 @@ public class Index implements Serializable {
 
 		Object[] temp = new Vector[10];// todo of type
 		Object[] temp1 = new Object[10];
-		clusteringCol=""; //todo
+		clusteringCol = ""; //todo
 		for (int i = 0; i < 10; i++) {
 			temp[i] = new Vector<BucketInfo>();
 		}
