@@ -93,10 +93,11 @@ public class DBApp implements DBAppInterface {
 	
 		Hashtable<String, minMax> minmax = new Hashtable<String, minMax>();
 		try {
-		FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
-		BufferedReader br = new BufferedReader(fr);
+
 			
 		for (int i = 0; i < columnNames.length; i++) {
+			FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
+			BufferedReader br = new BufferedReader(fr);
 			String currCol = columnNames[i];
 			boolean found = false;
 			
