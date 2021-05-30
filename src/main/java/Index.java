@@ -14,6 +14,7 @@ public class Index implements Serializable {
 	public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges,
 				 Vector<Table.tuple4> table) {
 		this.tableName = tableName;
+		this.columnNames=new Vector<>();
 		for (int i = 0; i < columnNames.length; i++)
 			this.columnNames.add(columnNames[i]);
 
