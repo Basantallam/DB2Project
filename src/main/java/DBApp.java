@@ -434,11 +434,11 @@ public class DBApp implements DBAppInterface {
 //            1. age / salary
 //  2. salary/city
 
-	public static class minMax {
+	public static class minMax implements Serializable  {
 		Object max;
 		Object min;
 
-		public minMax(Object max, Object min) {
+		public minMax(Object max, Object min){
 			this.max = max;
 			this.min = min;
 		}
