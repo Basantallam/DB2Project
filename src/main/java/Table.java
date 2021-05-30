@@ -111,6 +111,8 @@ public class Table implements Serializable {
 		}
 	}
 	public  Index chooseIndex() {
+		//choose index for insertion mohemmmm
+		//momken n3ml choose index for update w delete fe method tania
 		//todo
 	return null;
 	}
