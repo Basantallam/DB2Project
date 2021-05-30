@@ -304,21 +304,18 @@ public class DBApp implements DBAppInterface {
 		if (!(DB.contains(table)))
 			throw new DBAppException("Table does not exist in Database");
 
-		// todo - check if index exists
-		// resolving the select statement
-
 		Vector curr = table.resolveOneStatement(sqlTerms[0]);
 		for (int i = 0; i < sqlTerms.length - 1; i++) {
 			if (!(colInTable(sqlTerms[i]._strTableName, sqlTerms[i]._strColumnName, sqlTerms[i]._objValue)))
 				throw new DBAppException("Invalid input, check column name and the value's data type");
 
 			Vector next = table.resolveOneStatement(sqlTerms[i+1]);
-			curr = table.applyOp(curr,next,arrayOperators[i],false);
-			//todo fix the false, how to determine index?
-			// todo - iman -continue
+			Boolean indexExist = false; 			//todo fix the false, how to determine index?
+			curr = table.applyOp(curr,next,arrayOperators[i],indexExist);
 		}
 		return curr.iterator();
 	}
+
 
 	public boolean colInTable(String table, String column, Object value) throws DBAppException {
 		// check col exists + check value type
