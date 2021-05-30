@@ -300,19 +300,8 @@ public class DBApp implements DBAppInterface {
 	@Override
 	public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
 
-		// validating input
-//        for (int i = 0; i < sqlTerms.length; i++)
-//            if ((sqlTerms[i]._strOperator).equals(">") || (sqlTerms[i]._strOperator).equals(">=") ||
-//                    (sqlTerms[i]._strOperator).equals("<") || (sqlTerms[i]._strOperator).equals("<=") ||
-//                    (sqlTerms[i]._strOperator).equals("=") || (sqlTerms[i]._strOperator).equals("!="))
-//                throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
-
-//        for (int i = 0; i < arrayOperators.length; i++)
-//            if (!(arrayOperators[i].equals("AND") || arrayOperators[i].equals("OR") || arrayOperators[i].equals("XOR")))
-//                throw new DBAppException("Star operator must be one of AND, OR, XOR!");
-
 		Table table = (Table) deserialize(sqlTerms[0]._strTableName);
-		if (!(DB.contains(table))) // based on the fact that only one table is included in a select statement
+		if (!(DB.contains(table)))
 			throw new DBAppException("Table does not exist in Database");
 
 		// todo - check if index exists
