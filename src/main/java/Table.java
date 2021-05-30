@@ -7,8 +7,9 @@ public class Table implements Serializable {
 	Vector<tuple4> table;
 	Vector<Index> index;
 	String clusteringCol;
+
 	public Table(String strTableName, String strClusteringKeyColumn, Hashtable<String, String> htblColNameType,
-			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
+				 Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax)
 			throws DBAppException, IOException {
 		tableName = strTableName;
 		this.table = new Vector<tuple4>();
@@ -20,7 +21,7 @@ public class Table implements Serializable {
 		if (strClusteringKeyColumn.equals("")) {
 			throw new DBAppException("please enter a primary key");
 		}
-		clusteringCol=strClusteringKeyColumn;
+		clusteringCol = strClusteringKeyColumn;
 		for (String key : keys) {
 			if (!(htblColNameType.get(key).equals("java.lang.Integer")
 					|| htblColNameType.get(key).equals("java.lang.String")
@@ -37,24 +38,24 @@ public class Table implements Serializable {
 	public void insert(String pk, Hashtable<String, Object> colNameValue, boolean useIndex) {
 
 		Object insertedPkValue = colNameValue.get(pk);
-		int foundIdx=0;
+		int foundIdx = 0;
 		int hi = table.size() - 1; // idx
 		int lo = 0;// idx
-		if(useIndex){
+		if (useIndex) {
 			//todo choose index to use
 			Index chosenIndex = chooseIndex();
 			Vector<Double> narrowedDown = chosenIndex.narrowPageRange();
-			 lo=PageIDtoIdx(narrowedDown.firstElement());
-			 hi=PageIDtoIdx(narrowedDown.firstElement());
+			lo = PageIDtoIdx(narrowedDown.firstElement());
+			hi = PageIDtoIdx(narrowedDown.firstElement());
 		}
-		foundIdx = BinarySearch(insertedPkValue,hi,lo);
+		foundIdx = BinarySearch(insertedPkValue, hi, lo);
 		double foundPageId = table.get(foundIdx).id;
 		Page foundpage = (Page) DBApp.deserialize(tableName + "_" + foundPageId);
 		tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
 		Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
 
 		if (returned == null || returned.pk != insertedPkValue) { //mesh el mafroud !(.equals) badal (!=)
-			indicesInsert(colNameValue,foundPageId); //insert fel indices el new record
+			indicesInsert(colNameValue, foundPageId); //insert fel indices el new record
 			foundTuple.min = foundpage.records.firstElement().pk;
 			foundTuple.max = foundpage.records.lastElement().pk;
 		}
@@ -69,9 +70,9 @@ public class Table implements Serializable {
 					create = false;
 					nxtPage.insert(returned.pk, returned.row);
 					if (returned.pk == insertedPkValue)
-				    	indicesInsert(returned.row, nxtPage.id);//insert fel indices el new record
-					else{
-						indicesUpdate(returned.row, foundPageId,nxtPage.id);  //insert fel indices bel shifted record
+						indicesInsert(returned.row, nxtPage.id);//insert fel indices el new record
+					else {
+						indicesUpdate(returned.row, foundPageId, nxtPage.id);  //insert fel indices bel shifted record
 					}
 					table.get(nxtIdx).min = returned.pk;
 				}
@@ -82,8 +83,10 @@ public class Table implements Serializable {
 				Page newPage = new Page(newID);
 				newPage.insert(returned.pk, returned.row);
 				if (returned.pk == insertedPkValue) indicesInsert(returned.row, newID);
-				else{ indicesInsert(returned.row, foundPageId);
-					indicesUpdate(returned.row, foundPageId,newID);}
+				else {
+					indicesInsert(returned.row, foundPageId);
+					indicesUpdate(returned.row, foundPageId, newID);
+				}
 				tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
 				table.insertElementAt(newtuple, foundIdx + 1);
 				DBApp.serialize(tableName + "_" + newID, newPage);
@@ -95,37 +98,39 @@ public class Table implements Serializable {
 	}
 
 	private int PageIDtoIdx(Double targetPageID) {
-		return BinarySearchPageID(table.size()-1,0,targetPageID);
+		return BinarySearchPageID(table.size() - 1, 0, targetPageID);
 		// Binary search for the page ID
 	}
-	public int BinarySearchPageID(int hi, int lo, Double targetID){
-		int mid = (hi+lo+1)/2;
-		if(hi<=lo){
+
+	public int BinarySearchPageID(int hi, int lo, Double targetID) {
+		int mid = (hi + lo + 1) / 2;
+		if (hi <= lo) {
 			//add extra condition to check id is correct?
 			return mid;
 		}
-		if(table.get(mid).id<targetID){
-			return BinarySearchPageID(hi, mid,targetID);
-		}else{
-			return BinarySearchPageID(mid-1,lo,targetID);
+		if (table.get(mid).id < targetID) {
+			return BinarySearchPageID(hi, mid, targetID);
+		} else {
+			return BinarySearchPageID(mid - 1, lo, targetID);
 		}
 	}
-	public  Index chooseIndex() {
+
+	public Index chooseIndex() {
 		//choose index for insertion mohemmmm
 		//momken n3ml choose index for update w delete fe method tania
 		//todo
-	return null;
+		return null;
 	}
 
 	private void indicesUpdate(Hashtable<String, Object> row, Double oldId, Double newId) {
-		for(Index i:index){
-			i.updateAddress(row,oldId,newId);
+		for (Index i : index) {
+			i.updateAddress(row, oldId, newId);
 		}
 	}
 
 	private void indicesInsert(Hashtable<String, Object> colNameValue, Double id) {
-		for(Index i:index){
-			i.insert(colNameValue,id);
+		for (Index i : index) {
+			i.insert(colNameValue, id);
 		}
 	}
 
@@ -140,39 +145,39 @@ public class Table implements Serializable {
 
 	public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue, boolean useIndex) throws Exception {
 		Object pk = parse(clusteringKeyValue);
-		int idx=0;
+		int idx = 0;
 		int hi = table.size() - 1; // idx
 		int lo = 0;// idx
 
-		if(useIndex){
+		if (useIndex) {
 			//todo update using Index?
 			//todo change hi and lo of binary search
 		}
-		idx = BinarySearch(pk,hi,lo);
+		idx = BinarySearch(pk, hi, lo);
 
 
-		double pageId=table.get(idx).id;
+		double pageId = table.get(idx).id;
 		Page p = (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
 
-		Vector<Hashtable<String, Object>> updatedrows =p.update(pk, columnNameValue);
+		Vector<Hashtable<String, Object>> updatedrows = p.update(pk, columnNameValue);
 
 		DBApp.serialize(tableName + "_" + pageId, p);
-		if(updatedrows!=null){
-			updateIndices(updatedrows.get(0),updatedrows.get(1),columnNameValue,pageId);
+		if (updatedrows != null) {
+			updateIndices(updatedrows.get(0), updatedrows.get(1), columnNameValue, pageId);
 		}
 	}
 
 	private void updateIndices(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow, Hashtable<String, Object> updatedValues, double pageId) {
-		for(Index i:index){
-			i.update(oldRow,newRow,updatedValues,pageId);
+		for (Index i : index) {
+			i.update(oldRow, newRow, updatedValues, pageId);
 		}
 	}
 
 	private void indicesDelete(Vector<Hashtable<String, Object>> deletedRows, double pageId) {
-		for (Hashtable<String,Object> row:deletedRows)
-		for(Index i:index){
-			i.delete(row,pageId);
-		}
+		for (Hashtable<String, Object> row : deletedRows)
+			for (Index i : index) {
+				i.delete(row, pageId);
+			}
 	}
 
 	private Object parse(String clusteringKeyValue) throws Exception {
@@ -189,14 +194,12 @@ public class Table implements Serializable {
 	}
 
 	public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
-		if(useIndex){
+		if (useIndex) {
 			//todo delete using Index
-		}
-		else
-		if (pk.equals(""))
+		} else if (pk.equals(""))
 			for (tuple4 t : table) {
 				Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-				Vector<Hashtable<String,Object>> deletedrows  = p.delete(null, columnNameValue);
+				Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
 				indicesDelete(deletedrows, p.id);
 
 				if (p.isEmpty()) {
@@ -214,10 +217,10 @@ public class Table implements Serializable {
 			Object pkValue = columnNameValue.get(pk);
 			int hi = table.size() - 1; // idx
 			int lo = 0;// idx
-			int idx = BinarySearch(pkValue,hi , lo);
+			int idx = BinarySearch(pkValue, hi, lo);
 			tuple4 t = table.get(idx);
 			Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-			Vector<Hashtable<String,Object>> deletedrows  = p.delete(null, columnNameValue);
+			Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
 			indicesDelete(deletedrows, p.id);
 			if (p.isEmpty()) {
 				table.remove(idx);
@@ -233,7 +236,7 @@ public class Table implements Serializable {
 	}
 
 	public void updateMetadata(String pk, Hashtable<String, String> htblColNameType,
-			Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax) throws IOException {
+							   Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax) throws IOException {
 		FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
 		BufferedReader br = new BufferedReader(fr);
 		String s = "";
@@ -266,7 +269,6 @@ public class Table implements Serializable {
 		fw.close();
 		br.close();
 	}
-
 
 
 	public static int GenericCompare(Object a, Object b) {
@@ -303,27 +305,29 @@ public class Table implements Serializable {
 
 	}
 
-	public Boolean createIndex(String[] columnNames, Hashtable<String, DBApp.minMax> ranges)  {
-		if(checkExists(columnNames)) return false; // check if index already exists
+	public Boolean createIndex(String[] columnNames, Hashtable<String, DBApp.minMax> ranges) {
+		if (checkExists(columnNames)) return false; // check if index already exists
 
 
-		Index i = new Index(this.tableName,columnNames , ranges ,this.table, this.clusteringCol);
+		Index i = new Index(this.tableName, columnNames, ranges, this.table, this.clusteringCol);
 		index.add(i);
 		return true;
 	}
 
-	private boolean checkExists(String[] columnNames)  {
+	private boolean checkExists(String[] columnNames) {
 		HashSet<String> columns = new HashSet<>();
 		Collections.addAll(columns, columnNames);
-		loop :for(Index i :index){
-			if(i.columnNames.size()== columns.size()){
-				for (int j = 0; j <i.columnNames.size() ; j++)
-					if(!columns.contains(columnNames[j]))continue loop;
+		loop:
+		for (Index i : index) {
+			if (i.columnNames.size() == columns.size()) {
+				for (int j = 0; j < i.columnNames.size(); j++)
+					if (!columns.contains(columnNames[j])) continue loop;
 				return true;
 			}
 		}
 		return false;
 	}
+
 
 	public static class tuple4 implements Serializable {
 		Double id;
@@ -370,4 +374,112 @@ public class Table implements Serializable {
 		fw.close();
 	}
 
+	public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
+		Iterator pagesItr = (this.table).iterator();
+		Iterator recs = null;
+		Page currPage;
+		Page.Pair currRec;
+
+		while (pagesItr.hasNext()) {
+			currPage = (Page) pagesItr.next();
+			recs = (currPage.records).iterator();
+			while (recs.hasNext()) {
+				// removing records that violate the select statement
+				currRec = (Page.Pair) recs.next();
+				if (!(checkCond(currRec, term._strColumnName, term._objValue, term._strOperator)))
+					recs.remove();
+			}
+		}
+		return (Vector) recs;
+	}
+
+	public Vector applyOp(Vector curr, Vector next, String arrayOperator) throws DBAppException {
+		//todo -iman
+		switch (arrayOperator) {
+			case ("AND"):
+				return ANDing(curr, next);
+			case ("OR"):
+				return ORing(curr, next);
+			case ("XOR"):
+				return XORing(curr, next);
+			default:
+				throw new DBAppException("Star operator must be one of AND, OR, XOR!");
+		}
+
+	}
+
+	public Vector ANDing(Vector i1, Vector i2) {
+		List<Object> l1 = new ArrayList<>();
+//			i1.forEachRemaining(l1::add);
+		List<Object> l2 = new ArrayList<>();
+//			i2.forEachRemaining(l2::add);
+		Vector res = null;
+		while (!(l1.isEmpty())) {
+			if (l2.contains(l1.get(0)))
+				res.add(l1.get(0));
+			l1.remove(0);
+		}
+		return res;
+	}
+
+	public Vector ORing(Vector i1, Vector i2) {
+		Vector res = i1;
+		Object curr;
+//			while (i2.hasNext()) {
+//				curr = i2.next();
+//				res.add(curr);
+//			}
+
+		return res;
+	}
+
+	public Vector XORing(Vector i1, Vector i2) {
+//			List<Object> l1 = new ArrayList<>();
+//			i1.forEachRemaining(l1::add);
+//			List<Object> l2 = new ArrayList<>();
+//			i2.forEachRemaining(l2::add);
+//			ListVector res = null;
+//			while (!(l1.isEmpty())) {
+//				if (!(l2.contains(l1.get(0))))
+//					res.add(l1.get(0));
+//				l1.remove(0);
+//			}
+//			i1.forEachRemaining(l1::add);
+//			i2.forEachRemaining(l2::add);
+//			while (!(l2.isEmpty())) {
+//				if (!(l1.contains(l2.get(0))))
+//					res.add(l2.get(0));
+//				l2.remove(0);
+//			}
+//			return res;
+		return null;
+	}
+
+	public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
+		Object recVal = rec.row.get(col);
+		switch (operator) {
+			case ">":
+				if (GenericCompare(recVal, value) > 0)
+					return true;
+			case ">=":
+				if (GenericCompare(recVal, value) >= 0)
+					return true;
+			case "<":
+				if (GenericCompare(recVal, value) < 0)
+					return true;
+			case "<=":
+				if (GenericCompare(recVal, value) <= 0)
+					return true;
+			case "=":
+				if (GenericCompare(recVal, value) == 0)
+					return true;
+			case "!=":
+				if (GenericCompare(recVal, value) != 0)
+					return true;
+			default:
+				throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
+		}
+
+
+	}
 }
