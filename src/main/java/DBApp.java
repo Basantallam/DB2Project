@@ -136,13 +136,13 @@ public class DBApp implements DBAppInterface {
 
                 if (metadata[0].equals(tableName)) {
                     for (int i = 0; i < columnNames.length; i++) {
-                        if(metadata[1].equals(columnNames)&&metadata[4].equals("false")){
-                            s+= metadata[0]+", "+metadata[1]+", "+metadata[2]+", "+metadata[3]+", "+"true, "+metadata[5]+", "+metadata[6];
+                        if(metadata[1].equals(columnNames[i])&&metadata[4].equals("False")){
+                            s+= metadata[0]+", "+metadata[1]+", "+metadata[2]+", "+metadata[3]+", "+"True, "+metadata[5]+", "+metadata[6];
                         }else{
                             s+=line;
                         }s += "\n";
                     }
-                }
+                }else s+=line +"\n";
             }String path = "src\\main\\resources\\metadata.csv";
             FileWriter fw = new FileWriter(path);
             fw.write(s);
