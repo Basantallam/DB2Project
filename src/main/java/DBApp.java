@@ -300,133 +300,24 @@ public class DBApp implements DBAppInterface {
 	@Override
 	public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
 
-		// validating input
-//        for (int i = 0; i < sqlTerms.length; i++)
-//            if ((sqlTerms[i]._strOperator).equals(">") || (sqlTerms[i]._strOperator).equals(">=") ||
-//                    (sqlTerms[i]._strOperator).equals("<") || (sqlTerms[i]._strOperator).equals("<=") ||
-//                    (sqlTerms[i]._strOperator).equals("=") || (sqlTerms[i]._strOperator).equals("!="))
-//                throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
-
-//        for (int i = 0; i < arrayOperators.length; i++)
-//            if (!(arrayOperators[i].equals("AND") || arrayOperators[i].equals("OR") || arrayOperators[i].equals("XOR")))
-//                throw new DBAppException("Star operator must be one of AND, OR, XOR!");
-
 		Table table = (Table) deserialize(sqlTerms[0]._strTableName);
-		if (!(DB.contains(table))) // based on the fact that only one table is included in a select statement
+		if (!(DB.contains(table)))
 			throw new DBAppException("Table does not exist in Database");
 
 		// todo - check if index exists
 		// resolving the select statement
 
+		Vector curr = table.resolveOneStatement(sqlTerms[0]);
 		for (int i = 0; i < sqlTerms.length - 1; i++) {
 			if (!(colInTable(sqlTerms[i]._strTableName, sqlTerms[i]._strColumnName, sqlTerms[i]._objValue)))
 				throw new DBAppException("Invalid input, check column name and the value's data type");
-			Iterator i1 = resolveOneStatement(table, sqlTerms[i]);
-			Iterator i2 = resolveOneStatement(table, sqlTerms[i + 1]);
-			switch (arrayOperators[i]) {
-			case ("AND"):
-				return ANDing(i1, i2);
-			case ("OR"):
-				return ORing(i1, i2);
-			case ("XOR"):
-				return XORing(i1, i2);
-			default:
-				throw new DBAppException("Star operator must be one of AND, OR, XOR!");
-			}
-		}
-		return null;
-	}
 
-	public Iterator ANDing(Iterator i1, Iterator i2) {
-		List<Object> l1 = new ArrayList<>();
-		i1.forEachRemaining(l1::add);
-		List<Object> l2 = new ArrayList<>();
-		i2.forEachRemaining(l2::add);
-		ListIterator res = null;
-		while (!(l1.isEmpty())) {
-			if (l2.contains(l1.get(0)))
-				res.add(l1.get(0));
-			l1.remove(0);
+			Vector next = table.resolveOneStatement(sqlTerms[i+1]);
+			curr = table.applyOp(curr,next,arrayOperators[i],false);
+			//todo fix the false, how to determine index?
+			// todo - iman -continue
 		}
-		return res;
-	}
-
-	public Iterator ORing(Iterator i1, Iterator i2) {
-		ListIterator res = (ListIterator) i1;
-		Object curr;
-		while (i2.hasNext()) {
-			curr = i2.next();
-			res.add(curr);
-		}
-		Iterator res2 = (Iterator) res;
-		return res2;
-	}
-
-	public Iterator XORing(Iterator i1, Iterator i2) {
-		List<Object> l1 = new ArrayList<>();
-		i1.forEachRemaining(l1::add);
-		List<Object> l2 = new ArrayList<>();
-		i2.forEachRemaining(l2::add);
-		ListIterator res = null;
-		while (!(l1.isEmpty())) {
-			if (!(l2.contains(l1.get(0))))
-				res.add(l1.get(0));
-			l1.remove(0);
-		}
-		i1.forEachRemaining(l1::add);
-		i2.forEachRemaining(l2::add);
-		while (!(l2.isEmpty())) {
-			if (!(l1.contains(l2.get(0))))
-				res.add(l2.get(0));
-			l2.remove(0);
-		}
-		return res;
-	}
-
-	public Iterator resolveOneStatement(Table table, SQLTerm term) throws DBAppException {
-		Iterator pagesItr = (table.table).iterator();
-		Iterator recs = null;
-		Page currPage;
-		Page.Pair currRec;
-
-		while (pagesItr.hasNext()) {
-			currPage = (Page) pagesItr.next();
-			recs = (currPage.records).iterator();
-			while (recs.hasNext()) {
-				// removing records that violate the select statement
-				currRec = (Page.Pair) recs.next();
-				if (!(checkCond(currRec, term._strColumnName, term._objValue, term._strOperator)))
-					recs.remove();
-			}
-		}
-		return recs;
-	}
-
-	public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
-		Object recVal = rec.row.get(col);
-		switch (operator) {
-		case ">":
-			if (GenericCompare(recVal, value) > 0)
-				return true;
-		case ">=":
-			if (GenericCompare(recVal, value) >= 0)
-				return true;
-		case "<":
-			if (GenericCompare(recVal, value) < 0)
-				return true;
-		case "<=":
-			if (GenericCompare(recVal, value) <= 0)
-				return true;
-		case "=":
-			if (GenericCompare(recVal, value) == 0)
-				return true;
-		case "!=":
-			if (GenericCompare(recVal, value) != 0)
-				return true;
-		default:
-			throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
-		}
-
+		return curr.iterator();
 	}
 
 	public boolean colInTable(String table, String column, Object value) throws DBAppException {
