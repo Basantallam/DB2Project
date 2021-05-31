@@ -181,7 +181,7 @@ public class Index implements Serializable {
 				newBI.bucket.insert(returned.values, id);
 				newBI.size++;
 				cell.insertElementAt(newBI, bucketInfoIdx + 1);
-				DBApp.serialize(tableName + "_b_" + foundBI.id+1, b);
+				DBApp.serialize(tableName + "_b_" + newBI.id, newBI.bucket);
 			}
 		}
 	}
