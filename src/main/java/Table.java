@@ -75,6 +75,7 @@ public class Table implements Serializable {
 						indicesUpdate(returned.row, foundPageId, nxtPage.id);  //insert fel indices bel shifted record
 					}
 					table.get(nxtIdx).min = returned.pk;
+					DBApp.serialize(tableName + "_" + table.get(nxtIdx).id,nxtPage);
 				}
 
 			}
