@@ -162,6 +162,7 @@ public class Index implements Serializable {
 		DBApp.serialize(tableName + "_b_" + foundBI.id, b);
 		foundBI.size++;
 		if(returned!=null){
+			foundBI.size--;
 			boolean create = true;
 			if (cell.size()-1 > bucketInfoIdx ) {
 				int nxtIdx = bucketInfoIdx + 1;
