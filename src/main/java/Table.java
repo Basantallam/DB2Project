@@ -321,7 +321,7 @@ public class Table implements Serializable {
 		for (Index i : index) {
 			if (i.columnNames.size() == columns.size()) {
 				for (int j = 0; j < i.columnNames.size(); j++)
-					if (!columns.contains(columnNames[j])) continue loop;
+					if (!columns.contains(i.columnNames.get(j))) continue loop;
 				return true;
 			}
 		}
