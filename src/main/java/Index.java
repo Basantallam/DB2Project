@@ -166,22 +166,23 @@ public class Index implements Serializable {
 			boolean create = true;
 			if (cell.size()-1 > bucketInfoIdx ) {
 				int nxtIdx = bucketInfoIdx + 1;
-				Bucket nxtBucket = (Bucket) DBApp.deserialize(tableName + "_" + cell.get(nxtIdx).id);
+				Bucket nxtBucket = (Bucket) DBApp.deserialize(tableName + "_b_" + cell.get(nxtIdx).id);
 				if (!nxtBucket.isFull()) {
 					create = false;
 					nxtBucket.insert(returned.values,id);
 				}
-					cell.get(nxtIdx).min = returned.values.get(clusteringCol);
-				}
+				cell.get(nxtIdx).min = returned.values.get(clusteringCol);
+				DBApp.serialize(tableName + "_b_" + cell.get(nxtIdx).id,nxtBucket);
+			}
 
-		if (create) {
+			if (create) {
 
-			BucketInfo newBI = new BucketInfo();
-			newBI.bucket.insert(returned.values, id);
-			newBI.size++;
-			cell.insertElementAt(newBI, bucketInfoIdx + 1);
-			DBApp.serialize(tableName + "_b_" + foundBI.id+1, b);
-		}
+				BucketInfo newBI = new BucketInfo();
+				newBI.bucket.insert(returned.values, id);
+				newBI.size++;
+				cell.insertElementAt(newBI, bucketInfoIdx + 1);
+				DBApp.serialize(tableName + "_b_" + foundBI.id+1, b);
+			}
 		}
 	}
 
