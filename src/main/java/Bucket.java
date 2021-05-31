@@ -50,17 +50,17 @@ public class Bucket implements Serializable {
 			return BinarySearch(searchkey, hi, mid + 1);
 
 	}
-	public boolean updateAddress(double oldAddress, double newAddress, Hashtable<String, Object> values) {
+	public void updateAddress(double oldAddress, double newAddress, Hashtable<String, Object> values) {
 		//todo binary search
 
 		for (Record r : records) {
 			if (r.values.equals(values) && r.pageid == oldAddress) {
 				r.pageid = newAddress;
-				return true;
+				return ;
 				
 			}
 		}
-		return false;
+		return ;
 	}
 	public boolean isFull(){
 		return this.records.size()==DBApp.indexCapacity;
