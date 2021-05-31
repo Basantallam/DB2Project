@@ -300,10 +300,10 @@ public class DBApp implements DBAppInterface {
 
 	@Override
 	public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
-
-		Table table = (Table) deserialize(sqlTerms[0]._strTableName);
-		if (!(DB.contains(table)))
+		if (!(DB.contains(sqlTerms[0]._strTableName)))
 			throw new DBAppException("Table does not exist in Database");
+		Table table = (Table) deserialize(sqlTerms[0]._strTableName);
+
 
 		Vector curr = table.resolveOneStatement(sqlTerms[0]);
 		for (int i = 0; i < sqlTerms.length - 1; i++) {
