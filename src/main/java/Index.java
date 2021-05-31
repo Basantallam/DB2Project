@@ -186,11 +186,6 @@ public class Index implements Serializable {
 		}
 	}
 
-	private int CreateBucketID() {
-		//todo ++ or double
-		return 0;
-	}
-
 	public Vector<BucketInfo> getCell(Hashtable<String, Object> colNameValue) {
 		Vector cellIdx = getCellCoordinates(colNameValue);
 		Object cell = grid[(Integer) cellIdx.get(0)];
