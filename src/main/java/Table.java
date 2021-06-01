@@ -42,11 +42,10 @@ public class Table implements Serializable {
         int hi = table.size() - 1; // idx
         int lo = 0;// idx
         if (useIndex) {
-            //todo choose index to use
-            Index chosenIndex = chooseIndex();
-            Vector<Double> narrowedDown = chosenIndex.narrowPageRange();
-            lo = PageIDtoIdx(narrowedDown.firstElement());
-            hi = PageIDtoIdx(narrowedDown.firstElement());
+            Index chosenIndex = chooseIndexPK();
+            Vector<Double> narrowedDown = chosenIndex.narrowPageRange(colNameValue);
+            if(narrowedDown.firstElement()==-1) lo = PageIDtoIdx(narrowedDown.firstElement());
+            if(narrowedDown.lastElement()==-1) hi = PageIDtoIdx(narrowedDown.lastElement());
         }
         foundIdx = BinarySearch(insertedPkValue, hi, lo);
         double foundPageId = table.get(foundIdx).id;
@@ -116,7 +115,7 @@ public class Table implements Serializable {
         }
     }
 
-    public Index chooseIndex() {
+    public Index chooseIndexPK() {
         //choose index for insertion mohemmmm
         //momken n3ml choose index for update w delete fe method tania
         //todo

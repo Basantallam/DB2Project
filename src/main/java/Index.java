@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
@@ -260,10 +261,14 @@ public class Index implements Serializable {
         DBApp.serialize(tableName + "_b_" + bi.id, b);
     }
 
-    public Vector<Double> narrowPageRange() {
-//		vector containing min and max pages
-        //min el awal w ba3den hi
-        return null; //todo
+    public Vector<Double> narrowPageRange(Hashtable<String, Object> colNameValue) {
+        Vector<BucketInfo> cell = getCell(colNameValue);
+        int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(clusteringCol), 0, cell.size() - 1);
+        BucketInfo foundBI = cell.get(bucketInfoIdx);
+        Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + foundBI.id);
+        Vector res = b.getInsertCoordinates(colNameValue);
+        DBApp.serialize(tableName + "_b_" + foundBI.id,b);
+        return res;
     }
 
     private class BucketInfo implements Serializable {
