@@ -448,9 +448,7 @@ public class Table implements Serializable {
                 stackO.pop();
                 Object topn =  stack.pop();
                 Object topn2 =  stack.pop();
-
                 stack.push(applyOp(topn,topn2,top.op));
-
                 stack.push(n);
                 stackO.push(op);
             }
@@ -485,6 +483,7 @@ public class Table implements Serializable {
 
     private Vector ANDingI(Object curr, Object next) {
         //2nd child AND
+        //momken curr w next yb2o SQL Terms aw  Vectors fa handle every case
         //todo anding with Index momken nkhalee vector of sql terms
         return null;
     }
@@ -511,7 +510,6 @@ public class Table implements Serializable {
             else if (GenericCompare(o1, o2) > 0){
                 o2 = it2.next();
             }
-
         }
         return res;
     }
@@ -525,8 +523,6 @@ public class Table implements Serializable {
     }
 
     public static Vector XORing(Vector i1, Vector i2) {
-
-
         Vector v2 = ANDing(i1,i2);
         Vector v1 = ORing(i1,i2);
         Vector res =new Vector();
@@ -550,7 +546,6 @@ public class Table implements Serializable {
                     else
                         break;
                 }
-
             }
         while(it1.hasNext() ) {
             res.add(o1);
