@@ -439,6 +439,7 @@ public class Table implements Serializable {
 
     public static Vector ORing(Vector i1, Vector i2) {
         Object curr;
+        //todo - remove duplicates
         Iterator it2 = i2.iterator();
         while (it2.hasNext()) {
             curr = it2.next();
@@ -452,36 +453,34 @@ public class Table implements Serializable {
 
         Vector v2 = ANDing(i1,i2);
         Vector v1 = ORing(i1,i2);
-        Collections.sort(v1);
-        Collections.sort(v2);
-        ListIterator it1 = v1.listIterator();
-        ListIterator it2 = v2.listIterator();
-        Object o1;
-        Object o2;
-        if(it1.hasPrevious() && it2.hasPrevious()) {
-            o1 = it1.previous();
-            o2 = it2.previous();
-
-            while (it1.hasPrevious() && it2.hasPrevious()) {
+        Vector res =new Vector();
+        TreeSet s1 = new TreeSet(v1);
+        TreeSet s2 = new TreeSet(v2);
+        Iterator it1 = s1.iterator();
+        Iterator it2 = s2.iterator();
+        Object o1 = it1.next();
+        Object o2= it2.next();
+            while (it1.hasNext()) {
                 if (GenericCompare(o1, o2) == 0) {
-                    it1.remove();
-                    if (!(it1.hasPrevious() || it2.hasPrevious()))
-                        break;
-                    it1.previous();
-                    it2.previous();
+                    o1=it1.next();
+                    if(it2.hasNext())
+                        o2=it2.next();
                 } else if (GenericCompare(o1, o2) < 0) {
-                    it2.previous();
+                    res.add(o1);
+                    o1=it1.next();
                 } else if (GenericCompare(o1, o2) > 0) {
-                    it1.previous();
+                    if(it2.hasNext())
+                        o2=it2.next();
+                    else
+                        break;
                 }
-
             }
+        while(it1.hasNext() ) {
+            res.add(o1);
+            o1 = it1.next();
         }
-        while(it2.hasPrevious() ){
-            v1.add(it2.previous());
-
-        }
-        return v1;
+        res.add(o1);
+        return res;
     }
 
     public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
@@ -528,6 +527,8 @@ public class Table implements Serializable {
         v2.add(4);
         v2.add(7);
         v2.add(13);
+//        System.out.println(v1);
+//        System.out.println(v2);
         System.out.println(ANDing(v1,v2));
         System.out.println(ORing(v1,v2));
         System.out.println(XORing(v1,v2));
