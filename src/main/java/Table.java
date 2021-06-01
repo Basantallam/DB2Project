@@ -491,6 +491,18 @@ public class Table implements Serializable {
         //2nd child AND
         // curr w next are SQL Terms
         //todo anding with Index momken nkhalee vector of sql terms
+        Vector result=null;
+        Index index = useIndexSelect(curr,next);
+        if(index!=null){
+
+        }else{
+
+        }
+        return result;
+    }
+
+    private Index useIndexSelect(Object curr, Object next) {
+        //todo
         return null;
     }
 
