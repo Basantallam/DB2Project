@@ -470,20 +470,26 @@ public class Table implements Serializable {
         }
     }
 
-    private Vector ANDing(Object curr, Object next) {
+    private Vector ANDing(Object curr, Object next) throws DBAppException {
         //parent AND
-        if(curr instanceof Vector && next instanceof Vector){
-            return ANDing((Vector) curr,(Vector) next);
+        if(curr instanceof SQLTerm && next instanceof SQLTerm){
+            return ANDingI(curr,next);
+            //momken nb2a nkhalee vector of SQLTerms mesh 2 only
         }
         else{
-            //momken nb2a nkhalee vector of SQLTerms mesh 2 only?
-            return ANDingI(curr,next);
+            if(curr instanceof SQLTerm) {
+                curr=(Vector)resolveOneStatement((SQLTerm)curr);
+            }
+            else if(next instanceof SQLTerm){
+                next=(Vector)resolveOneStatement((SQLTerm)next);
+            }
+            return ANDing((Vector) curr,(Vector) next);
         }
     }
 
     private Vector ANDingI(Object curr, Object next) {
         //2nd child AND
-        //momken curr w next yb2o SQL Terms aw  Vectors fa handle every case
+        // curr w next are SQL Terms
         //todo anding with Index momken nkhalee vector of sql terms
         return null;
     }
