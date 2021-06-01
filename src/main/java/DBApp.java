@@ -6,6 +6,7 @@ public class DBApp implements DBAppInterface {
 	HashSet<String> DB;
 	public static int capacity;
 	public static int indexCapacity;
+	public static Hashtable code = new Hashtable();
 
 	public void init() {
 		DB = new HashSet<>();
@@ -27,7 +28,12 @@ public class DBApp implements DBAppInterface {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		fillcodes();
+		//todo fill
+	}
 
+	private void fillcodes() {
+		code.put('0',1);
 	}
 
 	private int getCapacity() throws IOException {
