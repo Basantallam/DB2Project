@@ -438,14 +438,11 @@ public class Table implements Serializable {
     }
 
     public static Vector ORing(Vector i1, Vector i2) {
-        Object curr;
-        //todo - remove duplicates
-        Iterator it2 = i2.iterator();
-        while (it2.hasNext()) {
-            curr = it2.next();
-            i1.add(curr);
-        }
-        return i1;
+        TreeSet s1 = new TreeSet(i1);
+        TreeSet s2 = new TreeSet(i2);
+        s1.addAll(s2);
+        Vector res = new Vector(s1);
+        return res;
     }
 
     public static Vector XORing(Vector i1, Vector i2) {
@@ -454,10 +451,10 @@ public class Table implements Serializable {
         Vector v2 = ANDing(i1,i2);
         Vector v1 = ORing(i1,i2);
         Vector res =new Vector();
-        TreeSet s1 = new TreeSet(v1);
-        TreeSet s2 = new TreeSet(v2);
-        Iterator it1 = s1.iterator();
-        Iterator it2 = s2.iterator();
+        Collections.sort(v1);
+        Collections.sort(v2);
+        Iterator it1 = v1.iterator();
+        Iterator it2 = v2.iterator();
         Object o1 = it1.next();
         Object o2= it2.next();
             while (it1.hasNext()) {
@@ -527,8 +524,6 @@ public class Table implements Serializable {
         v2.add(4);
         v2.add(7);
         v2.add(13);
-//        System.out.println(v1);
-//        System.out.println(v2);
         System.out.println(ANDing(v1,v2));
         System.out.println(ORing(v1,v2));
         System.out.println(XORing(v1,v2));
