@@ -251,7 +251,6 @@ public class Index implements Serializable {
     }
 
     public void delete(Hashtable<String, Object> row, double pageId) {
-//		todo extract value from row related to the index
         Vector<BucketInfo> cell = getCell(row);
         Object searchKey = row.get(clusteringCol);
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
