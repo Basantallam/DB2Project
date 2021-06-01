@@ -411,11 +411,11 @@ public class Table implements Serializable {
 
     }
 
-    public Vector ANDing(Vector i1, Vector i2) {
+    public static Vector ANDing(Vector i1, Vector i2) {
 
         Collections.sort(i1);
         Collections.sort(i2);
-        Vector res = null;
+        Vector res = new Vector();
         Iterator it1 = i1.iterator();
         Iterator it2 = i2.iterator();
         Object o1 = it1.next();
@@ -435,10 +435,6 @@ public class Table implements Serializable {
             }
 
         }
-//			while (it1.hasNext()) {
-//				if (i2.contains(it1.next()))
-//					res.add(it1.next());
-//			}
         return res;
     }
 
@@ -453,38 +449,30 @@ public class Table implements Serializable {
     }
 
     public Vector XORing(Vector i1, Vector i2) {
-        Vector res = null;
-        Iterator it1 = i1.iterator();
-        Iterator it2 = i2.iterator();
         Collections.sort(i1);
         Collections.sort(i2);
-        Object o1 = it1.next();
-        Object o2 = it2.next();
 
-        while (it1.hasNext() && it2.hasNext()) {
+        Vector v1 = ANDing(i1,i2);
+        Vector v2 = ORing(i1,i2);
+        ListIterator it1 = v1.listIterator();
+        ListIterator it2 = v2.listIterator();
+        Object o1 = it1.previous();
+        Object o2 = it2.previous();
+        while (it1.hasPrevious() && it2.hasPrevious()) {
             if (GenericCompare(o1, o2) == 0) {
-                res.add(o1);
-                o1 = it1.next();
-                o2 = it2.next();
+                it1.remove();
+                it1.previous();
+                it2.previous();
             }
             else if (GenericCompare(o1, o2) < 0){
-                o1 = it1.next();
+                it2.previous();
             }
             else if (GenericCompare(o1, o2) > 0){
-                o2 = it2.next();
+                it1.previous();
             }
 
         }
-//        while (it1.hasNext()) {
-//            if (!(i2.contains(it1.next())))
-//                res.add(it1.next());
-//        }
-//        while (it2.hasNext()) {
-//            if (!(i1.contains(it2.next())))
-//                res.add(it2.next());
-//        }
-
-        return res;
+        return i1;
     }
 
     public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
@@ -515,6 +503,25 @@ public class Table implements Serializable {
 
     }
     public static void main (String [] args){
+
+        Vector<Integer> v1=new Vector<Integer>();
+        Vector<Integer> v2=new Vector<Integer>();
+        v1.add(1);
+        v1.add(2);
+        v1.add(3);
+        v1.add(4);
+        v1.add(5);
+        v1.add(6);
+        v1.add(7);
+        v1.add(8);
+        v1.add(9);
+        v2.add(3);
+        v2.add(4);
+        v2.add(7);
+        v2.add(13);
+        System.out.println(ANDing(v1,v2));
+
+
 
     }
 }
