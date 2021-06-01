@@ -15,7 +15,9 @@ public class Bucket implements Serializable {
     }
 
     public void delete(Hashtable<String, Object> row, double pageId) {
-
+        Object pkvalue = row.get(clusteringCol);
+        int i = BinarySearch(pkvalue, records.size() - 1, 0);
+        records.get(i).pageid=pageId;
     }
 
     public Record insert(Hashtable<String, Object> colNameValue, Double pageID) {
@@ -53,14 +55,11 @@ public class Bucket implements Serializable {
     }
 
     public void updateAddress(double oldAddress, double newAddress, Hashtable<String, Object> values) {
-        //todo binary search
+        Object pkvalue = values.get(clusteringCol);
+        int i = BinarySearch(pkvalue, records.size() - 1, 0);
+        records.get(i).pageid=newAddress;
 
-        for (Record r : records) {
-            if (r.values.equals(values) && r.pageid == oldAddress) {
-                r.pageid = newAddress;
-                return;
-            }
-        }
+
     }
 
     public boolean isFull() {

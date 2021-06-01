@@ -252,13 +252,13 @@ public class Index implements Serializable {
 
     public void delete(Hashtable<String, Object> row, double pageId) {
 //		todo extract value from row related to the index
-//		binary search the bucket if sorted
-//		deserialize bucket
-//		Bucket foundBucket  = null;
-//		foundBucket.delete(row, pageId);
-//		check to delete bucket
-//		serialize it
-
+        Vector<BucketInfo> cell = getCell(row);
+        Object searchKey = row.get(clusteringCol);
+        BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
+        Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+        Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
+        b.delete(arrangedHash,pageId);
+        DBApp.serialize(tableName + "_b_" + bi.id, b);
     }
 
     public Vector<Double> narrowPageRange() {
