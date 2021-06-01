@@ -161,15 +161,12 @@ public class Index implements Serializable {
     public int BinarySearchCell(Vector<BucketInfo> cell, Object searchkey, int hi, int lo) {
         //binary search within one cell
         int mid = (hi + lo + 1) / 2;
-
         if (lo >= hi)
             return mid;
-
         if (Table.GenericCompare(cell.get(mid).min, searchkey) < 0)
             return BinarySearchCell(cell, searchkey, hi, mid);
         else
             return BinarySearchCell(cell, searchkey, mid - 1, lo);
-
     }
 
     public void insert(Hashtable<String, Object> colNameValue, Double id) {
@@ -268,6 +265,21 @@ public class Index implements Serializable {
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + foundBI.id);
         Vector res = b.getInsertCoordinates(colNameValue);
         DBApp.serialize(tableName + "_b_" + foundBI.id,b);
+        return res;
+    }
+
+    public int getSize() {
+        //todo
+        int res=1;
+        Object cell=grid[0];
+        while(true){
+            if(cell instanceof Object[]){
+                res++;
+                Object y = ((Object[]) cell)[0];
+                cell = y;
+            }
+            else break;
+        }
         return res;
     }
 

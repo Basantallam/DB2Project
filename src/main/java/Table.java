@@ -118,8 +118,17 @@ public class Table implements Serializable {
     public Index chooseIndexPK() {
         //choose index for insertion mohemmmm
         //momken n3ml choose index for update w delete fe method tania
-        //todo
-        return null;
+        Index indexSoFar=index.get(0);
+        int min=(int)1e6;
+        for (Index i:index) {
+            if(i.clusteringCol.equals(clusteringCol)){
+                int size=i.getSize();
+                if(size<min){
+                    indexSoFar=i;min=size;
+                }
+            }
+        }
+        return indexSoFar;
     }
 
     private void indicesUpdate(Hashtable<String, Object> row, Double oldId, Double newId) {
@@ -471,6 +480,7 @@ public class Table implements Serializable {
                     else
                         break;
                 }
+
             }
         while(it1.hasNext() ) {
             res.add(o1);
