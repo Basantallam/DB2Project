@@ -404,23 +404,93 @@ public class Table implements Serializable {
         return res;
     }
 
-    public Vector applyOp(Vector curr, Vector next, String arrayOperator) throws DBAppException {
+    public  Vector applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
+
 
         switch (arrayOperator) {
             case ("AND"):
                 return ANDing(curr, next);
             case ("OR"):
-                return ORing(curr, next);
+                if(curr instanceof SQLTerm){
+                    curr=resolveOneStatement((SQLTerm)curr);
+                }
+                if(next instanceof SQLTerm){
+                    next=resolveOneStatement((SQLTerm) next);
+                }
+                return ORing((Vector)curr,(Vector) next);
             case ("XOR"):
-                return XORing(curr, next);
+                if(curr instanceof SQLTerm){
+                    curr=resolveOneStatement((SQLTerm)curr);
+                }
+                if(next instanceof SQLTerm){
+                    next=resolveOneStatement((SQLTerm) next);
+                }
+                return XORing((Vector)curr,(Vector) next);
             default:
                 throw new DBAppException("Star operator must be one of AND, OR, XOR!");
         }
 
     }
+    public void  Stack(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
+        Stack<Object> stack=new Stack<Object>();
+        Stack<DBApp.Operation> stackO=new Stack<DBApp.Operation>();
+        stack.push(sqlTerms[0]);
+
+        stack.push(sqlTerms[1]);
+        stackO.push(new DBApp.Operation(arrayOperators[0]));
+        for(int i=2;i<arrayOperators.length;i++) {
+            System.out.println(stack);
+            System.out.println(stackO);
+            SQLTerm n = sqlTerms[i];
+            DBApp.Operation op = new DBApp.Operation(arrayOperators[i-1]);
+            DBApp.Operation top = stackO.peek();
+            if (op.priority <= top.priority) { //top a7san
+                stackO.pop();
+                Object topn =  stack.pop();
+                Object topn2 =  stack.pop();
+
+                stack.push(applyOp(topn,topn2,top.op));
+
+                stack.push(n);
+                stackO.push(op);
+            }
+            else{
+                stack.push(n);
+                stackO.push(op);
+            }
+        }
+        while(stack.size()>1){
+            System.out.println(stack);
+            System.out.println(stackO);
+            Object a = stack.pop();
+            Object b=  stack.pop();
+            DBApp.Operation o = stackO.pop();
+
+            Vector res=applyOp(a,b,o.op);
+            stack.push(res);
+
+        }
+    }
+
+    private Vector ANDing(Object curr, Object next) {
+        //parent AND
+        if(curr instanceof Vector && next instanceof Vector){
+            return ANDing((Vector) curr,(Vector) next);
+        }
+        else{
+            //momken nb2a nkhalee vector of SQLTerms mesh 2 only?
+            return ANDingI(curr,next);
+        }
+    }
+
+    private Vector ANDingI(Object curr, Object next) {
+        //2nd child AND
+        //todo anding with Index momken nkhalee vector of sql terms
+        return null;
+    }
 
     public static Vector ANDing(Vector i1, Vector i2) {
-
+        //1st child AND
         Collections.sort(i1);
         Collections.sort(i2);
         Vector res = new Vector();

@@ -329,6 +329,28 @@ public class DBApp implements DBAppInterface {
 	}
 
 
+	static class Operation {
+		String op;
+		int priority;
+
+		public Operation(String o) {
+			op = o;
+			int p=0;
+			if(o=="XOR")
+				p=1;
+			else if (o=="OR")
+				p=2;
+			else
+				p=3;
+			priority = p;
+		}
+
+		public String toString() {
+			return op;
+		}
+	}
+
+
 	public boolean colInTable(String table, String column, Object value) throws DBAppException {
 		// check col exists + check value type
 		try {
