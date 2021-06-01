@@ -29,11 +29,14 @@ public class DBApp implements DBAppInterface {
 			e.printStackTrace();
 		}
 		fillcodes();
-		//todo fill
 	}
 
 	private void fillcodes() {
-		code.put('0',1);
+		int j=1;
+		for (char i = '0'  ; i <='9' ; i++) code.put(i,j++);
+		for (char i = 'A'  ; i <='Z' ; i++) code.put(i,j++);
+		code.put('-',j++);
+		for (char i = 'a'  ; i <='z' ; i++) code.put(i,j++);
 	}
 
 	private int getCapacity() throws IOException {

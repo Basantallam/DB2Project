@@ -1,5 +1,4 @@
 import java.io.Serializable;
-import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
@@ -12,6 +11,7 @@ public class Index implements Serializable {
     Object[] grid;
     String clusteringCol;
 
+
     public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges,
                  Vector<Table.tuple4> table, String clusteringCol) {
         this.tableName = tableName;
@@ -20,7 +20,8 @@ public class Index implements Serializable {
             this.columnNames.add(columnNames[i]);
 
         int n = columnNames.length;
-        this.ranges = ranges; // O(1) to find cell index
+
+        this.ranges = checkformatall((Hashtable) ranges); // O(1) to find cell index
 
         Object[] temp = new Vector[10];// todo of type
         Object[] temp1 = new Object[10];
@@ -38,6 +39,27 @@ public class Index implements Serializable {
         this.grid = temp;
         this.fill(table);
 
+    }
+
+//    private Hashtable<String,DBApp.minMax> checkformat(Hashtable<String,DBApp.minMax> ranges) {
+//        for(DBApp.minMax i:ranges.values()){
+//            if(i.max instanceof String){
+//                i.min= parseString((String )i.min);
+//                i.max=parseString((String) i.max);
+//            }
+//        }
+//        return ranges;
+//    }
+
+    private long parseString(String s) {
+        char[] c= s.toCharArray();
+        long res= 0;
+        for (int i = 0; i <c.length ; i++) {
+            long h = DBApp.code.get(c[i])==null?64:(long) DBApp.code.get(c[i]);
+
+          res+= h*Math.pow(63,c.length-i-1);
+        }
+        return res;
     }
 
     public static void main(String[] args) {
@@ -150,7 +172,6 @@ public class Index implements Serializable {
     }
 
     public void insert(Hashtable<String, Object> colNameValue, Double id) {
-        // todo binary search cell and bucket then overflow
         Vector<BucketInfo> cell = getCell(colNameValue);
 
         int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(clusteringCol), 0, cell.size() - 1);
@@ -192,7 +213,8 @@ public class Index implements Serializable {
     }
 
     public Vector<BucketInfo> getCell(Hashtable<String, Object> colNameValue) {
-        Vector cellIdx = getCellCoordinates(colNameValue);
+        Hashtable<String,Object> colNameValueparsed= checkformatall(colNameValue);
+        Vector cellIdx = getCellCoordinates(colNameValueparsed);
         Object cell = grid[(Integer) cellIdx.get(0)];
         for (int i = 1; i < cellIdx.size(); i++) {
             int x = (Integer) cellIdx.get(i);
@@ -200,6 +222,18 @@ public class Index implements Serializable {
             cell = y;
         }
         return (Vector<BucketInfo>) cell;
+    }
+
+    private Hashtable<String, Object> checkformatall(Hashtable<String, Object> colNameValue) {
+        Hashtable<String,Object> parsed = (Hashtable<String, Object>) colNameValue.clone();
+        for(Object i:parsed.values()){
+            if(i instanceof DBApp.minMax){
+                if(((DBApp.minMax) i).max instanceof String){
+                ((DBApp.minMax) i).min= parseString((String ) ((DBApp.minMax) i).min);
+                ((DBApp.minMax) i).max=parseString((String) ((DBApp.minMax) i).max);}
+            }else if(i instanceof String) i= parseString((String) i);
+        }
+        return parsed;
     }
 
     public void update(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow,
