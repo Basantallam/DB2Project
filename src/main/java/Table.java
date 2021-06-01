@@ -451,8 +451,8 @@ public class Table implements Serializable {
     public static Vector XORing(Vector i1, Vector i2) {
 
 
-        Vector v1 = ANDing(i1,i2);
-        Vector v2 = ORing(i1,i2);
+        Vector v2 = ANDing(i1,i2);
+        Vector v1 = ORing(i1,i2);
         Collections.sort(v1);
         Collections.sort(v2);
         ListIterator it1 = v1.listIterator();
