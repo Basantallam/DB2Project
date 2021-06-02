@@ -226,7 +226,7 @@ public class Table implements Serializable {
 
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
         if (useIndex) {
-            //todo delete using Index
+            chooseIndexAnd((Vector<String>) columnNameValue.keySet()).delete(columnNameValue);
         } else if (pk.equals(""))
             for (tuple4 t : table) {
                 Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
