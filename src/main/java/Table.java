@@ -143,6 +143,7 @@ public class Table implements Serializable {
         return indexSoFar;
     }
     public Vector<Index> chooseIndexOr(Vector<String>columnNames) {
+
         Vector<Index>res=new Vector<>();
         for (String cn:columnNames) {
             for (Index i:index) {
