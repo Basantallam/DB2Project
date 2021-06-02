@@ -39,7 +39,6 @@ public class Index implements Serializable {
         this.fill(table);
 
     }
-
     private void fillColmnNames(String[] columnNames) {
         this.columnNames = new Vector<>();
         for (String s : columnNames) {
@@ -49,7 +48,6 @@ public class Index implements Serializable {
                 this.columnNames.add(s);
         }
     }
-
     private long parseString(String s) {
         char[] c= s.toCharArray();
         long res= 0;
@@ -60,7 +58,6 @@ public class Index implements Serializable {
         }
         return res;
     }
-
     private Vector<DBApp.minMax> arrangeRanges(Hashtable<String, DBApp.minMax> ranges) {
         Set<String> set = ranges.keySet();
         int IndexDimension = columnNames.size();
@@ -73,7 +70,6 @@ public class Index implements Serializable {
         }
         return arrangedRanges;
     }
-
     public Object deepClone(Object[] org) {
         Object[] clone = new Object[org.length];
         if (org[0] instanceof Object[]) {
@@ -84,7 +80,6 @@ public class Index implements Serializable {
 
         return clone;
     }
-
     private void fill(Vector<Table.tuple4> table) {
         for (Table.tuple4 t : table) {
             double pageId = t.id;
@@ -118,7 +113,33 @@ public class Index implements Serializable {
         }
         return coordinates;
     }
+    public Vector<Integer> getCellsCoordinates(Hashtable<String, Object> values) {
+        Vector<Integer> coordinates = new Vector<Integer>();
 
+        Set<String> set = values.keySet();
+        int IndexDimension = columnNames.size();
+        Hashtable<String, Object> colValues = new Hashtable<String, Object>();
+
+        for (int ptr = 0; ptr < IndexDimension; ptr++) {
+            String col = columnNames.get(ptr);
+            if (set.contains(col)) {
+                colValues.put(col, values.get(col));
+                String colName = columnNames.get(ptr);
+                Object min = ranges.get(colName).min;
+                Object max = ranges.get(colName).max;
+                Object value = colValues.get(colName);
+                int cellWidth = (Table.GenericCompare(max, min) + 1) / 10; //range el cell kam raqam
+                int idx = (Table.GenericCompare(value, min) / (cellWidth)); // O(1)
+                if (Table.GenericCompare(value, min) % (cellWidth) > 0) {
+                    idx++; //ceil
+                }
+                coordinates.add(idx);
+            } else {
+                coordinates.add(-1);
+            }
+        }
+        return coordinates;
+    }
     public Hashtable<String, Object> arrangeHashtable(Hashtable<String, Object> values) {
         //takhod kol el record teraga3 el values eli fel Index columns bass
 
@@ -136,7 +157,6 @@ public class Index implements Serializable {
         }
         return extracted;
     }
-
     public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {
         Vector<BucketInfo> cell = getCell(row);
         Object searchKey = row.get(columnNames.get(0));
@@ -146,7 +166,6 @@ public class Index implements Serializable {
         b.updateAddress(oldId, newId, arrangedHash);
         DBApp.serialize(tableName + "_b_" + bi.id, b);
     }
-
     public int BinarySearchCell(Vector<BucketInfo> cell, Object searchkey, int hi, int lo) {
         //binary search within one cell
         int mid = (hi + lo + 1) / 2;
@@ -157,7 +176,6 @@ public class Index implements Serializable {
         else
             return BinarySearchCell(cell, searchkey, mid - 1, lo);
     }
-
     public void insert(Hashtable<String, Object> colNameValue, Double id) {
         Vector<BucketInfo> cell = getCell(colNameValue);
 
@@ -198,7 +216,6 @@ public class Index implements Serializable {
             }
         }
     }
-
     public Vector<BucketInfo> getCell(Hashtable<String, Object> colNameValue) {
         Hashtable<String,Object> colNameValueparsed= checkformatall(colNameValue);
         Vector cellIdx = getCellCoordinates(colNameValueparsed);
@@ -246,7 +263,6 @@ public class Index implements Serializable {
         b.delete(arrangedHash,pageId);
         DBApp.serialize(tableName + "_b_" + bi.id, b);
     }
-
     public Vector<Double> narrowPageRange(Hashtable<String, Object> colNameValue) {
         Vector<BucketInfo> cell = getCell(colNameValue);
         int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
@@ -256,7 +272,6 @@ public class Index implements Serializable {
         DBApp.serialize(tableName + "_b_" + foundBI.id,b);
         return res;
     }
-
     public int getSize() {
         return columnNames.size();
     }
@@ -267,6 +282,10 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString((Object[]) idx.grid[0]));// 3d
 //		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.grid[0])[0]))); // 2d
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
+    }
+
+    public void delete(Hashtable<String, Object> columnNameValue) {
+
     }
 
     private class BucketInfo implements Serializable {
