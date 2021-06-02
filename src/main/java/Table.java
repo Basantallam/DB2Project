@@ -35,6 +35,115 @@ public class Table implements Serializable {
 
     }
 
+    public static int GenericCompare(Object a, Object b) {
+        if (a instanceof Integer)
+            return ((Integer) a).compareTo((Integer) b);
+        else if (a instanceof Double)
+            return ((Double) a).compareTo((Double) b);
+        else if (a instanceof Date || b instanceof Date) {
+            if (a instanceof Date && b instanceof Date)
+                return ((Date) a).compareTo((Date) b);
+            else {
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                String formata = a instanceof Date ? formatter.format(a) : (String) a;
+                String formatb = b instanceof Date ? formatter.format(b) : (String) b;
+                return (formata).compareTo(formatb);
+            }
+        } else if (a instanceof String)
+            return ((String) a).compareTo((String) b);
+        else
+            return 0;
+    }
+
+    public static Vector ANDing(Vector i1, Vector i2) {
+        //1st child AND
+        Collections.sort(i1);
+        Collections.sort(i2);
+        Vector res = new Vector();
+        Iterator it1 = i1.iterator();
+        Iterator it2 = i2.iterator();
+        Object o1 = it1.next();
+        Object o2 = it2.next();
+
+        while (it1.hasNext() && it2.hasNext()) {
+            if (GenericCompare(o1, o2) == 0) {
+                res.add(o1);
+                o1 = it1.next();
+                o2 = it2.next();
+            } else if (GenericCompare(o1, o2) < 0) {
+                o1 = it1.next();
+            } else if (GenericCompare(o1, o2) > 0) {
+                o2 = it2.next();
+            }
+        }
+        return res;
+    }
+
+    public static Vector ORing(Vector i1, Vector i2) {
+        TreeSet s1 = new TreeSet(i1);
+        TreeSet s2 = new TreeSet(i2);
+        s1.addAll(s2);
+        Vector res = new Vector(s1);
+        return res;
+    }
+
+    public static Vector XORing(Vector i1, Vector i2) {
+        Vector v2 = ANDing(i1, i2);
+        Vector v1 = ORing(i1, i2);
+        Vector res = new Vector();
+        Collections.sort(v1);
+        Collections.sort(v2);
+        Iterator it1 = v1.iterator();
+        Iterator it2 = v2.iterator();
+        Object o1 = it1.next();
+        Object o2 = it2.next();
+        while (it1.hasNext()) {
+            if (GenericCompare(o1, o2) == 0) {
+                o1 = it1.next();
+                if (it2.hasNext())
+                    o2 = it2.next();
+            } else if (GenericCompare(o1, o2) < 0) {
+                res.add(o1);
+                o1 = it1.next();
+            } else if (GenericCompare(o1, o2) > 0) {
+                if (it2.hasNext())
+                    o2 = it2.next();
+                else
+                    break;
+            }
+        }
+        while (it1.hasNext()) {
+            res.add(o1);
+            o1 = it1.next();
+        }
+        res.add(o1);
+        return res;
+    }
+
+    public static void main(String[] args) {
+
+        Vector<Integer> v1 = new Vector<Integer>();
+        Vector<Integer> v2 = new Vector<Integer>();
+        v1.add(1);
+        v1.add(2);
+        v1.add(3);
+        v1.add(4);
+        v1.add(5);
+        v1.add(6);
+        v1.add(7);
+        v1.add(8);
+        v1.add(9);
+        v2.add(3);
+        v2.add(4);
+        v2.add(7);
+        v2.add(13);
+        System.out.println(ANDing(v1, v2));
+        System.out.println(ORing(v1, v2));
+        System.out.println(XORing(v1, v2));
+
+
+    }
+
     public void insert(String pk, Hashtable<String, Object> colNameValue, boolean useIndex) {
 
         Object insertedPkValue = colNameValue.get(pk);
@@ -44,8 +153,8 @@ public class Table implements Serializable {
         if (useIndex) {
             Index chosenIndex = chooseIndexPK();
             Vector<Double> narrowedDown = chosenIndex.narrowPageRange(colNameValue);
-            if(narrowedDown.firstElement()==-1) lo = PageIDtoIdx(narrowedDown.firstElement());
-            if(narrowedDown.lastElement()==-1) hi = PageIDtoIdx(narrowedDown.lastElement());
+            if (narrowedDown.firstElement() == -1) lo = PageIDtoIdx(narrowedDown.firstElement());
+            if (narrowedDown.lastElement() == -1) hi = PageIDtoIdx(narrowedDown.lastElement());
         }
         foundIdx = BinarySearch(insertedPkValue, hi, lo);
         double foundPageId = table.get(foundIdx).id;
@@ -116,38 +225,42 @@ public class Table implements Serializable {
     }
 
     public Index chooseIndexPK() {
-        Index indexSoFar=index.get(0);
-        int min=(int)1e6;
-        for (Index i:index) {
-            if(i.clusteringCol.equals(clusteringCol)){
-                int size=i.getSize();
-                if(size<min){
-                    indexSoFar=i;min=size;
+        Index indexSoFar = index.get(0);
+        int min = (int) 1e6;
+        for (Index i : index) {
+            if (i.clusteringCol.equals(clusteringCol)) {
+                int size = i.getSize();
+                if (size < min) {
+                    indexSoFar = i;
+                    min = size;
                 }
             }
         }
         return indexSoFar;
     }
-    public Index chooseIndexAnd(Vector<String>columnNames) {
-        Index indexSoFar=null;
-        int max=0;
-        for (Index i:index) {
-            int count=0;
-            for (String cn:i.columnNames) {
-                if(columnNames.contains(cn))count++;
-            }if(count>max){
-                max=count;
-                indexSoFar=i;
+
+    public Index chooseIndexAnd(Vector<String> columnNames) {
+        Index indexSoFar = null;
+        int max = 0;
+        for (Index i : index) {
+            int count = 0;
+            for (String cn : i.columnNames) {
+                if (columnNames.contains(cn)) count++;
+            }
+            if (count > max) {
+                max = count;
+                indexSoFar = i;
             }
         }
         return indexSoFar;
     }
-    public Vector<Index> chooseIndexOr(Vector<String>columnNames) {
 
-        Vector<Index>res=new Vector<>();
-        for (String cn:columnNames) {
-            for (Index i:index) {
-                if(i.columnNames.contains(cn))res.add(i);
+    public Vector<Index> chooseIndexOr(Vector<String> columnNames) {
+
+        Vector<Index> res = new Vector<>();
+        for (String cn : columnNames) {
+            for (Index i : index) {
+                if (i.columnNames.contains(cn)) res.add(i);
             }
         }
         return res;
@@ -179,23 +292,23 @@ public class Table implements Serializable {
         int idx = 0;
         int hi = table.size() - 1; // idx
         int lo = 0;// idx
-
         if (useIndex) {
-            //todo update using Index?
-            //todo change hi and lo of binary search
+            Hashtable<String,Object> clustering = new Hashtable<>();
+            clustering.put(clusteringCol,clusteringKeyValue);
+            Index chosenIndex = chooseIndexPK();
+            Vector<Double> narrowedDown = chosenIndex.narrowPageRange(clustering);
+            if (narrowedDown.firstElement() == -1) lo = PageIDtoIdx(narrowedDown.firstElement());
+            if (narrowedDown.lastElement() == -1) hi = PageIDtoIdx(narrowedDown.lastElement());
         }
         idx = BinarySearch(pk, hi, lo);
-
-
         double pageId = table.get(idx).id;
         Page p = (Page) DBApp.deserialize(tableName + "_" + table.get(idx).id);
-
-        Vector<Hashtable<String, Object>> updatedrows = p.update(pk, columnNameValue);
-
+        Vector<Hashtable<String, Object>> updatedRows = p.update(pk, columnNameValue);
         DBApp.serialize(tableName + "_" + pageId, p);
-        if (updatedrows != null) {
-            updateIndices(updatedrows.get(0), updatedrows.get(1), columnNameValue, pageId);
-        }
+
+        assert updatedRows !=null;
+        updateIndices(updatedRows.get(0), updatedRows.get(1), columnNameValue, pageId);
+
     }
 
     private void updateIndices(Hashtable<String, Object> oldRow, Hashtable<String, Object> newRow, Hashtable<String, Object> updatedValues, double pageId) {
@@ -301,28 +414,6 @@ public class Table implements Serializable {
         br.close();
     }
 
-
-    public static int GenericCompare(Object a, Object b) {
-        if (a instanceof Integer)
-            return ((Integer) a).compareTo((Integer) b);
-        else if (a instanceof Double)
-            return ((Double) a).compareTo((Double) b);
-        else if (a instanceof Date || b instanceof Date) {
-            if (a instanceof Date && b instanceof Date)
-                return ((Date) a).compareTo((Date) b);
-            else {
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                String formata = a instanceof Date ? formatter.format(a) : (String) a;
-                String formatb = b instanceof Date ? formatter.format(b) : (String) b;
-                return (formata).compareTo(formatb);
-            }
-        } else if (a instanceof String)
-            return ((String) a).compareTo((String) b);
-        else
-            return 0;
-    }
-
-
     public int BinarySearch(Object searchkey, int hi, int lo) {
         int mid = (hi + lo + 1) / 2;
 
@@ -357,28 +448,6 @@ public class Table implements Serializable {
             }
         }
         return false;
-    }
-
-
-    public static class tuple4 implements Serializable {
-        Double id;
-        transient Page page;
-        Object min;
-        Object max;
-
-        public String print(String tableName) {
-            Page p = (Page) DBApp.deserialize(tableName + "_" + id);
-
-            return p.toString();
-        }
-
-        public tuple4(Double id, Page page, Object min, Object max) {
-            this.id = id;
-            this.page = page;
-            this.max = max;
-            this.min = min;
-        }
-
     }
 
     public void createCSV() throws IOException {
@@ -426,67 +495,67 @@ public class Table implements Serializable {
         return res;
     }
 
-    public  Vector applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
+    public Vector applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
 
 
         switch (arrayOperator) {
             case ("AND"):
                 return ANDing(curr, next);
             case ("OR"):
-                if(curr instanceof SQLTerm){
-                    curr=resolveOneStatement((SQLTerm)curr);
+                if (curr instanceof SQLTerm) {
+                    curr = resolveOneStatement((SQLTerm) curr);
                 }
-                if(next instanceof SQLTerm){
-                    next=resolveOneStatement((SQLTerm) next);
+                if (next instanceof SQLTerm) {
+                    next = resolveOneStatement((SQLTerm) next);
                 }
-                return ORing((Vector)curr,(Vector) next);
+                return ORing((Vector) curr, (Vector) next);
             case ("XOR"):
-                if(curr instanceof SQLTerm){
-                    curr=resolveOneStatement((SQLTerm)curr);
+                if (curr instanceof SQLTerm) {
+                    curr = resolveOneStatement((SQLTerm) curr);
                 }
-                if(next instanceof SQLTerm){
-                    next=resolveOneStatement((SQLTerm) next);
+                if (next instanceof SQLTerm) {
+                    next = resolveOneStatement((SQLTerm) next);
                 }
-                return XORing((Vector)curr,(Vector) next);
+                return XORing((Vector) curr, (Vector) next);
             default:
                 throw new DBAppException("Star operator must be one of AND, OR, XOR!");
         }
 
     }
-    public void  Stack(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
-        Stack<Object> stack=new Stack<Object>();
-        Stack<DBApp.Operation> stackO=new Stack<DBApp.Operation>();
+
+    public void Stack(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
+        Stack<Object> stack = new Stack<Object>();
+        Stack<DBApp.Operation> stackO = new Stack<DBApp.Operation>();
         stack.push(sqlTerms[0]);
 
         stack.push(sqlTerms[1]);
         stackO.push(new DBApp.Operation(arrayOperators[0]));
-        for(int i=2;i<arrayOperators.length;i++) {
+        for (int i = 2; i < arrayOperators.length; i++) {
             System.out.println(stack);
             System.out.println(stackO);
             SQLTerm n = sqlTerms[i];
-            DBApp.Operation op = new DBApp.Operation(arrayOperators[i-1]);
+            DBApp.Operation op = new DBApp.Operation(arrayOperators[i - 1]);
             DBApp.Operation top = stackO.peek();
             if (op.priority <= top.priority) { //top a7san
                 stackO.pop();
-                Object topn =  stack.pop();
-                Object topn2 =  stack.pop();
-                stack.push(applyOp(topn,topn2,top.op));
+                Object topn = stack.pop();
+                Object topn2 = stack.pop();
+                stack.push(applyOp(topn, topn2, top.op));
                 stack.push(n);
                 stackO.push(op);
-            }
-            else{
+            } else {
                 stack.push(n);
                 stackO.push(op);
             }
         }
-        while(stack.size()>1){
+        while (stack.size() > 1) {
             System.out.println(stack);
             System.out.println(stackO);
             Object a = stack.pop();
-            Object b=  stack.pop();
+            Object b = stack.pop();
             DBApp.Operation o = stackO.pop();
 
-            Vector res=applyOp(a,b,o.op);
+            Vector res = applyOp(a, b, o.op);
             stack.push(res);
 
         }
@@ -494,18 +563,16 @@ public class Table implements Serializable {
 
     private Vector ANDing(Object curr, Object next) throws DBAppException {
         //parent AND
-        if(curr instanceof SQLTerm && next instanceof SQLTerm){
-            return ANDingI(curr,next);
+        if (curr instanceof SQLTerm && next instanceof SQLTerm) {
+            return ANDingI(curr, next);
             //momken nb2a nkhalee vector of SQLTerms mesh 2 only
-        }
-        else{
-            if(curr instanceof SQLTerm) {
-                curr=(Vector)resolveOneStatement((SQLTerm)curr);
+        } else {
+            if (curr instanceof SQLTerm) {
+                curr = (Vector) resolveOneStatement((SQLTerm) curr);
+            } else if (next instanceof SQLTerm) {
+                next = (Vector) resolveOneStatement((SQLTerm) next);
             }
-            else if(next instanceof SQLTerm){
-                next=(Vector)resolveOneStatement((SQLTerm)next);
-            }
-            return ANDing((Vector) curr,(Vector) next);
+            return ANDing((Vector) curr, (Vector) next);
         }
     }
 
@@ -513,11 +580,11 @@ public class Table implements Serializable {
         //2nd child AND
         // curr w next are SQL Terms
         //todo anding with Index momken nkhalee vector of sql terms
-        Vector result=null;
-        Index index = useIndexSelect(curr,next);
-        if(index!=null){
+        Vector result = null;
+        Index index = useIndexSelect(curr, next);
+        if (index != null) {
 
-        }else{
+        } else {
 
         }
         return result;
@@ -526,73 +593,6 @@ public class Table implements Serializable {
     private Index useIndexSelect(Object curr, Object next) {
         //todo
         return null;
-    }
-
-    public static Vector ANDing(Vector i1, Vector i2) {
-        //1st child AND
-        Collections.sort(i1);
-        Collections.sort(i2);
-        Vector res = new Vector();
-        Iterator it1 = i1.iterator();
-        Iterator it2 = i2.iterator();
-        Object o1 = it1.next();
-        Object o2 = it2.next();
-
-        while (it1.hasNext() && it2.hasNext()) {
-            if (GenericCompare(o1, o2) == 0) {
-                res.add(o1);
-                o1 = it1.next();
-                o2 = it2.next();
-            }
-            else if (GenericCompare(o1, o2) < 0){
-                o1 = it1.next();
-            }
-            else if (GenericCompare(o1, o2) > 0){
-                o2 = it2.next();
-            }
-        }
-        return res;
-    }
-
-    public static Vector ORing(Vector i1, Vector i2) {
-        TreeSet s1 = new TreeSet(i1);
-        TreeSet s2 = new TreeSet(i2);
-        s1.addAll(s2);
-        Vector res = new Vector(s1);
-        return res;
-    }
-
-    public static Vector XORing(Vector i1, Vector i2) {
-        Vector v2 = ANDing(i1,i2);
-        Vector v1 = ORing(i1,i2);
-        Vector res =new Vector();
-        Collections.sort(v1);
-        Collections.sort(v2);
-        Iterator it1 = v1.iterator();
-        Iterator it2 = v2.iterator();
-        Object o1 = it1.next();
-        Object o2= it2.next();
-            while (it1.hasNext()) {
-                if (GenericCompare(o1, o2) == 0) {
-                    o1=it1.next();
-                    if(it2.hasNext())
-                        o2=it2.next();
-                } else if (GenericCompare(o1, o2) < 0) {
-                    res.add(o1);
-                    o1=it1.next();
-                } else if (GenericCompare(o1, o2) > 0) {
-                    if(it2.hasNext())
-                        o2=it2.next();
-                    else
-                        break;
-                }
-            }
-        while(it1.hasNext() ) {
-            res.add(o1);
-            o1 = it1.next();
-        }
-        res.add(o1);
-        return res;
     }
 
     public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
@@ -622,28 +622,25 @@ public class Table implements Serializable {
 
 
     }
-    public static void main (String [] args){
 
-        Vector<Integer> v1=new Vector<Integer>();
-        Vector<Integer> v2=new Vector<Integer>();
-        v1.add(1);
-        v1.add(2);
-        v1.add(3);
-        v1.add(4);
-        v1.add(5);
-        v1.add(6);
-        v1.add(7);
-        v1.add(8);
-        v1.add(9);
-        v2.add(3);
-        v2.add(4);
-        v2.add(7);
-        v2.add(13);
-        System.out.println(ANDing(v1,v2));
-        System.out.println(ORing(v1,v2));
-        System.out.println(XORing(v1,v2));
+    public static class tuple4 implements Serializable {
+        Double id;
+        transient Page page;
+        Object min;
+        Object max;
 
+        public tuple4(Double id, Page page, Object min, Object max) {
+            this.id = id;
+            this.page = page;
+            this.max = max;
+            this.min = min;
+        }
 
+        public String print(String tableName) {
+            Page p = (Page) DBApp.deserialize(tableName + "_" + id);
+
+            return p.toString();
+        }
 
     }
 }
