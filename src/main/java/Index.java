@@ -16,9 +16,8 @@ public class Index implements Serializable {
     public Index(String tableName, String[] columnNames, Hashtable<String, DBApp.minMax> ranges,
                  Vector<Table.tuple4> table, String clusteringCol) {
         this.tableName = tableName;
-        this.columnNames = new Vector<>();
-        for (int i = 0; i < columnNames.length; i++)
-            this.columnNames.add(columnNames[i]);
+        this.clusteringCol = clusteringCol;
+        fillColmnNames(columnNames);
 
         int n = columnNames.length;
 
@@ -26,7 +25,6 @@ public class Index implements Serializable {
 
         Object[] temp = new Vector[10];// todo of type
         Object[] temp1 = new Object[10];
-        this.clusteringCol = clusteringCol; //todo
         for (int i = 0; i < 10; i++) {
             temp[i] = new Vector<BucketInfo>();
         }
@@ -42,15 +40,15 @@ public class Index implements Serializable {
 
     }
 
-//    private Hashtable<String,DBApp.minMax> checkformat(Hashtable<String,DBApp.minMax> ranges) {
-//        for(DBApp.minMax i:ranges.values()){
-//            if(i.max instanceof String){
-//                i.min= parseString((String )i.min);
-//                i.max=parseString((String) i.max);
-//            }
-//        }
-//        return ranges;
-//    }
+    private void fillColmnNames(String[] columnNames) {
+        this.columnNames = new Vector<>();
+        for (String s : columnNames) {
+            if (s.equals(clusteringCol))
+                this.columnNames.add(0, s);
+            else
+                this.columnNames.add(s);
+        }
+    }
 
     private long parseString(String s) {
         char[] c= s.toCharArray();
@@ -61,15 +59,6 @@ public class Index implements Serializable {
           res+= h*Math.pow(63,c.length-i-1);
         }
         return res;
-    }
-
-    public static void main(String[] args) {
-//		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
-//		Index idx = new Index("tablename",stringarr, new Hashtable<>(), this.table);
-//		System.out.println((Arrays.deepToString(idx.grid)));// 4d
-//		System.out.println(Arrays.deepToString((Object[]) idx.grid[0]));// 3d
-//		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.grid[0])[0]))); // 2d
-//		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
     }
 
     private Vector<DBApp.minMax> arrangeRanges(Hashtable<String, DBApp.minMax> ranges) {
@@ -150,7 +139,7 @@ public class Index implements Serializable {
 
     public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {
         Vector<BucketInfo> cell = getCell(row);
-        Object searchKey = row.get(clusteringCol);
+        Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
         Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
@@ -250,7 +239,7 @@ public class Index implements Serializable {
 
     public void delete(Hashtable<String, Object> row, double pageId) {
         Vector<BucketInfo> cell = getCell(row);
-        Object searchKey = row.get(clusteringCol);
+        Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
         Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
@@ -260,7 +249,7 @@ public class Index implements Serializable {
 
     public Vector<Double> narrowPageRange(Hashtable<String, Object> colNameValue) {
         Vector<BucketInfo> cell = getCell(colNameValue);
-        int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(clusteringCol), 0, cell.size() - 1);
+        int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
         BucketInfo foundBI = cell.get(bucketInfoIdx);
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + foundBI.id);
         Vector res = b.getInsertCoordinates(colNameValue);
@@ -282,6 +271,14 @@ public class Index implements Serializable {
         }
         return res;
     }
+    public static void main(String[] args) {
+//		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
+//		Index idx = new Index("tablename",stringarr, new Hashtable<>(), this.table);
+//		System.out.println((Arrays.deepToString(idx.grid)));// 4d
+//		System.out.println(Arrays.deepToString((Object[]) idx.grid[0]));// 3d
+//		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.grid[0])[0]))); // 2d
+//		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
+    }
 
     private class BucketInfo implements Serializable {
         long id;
@@ -293,7 +290,7 @@ public class Index implements Serializable {
         public BucketInfo() {
             this.size = 0;
             this.id = ++serialID;
-            this.bucket = new Bucket(id, clusteringCol);
+            this.bucket = new Bucket(id, clusteringCol,columnNames.get(0));
             this.max = null;
             this.min = null;
         }
