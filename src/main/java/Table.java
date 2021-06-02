@@ -130,6 +130,23 @@ public class Table implements Serializable {
         }
         return indexSoFar;
     }
+    public Index chooseIndexAnd(Vector<String>columnNames) {
+        //choose index for insertion mohemmmm
+        //momken n3ml choose index for update w delete fe method tania
+
+        Index indexSoFar=null;
+        int max=0;
+        for (Index i:index) {
+            int count=0;
+            for (String cn:i.columnNames) {
+                if(columnNames.contains(cn))count++;
+            }if(count>max){
+                max=count;
+                indexSoFar=i;
+            }
+        }
+        return indexSoFar;
+    }
 
     private void indicesUpdate(Hashtable<String, Object> row, Double oldId, Double newId) {
         for (Index i : index) {
