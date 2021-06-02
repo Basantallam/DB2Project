@@ -116,8 +116,6 @@ public class Table implements Serializable {
     }
 
     public Index chooseIndexPK() {
-        //choose index for insertion mohemmmm
-        //momken n3ml choose index for update w delete fe method tania
         Index indexSoFar=index.get(0);
         int min=(int)1e6;
         for (Index i:index) {
@@ -131,9 +129,6 @@ public class Table implements Serializable {
         return indexSoFar;
     }
     public Index chooseIndexAnd(Vector<String>columnNames) {
-        //choose index for insertion mohemmmm
-        //momken n3ml choose index for update w delete fe method tania
-
         Index indexSoFar=null;
         int max=0;
         for (Index i:index) {
@@ -146,6 +141,15 @@ public class Table implements Serializable {
             }
         }
         return indexSoFar;
+    }
+    public Vector<Index> chooseIndexOr(Vector<String>columnNames) {
+        Vector<Index>res=new Vector<>();
+        for (String cn:columnNames) {
+            for (Index i:index) {
+                if(i.columnNames.contains(cn))res.add(i);
+            }
+        }
+        return res;
     }
 
     private void indicesUpdate(Hashtable<String, Object> row, Double oldId, Double newId) {

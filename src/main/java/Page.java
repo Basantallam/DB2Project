@@ -74,7 +74,6 @@ public class Page implements Serializable {
 //		}
 //		return null;
 //	}
-	
 //TreeSet does internal Binary Search
 //	public int BinarySearch(Object searchkey, int hi, int lo) {
 //		int mid = (hi + lo + 1) / 2;
@@ -130,12 +129,10 @@ public class Page implements Serializable {
 //        }
 //    }
 	public Vector<Hashtable<String, Object>> delete(Object pkValue, Hashtable<String, Object> columnNameValue) {
-		Vector<Hashtable<String, Object>> deletedRows = new Vector<>();
 
+		Vector<Hashtable<String, Object>> deletedRows = new Vector<>();
 		if(pkValue==null){
-		ListIterator<Pair> it = 
-	            records.listIterator( records.size() );
-	 		 		
+			ListIterator<Pair> it = records.listIterator( records.size() );
 			while (it.hasPrevious()) {
 				Pair r = it.previous();
 
@@ -147,7 +144,7 @@ public class Page implements Serializable {
 					}
 				}
 				if (and){
-//					deletedRows.add(r.row);
+					deletedRows.add(r.row);
 					//todo add deleted rows
 					it.remove();
 				}
