@@ -6,7 +6,7 @@ public class DBApp implements DBAppInterface {
 	HashSet<String> DB;
 	public static int capacity;
 	public static int indexCapacity;
-	public static Hashtable code = new Hashtable();
+	public static Hashtable<Character, Long> code = new Hashtable();
 
 	public void init() {
 		DB = new HashSet<>();
@@ -28,11 +28,11 @@ public class DBApp implements DBAppInterface {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		fillcodes();
+		fillCodes();
 	}
 
-	private void fillcodes() {
-		int j=1;
+	private void fillCodes() {
+		long j=1;
 		for (char i = '0'  ; i <='9' ; i++) code.put(i,j++);
 		for (char i = 'A'  ; i <='Z' ; i++) code.put(i,j++);
 		code.put('-',j++);
@@ -170,7 +170,7 @@ public class DBApp implements DBAppInterface {
 			String pk = (String) res.get(0);
 			Vector<String> indexed = (Vector<String>) res.get(1);
 			// update and insert
-			boolean useIndex = res.contains(pk);
+			boolean useIndex = indexed.contains(pk);
 			if (pk.equals(""))
 				throw new DBAppException("Primary Key is Not Found");
 			Table table = (Table) deserialize(tableName);
@@ -266,7 +266,7 @@ public class DBApp implements DBAppInterface {
 			Vector res = checkinMeta(tableName, columnNameValue);
 			String pk = (String) res.get(0);
 			Vector<String> indexed = (Vector<String>) res.get(1);
-			boolean useIndex = res.contains(pk);
+			boolean useIndex = indexed.contains(pk);
 			if (!pk.equals(""))
 				throw new DBAppException("Primary Key is passed to be updated");
 			Table table = (Table) deserialize(tableName);
@@ -287,9 +287,10 @@ public class DBApp implements DBAppInterface {
 		if (DB.contains(tableName)) {
 			Vector res = checkinMeta(tableName, columnNameValue);
 			String pk = (String) res.get(0);
-			Boolean useIndex = false;
-			if (res.size() > 1)
-				useIndex = true;
+			Vector<String> indexed = (Vector<String>) res.get(1);
+			Boolean useIndex = useIndexAnd(columnNameValue, indexed);
+//			if (res.size() > 1) //todo da kan maktoob wana mafhemtsh eih da law 7ad la2a el todo di w tele3 el 3amlah sa7 ymsa7 kol el commented part
+//				useIndex = true;
 			Table table = (Table) deserialize(tableName);
 			table.delete(pk, columnNameValue, useIndex);
 			serialize(tableName, table);
@@ -297,6 +298,13 @@ public class DBApp implements DBAppInterface {
 		} else
 			throw new DBAppException("Table does not exist in Database");
 
+	}
+
+	private Boolean useIndexAnd(Hashtable<String, Object> columnNameValue, Vector<String> indexed) {
+		for (String i : columnNameValue.keySet()) {
+			if (indexed.contains(i)) return true;
+		}
+		return false;
 	}
 
 	private Boolean useIndexOr(Vector<String> indexThere, Hashtable<String, Object> columnNameValue) {// search Or /Xor

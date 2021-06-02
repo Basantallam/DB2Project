@@ -1,7 +1,9 @@
 import org.junit.jupiter.api.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -13,6 +15,22 @@ public class Milestone2Tests {
 
     @Test
     @Order(1)
+    public void testClearMetaDataFile() throws Exception {
+
+        String metaFilePath = "src/main/resources/metadata.csv";
+        File metaFile = new File(metaFilePath);
+
+        if (!metaFile.exists()) {
+            throw new Exception("`metadata.csv` in Resources folder does not exist");
+        }
+
+        PrintWriter writer = new PrintWriter(metaFile);
+        writer.write("");
+        writer.close();
+    }
+
+    @Test
+    @Order(2)
     public void testTableCreation() throws Exception {
         DBApp dbApp = new DBApp();
         dbApp.init();
@@ -26,7 +44,7 @@ public class Milestone2Tests {
     }
 
     @Test
-    @Order(2)
+    @Order(3)
     public void testRecordInsertions() throws Exception {
         DBApp dbApp = new DBApp();
         dbApp.init();

@@ -1,5 +1,4 @@
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
@@ -17,7 +16,7 @@ public class Index implements Serializable {
                  Vector<Table.tuple4> table, String clusteringCol) {
         this.tableName = tableName;
         this.clusteringCol = clusteringCol;
-        fillColmnNames(columnNames);
+        fillColumnNames(columnNames);
 
         int n = columnNames.length;
 
@@ -39,7 +38,7 @@ public class Index implements Serializable {
         this.fill(table);
 
     }
-    private void fillColmnNames(String[] columnNames) {
+    private void fillColumnNames(String[] columnNames) {
         this.columnNames = new Vector<>();
         for (String s : columnNames) {
             if (s.equals(clusteringCol))
@@ -166,15 +165,15 @@ public class Index implements Serializable {
         b.updateAddress(oldId, newId, arrangedHash);
         DBApp.serialize(tableName + "_b_" + bi.id, b);
     }
-    public int BinarySearchCell(Vector<BucketInfo> cell, Object searchkey, int hi, int lo) {
+    public int BinarySearchCell(Vector<BucketInfo> cell, Object searchKey, int hi, int lo) {
         //binary search within one cell
         int mid = (hi + lo + 1) / 2;
         if (lo >= hi)
             return mid;
-        if (Table.GenericCompare(cell.get(mid).min, searchkey) < 0)
-            return BinarySearchCell(cell, searchkey, hi, mid);
+        if (Table.GenericCompare(cell.get(mid).min, searchKey) < 0)
+            return BinarySearchCell(cell, searchKey, hi, mid);
         else
-            return BinarySearchCell(cell, searchkey, mid - 1, lo);
+            return BinarySearchCell(cell, searchKey, mid - 1, lo);
     }
     public void insert(Hashtable<String, Object> colNameValue, Double id) {
         Vector<BucketInfo> cell = getCell(colNameValue);
