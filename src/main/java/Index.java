@@ -258,18 +258,7 @@ public class Index implements Serializable {
     }
 
     public int getSize() {
-        //todo
-        int res=1;
-        Object cell=grid[0];
-        while(true){
-            if(cell instanceof Object[]){
-                res++;
-                Object y = ((Object[]) cell)[0];
-                cell = y;
-            }
-            else break;
-        }
-        return res;
+        return columnNames.size();
     }
     public static void main(String[] args) {
 //		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
