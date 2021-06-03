@@ -194,16 +194,16 @@ public class Index implements Serializable {
             cell.add(foundBI);
             b=foundBI.bucket;
         }else {
-            bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(clusteringCol), 0, cell.size() - 1);
+            bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
             foundBI = cell.get(bucketInfoIdx);
             b = (Bucket) DBApp.deserialize(tableName + "_b_" + foundBI.id);
         }
         Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
         Bucket.Record returned = b.insert(arrangedHash, id);
 
-        if (returned == null || !(returned.values.get(clusteringCol).equals(colNameValue.get(clusteringCol)))) {
-            foundBI.max = b.records.lastElement().values.get(clusteringCol);
-            foundBI.min = b.records.firstElement().values.get(clusteringCol);
+        if (returned == null || !(returned.values.get(columnNames.get(0)).equals(colNameValue.get(columnNames.get(0))))) {
+            foundBI.max = b.records.lastElement().values.get(columnNames.get(0));
+            foundBI.min = b.records.firstElement().values.get(columnNames.get(0));
         }
         DBApp.serialize(tableName + "_b_" + foundBI.id, b);
         foundBI.size++;
@@ -217,7 +217,7 @@ public class Index implements Serializable {
                     create = false;
                     nxtBucket.insert(returned.values, id);
                 }
-                cell.get(nxtIdx).min = returned.values.get(clusteringCol);
+                cell.get(nxtIdx).min = returned.values.get(columnNames.get(0));
                 DBApp.serialize(tableName + "_b_" + cell.get(nxtIdx).id, nxtBucket);
             }
 
