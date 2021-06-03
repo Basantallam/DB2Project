@@ -185,11 +185,19 @@ public class Index implements Serializable {
     }
     public void insert(Hashtable<String, Object> colNameValue, Double id) {
         Vector<BucketInfo> cell = getCell(colNameValue);
-
-        int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(clusteringCol), 0, cell.size() - 1);
-        BucketInfo foundBI = cell.get(bucketInfoIdx);
-        Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + foundBI.id);
-
+        int bucketInfoIdx;
+        BucketInfo foundBI;
+        Bucket b;
+        if(cell.size()==0){
+            bucketInfoIdx=0;
+            foundBI=new BucketInfo();
+            cell.add(foundBI);
+            b=foundBI.bucket;
+        }else {
+            bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(clusteringCol), 0, cell.size() - 1);
+            foundBI = cell.get(bucketInfoIdx);
+            b = (Bucket) DBApp.deserialize(tableName + "_b_" + foundBI.id);
+        }
         Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
         Bucket.Record returned = b.insert(arrangedHash, id);
 

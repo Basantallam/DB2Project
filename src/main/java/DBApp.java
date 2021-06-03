@@ -20,7 +20,7 @@ public class DBApp implements DBAppInterface {
 //        File mata = new File(pathcsv); //todo metadata.csv dynamically
 
 		try {
-			capacity = getCapacity();
+			getCapacity();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -40,13 +40,15 @@ public class DBApp implements DBAppInterface {
 		for (char i = 'a'  ; i <='z' ; i++) code.put(i,j++);
 	}
 
-	private int getCapacity() throws IOException {
+	private void getCapacity() throws IOException {
 		Properties prop = new Properties();
 		String fileName = "src\\main\\resources\\DBApp.config";
 		FileInputStream is = new FileInputStream(fileName);
 		prop.load(is);
 
-		return Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
+		capacity= Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
+		indexCapacity= Integer.parseInt(prop.getProperty("MaximumKeysCountinIndexBucket"));
+
 	}
 
 	private void addtoDB() throws IOException {
