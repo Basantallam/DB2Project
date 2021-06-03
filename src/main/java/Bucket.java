@@ -82,7 +82,7 @@ public class Bucket implements Serializable {
         return this.records.size() == DBApp.indexCapacity;
     }
 
-    class Record {
+    class Record implements Serializable{
         Hashtable values;
         double pageid;
 
