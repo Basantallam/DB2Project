@@ -244,8 +244,10 @@ public class Index implements Serializable {
 
     private Hashtable<String, Object> checkformatall(Hashtable<String, Object> colNameValue) {
         Hashtable<String,Object> parsed = (Hashtable<String, Object>) colNameValue.clone();
-        for(Object i:parsed.values())
-            if(i instanceof String) i= parseString((String) i);
+        for(String i:parsed.keySet())
+            if(parsed.get(i) instanceof String) {
+                parsed.replace(i, parseString((String) parsed.get(i)));
+            }
 
         return parsed;
     }
