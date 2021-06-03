@@ -306,7 +306,8 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
     }
 
-    public void delete(Hashtable<String, Object> columnNameValue) {
+    public Vector<Double> delete(Hashtable<String, Object> columnNameValue) {
+        Vector<Double>pages=new Vector<>();
         Vector<Integer> coordinates = getCellsCoordinates(columnNameValue);
         Vector<Vector<BucketInfo>> cells=new Vector<>();
         if (coordinates.get(0) == -1) {
@@ -317,20 +318,27 @@ public class Index implements Serializable {
             cells.add(helper(coordinates,1, (Object[]) grid[coordinates.get(0)]));
         }
         for (Vector<BucketInfo> cell:cells) {
+            Hashtable<String, Object> arrangedHash = arrangeHashtable(columnNameValue);
             if(columnNameValue.keySet().contains(clusteringCol)){
                 Object searchKey = columnNameValue.get(clusteringCol);
                 BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
                 Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
-                b.deleteI(columnNameValue);
+                Vector<Double>p=b.deleteI(arrangedHash);
+                for (double x:p) {
+                    pages.add(x);
+                }
                 DBApp.serialize(tableName + "_b_" + bi.id, b);
             }else {
                 for (BucketInfo bi : cell) {
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
-                    b.deleteI(columnNameValue);
+                    Vector<Double>p=b.deleteI(arrangedHash);
+                    for (double x:p) {
+                        pages.add(x);
+                    }
                     DBApp.serialize(tableName + "_b_" + bi.id, b);
                 }
             }
-        }
+        }return pages;
     }
     private Vector<BucketInfo> helper(Vector<Integer> coordinates, int ptr,Object grid) {
         if(ptr>=coordinates.size() && ptr <coordinates.size()+10){

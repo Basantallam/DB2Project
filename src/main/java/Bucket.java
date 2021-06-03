@@ -73,7 +73,8 @@ public class Bucket implements Serializable {
     public void updateAddress(double oldAddress, double newAddress, Hashtable<String, Object> values) {
         Object sortingValue = values.get(sortedIndex);
         int i = BinarySearch(sortingValue, records.size() - 1, 0);
-        records.get(i).pageid=newAddress;
+        if(records.get(i).pageid==oldAddress)
+            records.get(i).pageid=newAddress;
 
 
     }
@@ -82,11 +83,26 @@ public class Bucket implements Serializable {
         return this.records.size() == DBApp.indexCapacity;
     }
 
-    public void deleteI(Hashtable<String, Object> columnNameValue) {
+    public Vector<Double> deleteI(Hashtable<String, Object> columnNameValue) {
+        Vector<Double>pages=new Vector<>();
+        Object sortingValue = columnNameValue.get(sortedIndex);
+        if(sortingValue==null){
+            for (Record r:records) {
+                for (String s: r.values.keySet()) {
+                    if(columnNameValue.get(s).equals(r.values.get(s))) {
+                        records.remove(r);
+                        pages.add(r.pageid);
+                    }
+                }
+            }
+        }else{
+            int i = BinarySearch(sortingValue, records.size() - 1, 0);
+            pages.add(records.remove(i).pageid);
+        }return pages;
     }
 
     class Record implements Serializable{
-        Hashtable values;
+        Hashtable<String, Object> values;
         double pageid;
 
         public Record(Hashtable<String, Object> value, double pageid) {
