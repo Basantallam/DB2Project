@@ -38,6 +38,8 @@ public class Table implements Serializable {
     public static int GenericCompare(Object a, Object b) {
         if (a instanceof Integer)
             return ((Integer) a).compareTo((Integer) b);
+        else if (a instanceof Long)
+            return ((Long) a).compareTo((Long) b);
         else if (a instanceof Double)
             return ((Double) a).compareTo((Double) b);
         else if (a instanceof Date || b instanceof Date) {

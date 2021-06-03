@@ -20,7 +20,7 @@ public class Index implements Serializable {
 
         int n = columnNames.length;
 
-        this.ranges = checkformatall((Hashtable) ranges); // O(1) to find cell index
+        this.ranges = ranges; // O(1) to find cell index
 
         Object[] temp = new Vector[10];// todo of type
         Object[] temp1 = new Object[10];
@@ -47,7 +47,7 @@ public class Index implements Serializable {
                 this.columnNames.add(s);
         }
     }
-    private long parseString(String s) {
+    public static long parseString(String s) {
         char[] c= s.toCharArray();
         long res= 0;
         for (int i = 0; i <c.length ; i++) {
@@ -230,6 +230,7 @@ public class Index implements Serializable {
         Hashtable<String,Object> parsed = (Hashtable<String, Object>) colNameValue.clone();
         for(Object i:parsed.values()){
             if(i instanceof DBApp.minMax){
+
                 if(((DBApp.minMax) i).max instanceof String){
                 ((DBApp.minMax) i).min= parseString((String ) ((DBApp.minMax) i).min);
                 ((DBApp.minMax) i).max=parseString((String) ((DBApp.minMax) i).max);}

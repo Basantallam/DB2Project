@@ -1,4 +1,5 @@
 import java.io.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -118,7 +119,7 @@ public class DBApp implements DBAppInterface {
 
 						if (currCol.equals(metadata[1])) {
 							found = true;
-							minmax.put(currCol, new minMax(metadata[6], metadata[5]));
+							minmax.put(currCol, new minMax(parsed(metadata[6],metadata[2]), parsed(metadata[5],metadata[2])));
 						}
 					}
 				}
@@ -134,7 +135,20 @@ public class DBApp implements DBAppInterface {
 		return minmax; 
 	}
 
-    private void updatemetaindex(String tableName, String[] columnNames) {
+	private Object parsed(String value, String type) throws ParseException {
+		switch (type){
+			case("java.lang.Integer"):
+				return Integer.parseInt(value);
+			case( "java.lang.Double"):
+				return Double.parseDouble(value);
+			case ( "java.util.Date") :
+				return new SimpleDateFormat("yyyy-MM-dd").parse(value);
+			default:	return Index.parseString(value);
+
+		}
+	}
+
+	private void updatemetaindex(String tableName, String[] columnNames) {
         try{
             FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
             BufferedReader br = new BufferedReader(fr);
