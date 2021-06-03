@@ -102,16 +102,28 @@ public class Index implements Serializable {
             if (value == null) {
                 coordinates.add(0);
             } else {
-                int cellWidth = (Table.GenericCompare(max, min) + 1) / 10; //range el cell kam raqam
-                int idx = (Table.GenericCompare(value, min) / (cellWidth)); // O(1)
-                if (Table.GenericCompare(value, min) % (cellWidth) > 0) {
-                    idx++; //ceil
-                }
+                int idx =value instanceof Long? getIdxLong(min, max, value):getIdxDouble(min, max, value);
                 coordinates.add(idx);
             }
+
         }
         return coordinates;
     }
+
+    private int getIdxDouble(Object min, Object max, Object value) {
+        double cellWidth = (Table.GenericCompare(max, min) + 1) / 10.0; //range el cell kam raqam
+        return (int) Math.ceil((Table.GenericCompare(value, min) / (cellWidth)));
+    }
+
+    private int getIdxLong(Object min, Object max, Object value) {
+        long cellWidth = (Table.GenericCompare(max, min) + 1) / 10; //range el cell kam raqam
+        int idx = (int) (Table.GenericCompare(value, min) / (cellWidth)); // O(1)
+        if (Table.GenericCompare(value, min) % (cellWidth) > 0) {
+            idx++; //ceil
+        }
+        return idx;
+    }
+
     public Vector<Integer> getCellsCoordinates(Hashtable<String, Object> values) {
         Vector<Integer> coordinates = new Vector<Integer>();
 
@@ -127,11 +139,7 @@ public class Index implements Serializable {
                 Object min = ranges.get(colName).min;
                 Object max = ranges.get(colName).max;
                 Object value = colValues.get(colName);
-                int cellWidth = (Table.GenericCompare(max, min) + 1) / 10; //range el cell kam raqam
-                int idx = (Table.GenericCompare(value, min) / (cellWidth)); // O(1)
-                if (Table.GenericCompare(value, min) % (cellWidth) > 0) {
-                    idx++; //ceil
-                }
+                int idx =value instanceof Long? getIdxLong(min, max, value):getIdxDouble(min, max, value);
                 coordinates.add(idx);
             } else {
                 coordinates.add(-1);
@@ -228,14 +236,9 @@ public class Index implements Serializable {
 
     private Hashtable<String, Object> checkformatall(Hashtable<String, Object> colNameValue) {
         Hashtable<String,Object> parsed = (Hashtable<String, Object>) colNameValue.clone();
-        for(Object i:parsed.values()){
-            if(i instanceof DBApp.minMax){
+        for(Object i:parsed.values())
+            if(i instanceof String) i= parseString((String) i);
 
-                if(((DBApp.minMax) i).max instanceof String){
-                ((DBApp.minMax) i).min= parseString((String ) ((DBApp.minMax) i).min);
-                ((DBApp.minMax) i).max=parseString((String) ((DBApp.minMax) i).max);}
-            }else if(i instanceof String) i= parseString((String) i);
-        }
         return parsed;
     }
 
