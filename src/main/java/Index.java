@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
@@ -102,7 +103,7 @@ public class Index implements Serializable {
             if (value == null) {
                 coordinates.add(0);
             } else {
-                int idx =value instanceof Long? getIdxLong(min, max, value):getIdxDouble(min, max, value);
+                int idx =value instanceof Long|| value instanceof Date ? getIdxLong(min, max, value):getIdxDouble((double)min, (double)max, (double)value);
                 coordinates.add(idx);
             }
 
@@ -110,15 +111,22 @@ public class Index implements Serializable {
         return coordinates;
     }
 
-    private int getIdxDouble(Object min, Object max, Object value) {
-        double cellWidth = (Table.GenericCompare(max, min) + 1) / 10.0; //range el cell kam raqam
-        return (int) Math.ceil((Table.GenericCompare(value, min) / (cellWidth)));
+    private int getIdxDouble(double min, double max, double value) {
+        double cellWidth = ((max- min) + 1) / 10.0; //range el cell kam raqam
+        return (int) Math.ceil((value- min) / (cellWidth));
     }
 
-    private int getIdxLong(Object min, Object max, Object value) {
-        long cellWidth = (Table.GenericCompare(max, min) + 1) / 10; //range el cell kam raqam
-        int idx = (int) (Table.GenericCompare(value, min) / (cellWidth)); // O(1)
-        if (Table.GenericCompare(value, min) % (cellWidth) > 0) {
+    private int getIdxLong(Object minimum, Object maximum, Object valueToAdd) {
+        long min; long max; long value;
+        if (minimum instanceof Date){
+            min= ((Date) minimum).getTime();max=((Date)maximum).getTime();value=((Date)valueToAdd).getTime();
+        }
+        else{
+            min = (long) minimum; max= (long) maximum;value= (long) valueToAdd;
+        }
+        long cellWidth = ((max- min) + 1) / 10; //range el cell kam raqam
+        int idx = (int) ((value- min) / (cellWidth)); // O(1)
+        if ((value- min) % (cellWidth) > 0) {
             idx++; //ceil
         }
         return idx;
@@ -139,7 +147,7 @@ public class Index implements Serializable {
                 Object min = ranges.get(colName).min;
                 Object max = ranges.get(colName).max;
                 Object value = colValues.get(colName);
-                int idx =value instanceof Long? getIdxLong(min, max, value):getIdxDouble(min, max, value);
+                int idx =value instanceof Long? getIdxLong(min, max, value):getIdxDouble((double)min, (double)max, (double)value);
                 coordinates.add(idx);
             } else {
                 coordinates.add(-1);
