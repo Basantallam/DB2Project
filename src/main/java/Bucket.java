@@ -47,7 +47,7 @@ public class Bucket implements Serializable {
             else {
                 int i = BinarySearch(clusterValue, records.size() - 1, 0); // if it is working
                 records.insertElementAt(newRecord, i); // full capacity+1
-                return records.remove(DBApp.capacity);
+                return records.remove(DBApp.indexCapacity);
             }
         } else {
             int i = BinarySearch(clusterValue, records.size() - 1, 0);
