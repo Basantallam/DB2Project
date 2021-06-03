@@ -82,6 +82,9 @@ public class Bucket implements Serializable {
         return this.records.size() == DBApp.indexCapacity;
     }
 
+    public void deleteI(Hashtable<String, Object> columnNameValue) {
+    }
+
     class Record implements Serializable{
         Hashtable values;
         double pageid;

@@ -316,6 +316,21 @@ public class Index implements Serializable {
         }else{
             cells.add(helper(coordinates,1, (Object[]) grid[coordinates.get(0)]));
         }
+        for (Vector<BucketInfo> cell:cells) {
+            if(columnNameValue.keySet().contains(clusteringCol)){
+                Object searchKey = columnNameValue.get(clusteringCol);
+                BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
+                Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+                b.deleteI(columnNameValue);
+                DBApp.serialize(tableName + "_b_" + bi.id, b);
+            }else {
+                for (BucketInfo bi : cell) {
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+                    b.deleteI(columnNameValue);
+                    DBApp.serialize(tableName + "_b_" + bi.id, b);
+                }
+            }
+        }
     }
     private Vector<BucketInfo> helper(Vector<Integer> coordinates, int ptr,Object grid) {
         if(ptr>=coordinates.size() && ptr <coordinates.size()+10){
