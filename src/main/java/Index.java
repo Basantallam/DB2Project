@@ -91,7 +91,7 @@ public class Index implements Serializable {
 
     public Vector<Integer> getCellCoordinates(Hashtable<String, Object> values) {
         Vector<Integer> coordinates = new Vector<Integer>();
-        Hashtable<String, Object> colValues = arrangeHashtable(values);
+        Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(values));
 
         for (int i = 0; i < columnNames.size(); i++) {
             String colName = columnNames.get(i);
@@ -216,8 +216,7 @@ public class Index implements Serializable {
         }
     }
     public Vector<BucketInfo> getCell(Hashtable<String, Object> colNameValue) {
-        Hashtable<String,Object> colNameValueparsed= checkformatall(colNameValue);
-        Vector cellIdx = getCellCoordinates(colNameValueparsed);
+        Vector cellIdx = getCellCoordinates(colNameValue);
         Object cell = grid[(Integer) cellIdx.get(0)];
         for (int i = 1; i < cellIdx.size(); i++) {
             int x = (Integer) cellIdx.get(i);
