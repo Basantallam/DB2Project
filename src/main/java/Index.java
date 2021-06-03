@@ -102,8 +102,9 @@ public class Index implements Serializable {
             Object value = colValues.get(colName);
             if (value == null) {
                 coordinates.add(0);
-            } else {
-                int idx =value instanceof Long|| value instanceof Date ? getIdxLong(min, max, value):getIdxDouble((double)min, (double)max, (double)value);
+            } else {int idx = 0;
+               idx= (value instanceof Long|| value instanceof Date) ? ( getIdxLong(min, max, value))
+                        : getIdxDouble((double)min, (double)max, (double)value);
                 coordinates.add(idx);
             }
 
@@ -113,7 +114,7 @@ public class Index implements Serializable {
 
     private int getIdxDouble(double min, double max, double value) {
         double cellWidth = ((max- min) + 1) / 10.0; //range el cell kam raqam
-        return (int) Math.ceil((value- min) / (cellWidth));
+        return (int)( Math.floor((value- min) / (cellWidth)));
     }
 
     private int getIdxLong(Object minimum, Object maximum, Object valueToAdd) {
@@ -126,9 +127,9 @@ public class Index implements Serializable {
         }
         long cellWidth = ((max- min) + 1) / 10; //range el cell kam raqam
         int idx = (int) ((value- min) / (cellWidth)); // O(1)
-        if ((value- min) % (cellWidth) > 0) {
-            idx++; //ceil
-        }
+//        if ((value- min) % (cellWidth) > 0) {
+//            idx++; //ceil //I think floor
+//        }
         return idx;
     }
 
