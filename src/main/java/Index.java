@@ -148,7 +148,8 @@ public class Index implements Serializable {
                 Object min = ranges.get(colName).min;
                 Object max = ranges.get(colName).max;
                 Object value = colValues.get(colName);
-                int idx =value instanceof Long? getIdxLong(min, max, value):getIdxDouble((double)min, (double)max, (double)value);
+                int idx= (value instanceof Long|| value instanceof Date) ? ( getIdxLong(min, max, value))
+                        : getIdxDouble((double)min, (double)max, (double)value);
                 coordinates.add(idx);
             } else {
                 coordinates.add(-1);
@@ -306,8 +307,44 @@ public class Index implements Serializable {
     }
 
     public void delete(Hashtable<String, Object> columnNameValue) {
-
+        Vector<Integer> coordinates = getCellsCoordinates(columnNameValue);
+        Vector<Vector<BucketInfo>> cells=new Vector<>();
+        if (coordinates.get(0) == -1) {
+            for (int i=0;i<grid.length;i++) {
+                cells.add(helper(coordinates,1, (Object[]) grid[i]));
+            }
+        }else{
+            cells.add(helper(coordinates,1, (Object[]) grid[coordinates.get(0)]));
+        }
     }
+    private Vector<BucketInfo> helper(Vector<Integer> coordinates, int ptr,Object grid) {
+        if(ptr>=coordinates.size() && ptr <coordinates.size()+10){
+            Vector<BucketInfo>cell= (Vector<BucketInfo>)((Object[])grid)[ptr-coordinates.size()];
+            return cell;
+        }
+        else if(ptr==coordinates.size()-1){
+            if(coordinates.get(ptr)==-1){
+                for(int i=0;i<10;i++) helper(coordinates,ptr+i,grid);
+            }else {
+                 Vector<BucketInfo>cell= (Vector<BucketInfo>)((Object[])grid)[coordinates.get(ptr)];
+                return cell;
+            }
+        }else {
+            Object[]cell=((Object[])grid);
+            int x=coordinates.get(ptr);
+            if (coordinates.get(x) == -1) {
+
+                for (int i = 0; i < cell.length; i++) {
+                    Object y = ((Object[]) cell)[i];
+                    grid = y;
+                    return helper(coordinates, ptr + 1, grid);
+                }
+            }else{
+                return helper(coordinates, ptr + 1, cell[x]);
+            }
+        }return null;
+    }
+
 
     private class BucketInfo implements Serializable {
         long id;
