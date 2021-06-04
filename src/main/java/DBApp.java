@@ -90,7 +90,7 @@ public class DBApp implements DBAppInterface {
 			serialize(tableName, table);
 			if (!except)
 				throw new DBAppException("Index exists in Database");
-			updatemetaindex(tableName, columnNames);
+			updateMetaIndex(tableName, columnNames);
 		} else
 			throw new DBAppException("Table does not exist in Database");
 	}
@@ -150,7 +150,9 @@ public class DBApp implements DBAppInterface {
 		}
 	}
 
-	private void updatemetaindex(String tableName, String[] columnNames) {
+	private void updateMetaIndex(String tableName, String[] columnNames) {
+		HashSet<String> columns =  new HashSet<>();
+		Collections.addAll(columns, columnNames);
         try{
             FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
             BufferedReader br = new BufferedReader(fr);
@@ -161,13 +163,11 @@ public class DBApp implements DBAppInterface {
                 String[] metadata = (line).split(", ");
 
                 if (metadata[0].equals(tableName)) {
-                    for (int i = 0; i < columnNames.length; i++) {
-                        if(metadata[1].equals(columnNames[i])&&metadata[4].equals("False")){
-                            s+= metadata[0]+", "+metadata[1]+", "+metadata[2]+", "+metadata[3]+", "+"True, "+metadata[5]+", "+metadata[6];
-                        }else{
-                            s+=line;
-                        }s += "\n";
-                    }
+                	if(columns.contains(metadata[1])&&metadata[4].equals("False"))
+						s+= metadata[0]+", "+metadata[1]+", "+metadata[2]+", "+metadata[3]+", "+"True, "+metadata[5]+", "+metadata[6];
+					else{
+						s+=line;
+					}s += "\n";
                 }else s+=line +"\n";
             }String path = "src\\main\\resources\\metadata.csv";
             FileWriter fw = new FileWriter(path);
