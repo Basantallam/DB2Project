@@ -90,9 +90,9 @@ public class Index implements Serializable {
         }
     }
 
-    public Vector<Integer> getCellCoordinates(Hashtable<String, Object> values) {
-        Vector<Integer> coordinates = new Vector<Integer>();
+    public int[] getCellCoordinates(Hashtable<String, Object> values) {
         Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(values));
+        int[] coordinates = new int[colValues.size()];
 
         for (int i = 0; i < columnNames.size(); i++) {
             String colName = columnNames.get(i);
@@ -101,11 +101,12 @@ public class Index implements Serializable {
 
             Object value = colValues.get(colName);
             if (value == null) {
-                coordinates.add(0);
-            } else {int idx = 0;
-               idx= (value instanceof Long|| value instanceof Date) ? ( getIdxLong(min, max, value))
+                coordinates[i]=0;
+            }
+            else {
+                int idx = (value instanceof Long|| value instanceof Date) ? ( getIdxLong(min, max, value))
                         : getIdxDouble((double)min, (double)max, (double)value);
-                coordinates.add(idx);
+                coordinates[i]=idx;
             }
 
         }
@@ -175,7 +176,8 @@ public class Index implements Serializable {
         return extracted;
     }
     public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {
-        Vector<BucketInfo> cell = getCell(row);
+        int[] cellIdx = getCellCoordinates(row);
+        Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
@@ -194,7 +196,8 @@ public class Index implements Serializable {
             return BinarySearchCell(cell, searchKey, mid - 1, lo);
     }
     public void insert(Hashtable<String, Object> colNameValue, Double id) {
-        Vector<BucketInfo> cell = getCell(colNameValue);
+        int[] cellIdx = getCellCoordinates(colNameValue);
+        Vector<BucketInfo> cell = getCell(cellIdx);
         int bucketInfoIdx;
         BucketInfo foundBI;
         Bucket b;
@@ -241,11 +244,11 @@ public class Index implements Serializable {
             }
         }
     }
-    public Vector<BucketInfo> getCell(Hashtable<String, Object> colNameValue) {
-        Vector cellIdx = getCellCoordinates(colNameValue);
-        Object cell = grid[(Integer) cellIdx.get(0)];
-        for (int i = 1; i < cellIdx.size(); i++) {
-            int x = (Integer) cellIdx.get(i);
+    public Vector<BucketInfo> getCell(int[]  cellIdx) {
+
+        Object cell = grid[(Integer) cellIdx[0]];
+        for (int i = 1; i < cellIdx.length; i++) {
+            int x = (Integer) cellIdx[i];
             Object y = ((Object[]) cell)[x];
             cell = y;
         }
@@ -277,7 +280,8 @@ public class Index implements Serializable {
     }
 
     public void delete(Hashtable<String, Object> row, double pageId) {
-        Vector<BucketInfo> cell = getCell(row);
+        int[] cellIdx = getCellCoordinates(row);
+        Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
@@ -286,7 +290,8 @@ public class Index implements Serializable {
         DBApp.serialize(tableName + "_b_" + bi.id, b);
     }
     public Vector<Double> narrowPageRange(Hashtable<String, Object> colNameValue) {
-        Vector<BucketInfo> cell = getCell(colNameValue);
+        int[] cellIdx = getCellCoordinates(colNameValue);
+        Vector<BucketInfo> cell = getCell(cellIdx);
         int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
         BucketInfo foundBI = cell.get(bucketInfoIdx);
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + foundBI.id);
@@ -368,8 +373,136 @@ public class Index implements Serializable {
         }return null;
     }
 
+    public Vector lessThan(SQLTerm term) {
+        Hashtable<String, Object> hashtable = new Hashtable<>();
+        hashtable.put(term._strColumnName, term._objValue);
+        int[] LastCellCoordinates = this.getCellCoordinates(hashtable);
+        //supposedly no partial queries ya3ni mafeesh nulls fel hashtable?? wala a set el limit le eih?
+        Vector res = loopUntilExclusive(LastCellCoordinates,term);
 
-    private class BucketInfo implements Serializable {
+        return res;
+    }
+    public Vector lessThanOrEqual(SQLTerm term) {
+        Hashtable<String, Object> hashtable = new Hashtable<>();
+        hashtable.put(term._strColumnName, term._objValue);
+        int[] LastCellCoordinates = this.getCellCoordinates(hashtable);
+        //supposedly no partial queries ya3ni mafeesh nulls fel hashtable?? wala a set el limit le eih?
+        Vector res = loopUntilInclusive(LastCellCoordinates,term);
+
+        return res;
+    }
+    public Vector<Bucket.Record> loopUntilExclusive(int[]limits, SQLTerm term){
+        //includes all records in last cell just before the ones satisfying the cond
+        Vector<Bucket.Record> ref=new Vector<Bucket.Record>();
+        loopUntil(new int[limits.length],limits,0,ref);
+        Vector <BucketInfo> lastCell= getCell(limits);
+        for(BucketInfo bi :lastCell){
+            for(Bucket.Record r:bi.bucket.records){
+                Object recordVal= r.values.get(term._strColumnName);
+                if(Table.GenericCompare(recordVal,term._objValue)<0){
+                    ref.add(r);
+                }
+            }
+        }
+        return ref;
+    }
+    public Vector<Bucket.Record> loopUntilInclusive(int[]limits,SQLTerm term){
+        //includes records in last cell satisfying cond
+        Vector<Bucket.Record> ref=new Vector<Bucket.Record>();
+        loopUntil(new int[limits.length],limits,0,ref);
+        Vector <BucketInfo> lastCell= getCell(limits);
+        for(BucketInfo bi :lastCell){
+            for(Bucket.Record r:bi.bucket.records){
+                Object recordVal= r.values.get(term._strColumnName);
+                if(Table.GenericCompare(recordVal,term._objValue)<=0){
+                    ref.add(r);
+                }
+            }
+        }
+        return ref;
+    }
+    public void loopUntil(int[] curr,int[] limits,int depth, Vector<Bucket.Record> accumulated){
+
+        if(depth==limits.length){
+            Vector<BucketInfo> cell =getCell(curr);
+            for(BucketInfo bi :cell){
+                for(Bucket.Record r:bi.bucket.records){
+                    accumulated.add(r);
+                }
+            }
+            return;
+        }
+        for(int i=0;i<limits[depth];i++){ //excludes el last cell(limits)
+            int[] newCurr =curr.clone();
+            newCurr[depth]=i;
+            loopUntil(newCurr,limits,depth+1,accumulated);
+        }
+    }
+
+    public Vector greaterThan(SQLTerm term) {
+        Hashtable<String, Object> hashtable = new Hashtable<>();
+        hashtable.put(term._strColumnName, term._objValue);
+        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable);
+        //supposedly no partial queries ya3ni mafeesh nulls fel hashtable?? wala a set el limit le eih?
+        return this.loopFromExclusive(FirstCellCoordinates,term);
+    }
+
+    public Vector<Bucket.Record> loopFromInclusive(int[] start,SQLTerm term){
+        Vector<Bucket.Record> ref=new Vector<Bucket.Record>();
+        Vector <BucketInfo> firstCell = getCell(start);
+        for(BucketInfo bi :firstCell){
+            for(Bucket.Record r:bi.bucket.records){
+                Object recordVal= r.values.get(term._strColumnName);
+                if(Table.GenericCompare(recordVal,term._objValue)>=0){
+                    ref.add(r);
+                }
+            }
+        }
+        loopUntil(pLusOne(start),pLusOne(this.getEnd()),0,ref);
+        //bazawed ones 3ala kol el array bta3 getEnd 3ashan loop until bet exclude akher cell
+        //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2
+        return ref;
+    }
+
+
+    private int[] pLusOne(int[] arr) {
+        int [] arrnew=arr.clone();
+        for(int i=0;i<arr.length;i++){
+            arrnew[i] = arr[i]+1;
+        }
+        return arrnew;
+    }
+
+    private int[] getEnd() {
+        //todo returns laaaast coordinates in grid
+        return null;
+    }
+
+    public Vector<Bucket.Record> loopFromExclusive(int[] start,SQLTerm term){
+        Vector<Bucket.Record> ref=new Vector<Bucket.Record>();
+        Vector <BucketInfo> firstCell = getCell(start);
+        for(BucketInfo bi :firstCell){
+            for(Bucket.Record r:bi.bucket.records){
+                Object recordVal= r.values.get(term._strColumnName);
+                if(Table.GenericCompare(recordVal,term._objValue)>0){
+                    ref.add(r);
+                }
+            }
+        }
+        loopUntil(pLusOne(start),pLusOne(this.getEnd()),0,ref);
+        //bazawed ones 3ala kol el array bta3 getEnd 3ashan loop until bet exclude akher cell
+        //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2
+        return ref;
+    }
+    public Vector greaterThanOrEqual(SQLTerm term) {
+        Hashtable<String, Object> hashtable = new Hashtable<>();
+        hashtable.put(term._strColumnName, term._objValue);
+        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable);
+        //supposedly no partial queries ya3ni mafeesh nulls fel hashtable?? wala a set el limit le eih?
+        return this.loopFromInclusive(FirstCellCoordinates,term);
+    }
+
+    class BucketInfo implements Serializable {
         long id;
         int size;
         transient Bucket bucket;

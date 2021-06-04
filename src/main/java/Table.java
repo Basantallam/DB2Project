@@ -486,6 +486,59 @@ public class Table implements Serializable {
     }
 
     public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
+        Vector res = null;
+        Vector terms = new Vector<SQLTerm>();
+        terms.add(term);
+        Index index=useIndexSelect(terms);
+        if(null==index) {
+            ListIterator pagesItr = (this.table).listIterator(this.table.size());
+            ListIterator recs = null;
+
+            Page currPage;
+            Page.Pair currRec;
+
+            while (pagesItr.hasPrevious()) {
+                currPage = (Page) pagesItr.previous();
+                recs = (currPage.records).listIterator(currPage.records.size());
+
+                while (recs.hasPrevious()) {
+                    // removing records that violate the select statement
+                    currRec = (Page.Pair) recs.previous();
+                    if (checkCond(currRec, term._strColumnName, term._objValue, term._strOperator))
+                        res.add(currRec);
+                }
+            }
+        }
+        else {
+
+            switch (term._strOperator) {
+                case ("<"): {
+                    res=index.lessThan(term);
+                    break;
+                }
+                case ("<="): {
+                    res=index.lessThanOrEqual(term);
+                    break;
+                }
+                case (">"): {
+                    res=index.greaterThan(term);
+                    break;
+                }
+                case (">="): {
+                    res=index.greaterThanOrEqual(term);
+                    break;
+                }
+                case ("="): {
+//                    todo
+                    break;
+                }
+                case ("!="): {
+//                  todo  won't use index a7san
+                    break;
+                }
+
+// ma haza?:
+
         ListIterator pagesItr = (this.table).listIterator(this.table.size());
         ListIterator recs = null;
         Vector res = new Vector();
@@ -501,6 +554,7 @@ public class Table implements Serializable {
                 currRec = (Page.Pair) recs.previous();
                 if (checkCond(currRec, term._strColumnName, term._objValue, term._strOperator))
                     res.add(currRec);
+
             }
             DBApp.serialize(tableName+"_"+((tuple4) pagesItr.previous()).id,currPage);
         }
@@ -576,7 +630,7 @@ public class Table implements Serializable {
     private Vector ANDing(Object curr, Object next) throws DBAppException {
         //parent AND
         if (curr instanceof SQLTerm && next instanceof SQLTerm) {
-            return ANDingI(curr, next);
+            return ANDingI((SQLTerm)curr, (SQLTerm)next);
             //momken nb2a nkhalee vector of SQLTerms mesh 2 only
         } else {
             if (curr instanceof SQLTerm) {
@@ -588,12 +642,15 @@ public class Table implements Serializable {
         }
     }
 
-    private Vector ANDingI(Object curr, Object next) {
+    private Vector ANDingI(SQLTerm term1, SQLTerm term2) {
         //2nd child AND
         // curr w next are SQL Terms
         //todo anding with Index momken nkhalee vector of sql terms
         Vector result = null;
-        Index index = useIndexSelect(curr, next);
+        Vector <SQLTerm> terms=new Vector<>();
+        terms.add(term1);
+        terms.add(term2);
+        Index index = useIndexSelect(terms);
         if (index != null) {
 
         } else {
@@ -602,7 +659,9 @@ public class Table implements Serializable {
         return result;
     }
 
-    private Index useIndexSelect(Object curr, Object next) {
+    private Index useIndexSelect(Vector<SQLTerm> term1) {
+        //vector can have 1 or 2 terms
+        //momken nkhalee col names bas badal sql term kolo
         //todo
         return null;
     }
