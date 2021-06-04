@@ -488,12 +488,12 @@ public class Table implements Serializable {
     public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
         ListIterator pagesItr = (this.table).listIterator(this.table.size());
         ListIterator recs = null;
-        Vector res = null;
+        Vector res = new Vector();
         Page currPage;
         Page.Pair currRec;
 
         while (pagesItr.hasPrevious()) {
-            currPage = (Page) pagesItr.previous();
+            currPage = (Page) DBApp.deserialize(tableName+"_"+((tuple4) pagesItr.previous()).id);
             recs = (currPage.records).listIterator(currPage.records.size());
 
             while (recs.hasPrevious()) {
@@ -609,28 +609,34 @@ public class Table implements Serializable {
     public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
         Object recVal = rec.row.get(col);
         switch (operator) {
-            case ">":
+            case (">"):
                 if (GenericCompare(recVal, value) > 0)
                     return true;
-            case ">=":
+                break;
+            case (">="):
                 if (GenericCompare(recVal, value) >= 0)
                     return true;
-            case "<":
+                break;
+            case ("<"):
                 if (GenericCompare(recVal, value) < 0)
                     return true;
-            case "<=":
+                break;
+            case ("<="):
                 if (GenericCompare(recVal, value) <= 0)
                     return true;
-            case "=":
+                break;
+            case ("="):
                 if (GenericCompare(recVal, value) == 0)
                     return true;
-            case "!=":
+                break;
+            case ("!="):
                 if (GenericCompare(recVal, value) != 0)
                     return true;
+                break;
             default:
                 throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
         }
-
+        return false;
 
     }
 
