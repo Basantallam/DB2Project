@@ -1,8 +1,5 @@
 import java.io.Serializable;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 public class Index implements Serializable {
     int serialID;
@@ -90,7 +87,7 @@ public class Index implements Serializable {
         }
     }
 
-    public int[] getCellCoordinates(Hashtable<String, Object> values) {
+    public int[] getCellCoordinates(Hashtable<String, Object> values,boolean nine) {// added boolean for range queries
         Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(values));
         int[] coordinates = new int[colValues.size()];
 
@@ -101,7 +98,7 @@ public class Index implements Serializable {
 
             Object value = colValues.get(colName);
             if (value == null) {
-                coordinates[i]=0;
+                coordinates[i]=nine?9:0; //depending on bool ha7ot 0 wala 9
             }
             else {
                 int idx = (value instanceof Long|| value instanceof Date) ? ( getIdxLong(min, max, value))
@@ -176,7 +173,7 @@ public class Index implements Serializable {
         return extracted;
     }
     public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {
-        int[] cellIdx = getCellCoordinates(row);
+        int[] cellIdx = getCellCoordinates(row,false);
         Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
@@ -196,7 +193,7 @@ public class Index implements Serializable {
             return BinarySearchCell(cell, searchKey, mid - 1, lo);
     }
     public void insert(Hashtable<String, Object> colNameValue, Double id) {
-        int[] cellIdx = getCellCoordinates(colNameValue);
+        int[] cellIdx = getCellCoordinates(colNameValue,false);
         Vector<BucketInfo> cell = getCell(cellIdx);
         int bucketInfoIdx;
         BucketInfo foundBI;
@@ -280,7 +277,7 @@ public class Index implements Serializable {
     }
 
     public void delete(Hashtable<String, Object> row, double pageId) {
-        int[] cellIdx = getCellCoordinates(row);
+        int[] cellIdx = getCellCoordinates(row,false);//false sah?
         Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
@@ -290,7 +287,7 @@ public class Index implements Serializable {
         DBApp.serialize(tableName + "_b_" + bi.id, b);
     }
     public Vector<Double> narrowPageRange(Hashtable<String, Object> colNameValue) {
-        int[] cellIdx = getCellCoordinates(colNameValue);
+        int[] cellIdx = getCellCoordinates(colNameValue,false);
         Vector<BucketInfo> cell = getCell(cellIdx);
         int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
         BucketInfo foundBI = cell.get(bucketInfoIdx);
@@ -376,8 +373,8 @@ public class Index implements Serializable {
     public Vector lessThan(SQLTerm term) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] LastCellCoordinates = this.getCellCoordinates(hashtable);
-        //supposedly no partial queries ya3ni mafeesh nulls fel hashtable?? wala a set el limit le eih?
+        int[] LastCellCoordinates = this.getCellCoordinates(hashtable,true);
+        //nulls should be [9]
         Vector res = loopUntilExclusive(LastCellCoordinates,term);
 
         return res;
@@ -385,14 +382,14 @@ public class Index implements Serializable {
     public Vector lessThanOrEqual(SQLTerm term) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] LastCellCoordinates = this.getCellCoordinates(hashtable);
-        //supposedly no partial queries ya3ni mafeesh nulls fel hashtable?? wala a set el limit le eih?
+        int[] LastCellCoordinates = this.getCellCoordinates(hashtable,true);
+        //nulls should be 9
         Vector res = loopUntilInclusive(LastCellCoordinates,term);
 
         return res;
     }
     public Vector<Bucket.Record> loopUntilExclusive(int[]limits, SQLTerm term){
-        //includes all records in last cell just before the ones satisfying the cond
+        //nulls should be [9]
         Vector<Bucket.Record> ref=new Vector<Bucket.Record>();
         loopUntil(new int[limits.length],limits,0,ref);
         Vector <BucketInfo> lastCell= getCell(limits);
@@ -442,8 +439,8 @@ public class Index implements Serializable {
     public Vector greaterThan(SQLTerm term) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable);
-        //supposedly no partial queries ya3ni mafeesh nulls fel hashtable?? wala a set el limit le eih?
+        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
+        //nulls should be 0 3adi
         return this.loopFromExclusive(FirstCellCoordinates,term);
     }
 
@@ -474,8 +471,10 @@ public class Index implements Serializable {
     }
 
     private int[] getEnd() {
-        //todo returns laaaast coordinates in grid
-        return null;
+        // returns laaaast coordinates in grid [9][9]...?
+        int[] end = new int[this.columnNames.size()];
+        Arrays.fill(end,9);
+        return end;
     }
 
     public Vector<Bucket.Record> loopFromExclusive(int[] start,SQLTerm term){
@@ -497,8 +496,8 @@ public class Index implements Serializable {
     public Vector greaterThanOrEqual(SQLTerm term) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable);
-        //supposedly no partial queries ya3ni mafeesh nulls fel hashtable?? wala a set el limit le eih?
+        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
+        //nulls should be 0 3adi
         return this.loopFromInclusive(FirstCellCoordinates,term);
     }
 
