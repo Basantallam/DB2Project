@@ -397,13 +397,16 @@ public class Index implements Serializable {
         Vector res = null;
         if (!clustColQuery)
             //traverse Index
-            res = loopUntilExclusive(LastCellCoordinates, term);
+            res = loopUntil(LastCellCoordinates, term, false);
         else
         //todo traverse table
         {
             Vector<BucketInfo> cell = getCell(LastCellCoordinates);
             int lastPageID = pageFromCell(cell,term);
-            res = loopTableUntilExclusive(lastPageID, term);
+
+            Table t = (Table) DBApp.deserialize(term._strTableName);
+            res = t.loopTableUntilExclusive(lastPageID);
+
         }
         return res;
     }
@@ -423,24 +426,7 @@ public class Index implements Serializable {
 
     }
 
-    private Vector loopTableUntilExclusive(int lastPageID, SQLTerm term) {
-        Vector res = new Vector();
-        Table t = (Table) DBApp.deserialize(term._strTableName);
 
-        for(Table.tuple4 tuple: t.table){
-            //todo deserialize page
-            Page currPage = tuple.page;
-            if(currPage.id==lastPageID)
-                break;
-            for(Page.Pair record: currPage.records){
-                res.add(record);
-            }
-
-        }
-         //todo I: cond stop at lastcellcoordinates  B:asdek eih hena?
-
-        return res;
-    }
 
     public Vector lessThanOrEqual(SQLTerm term, boolean clustColQuery) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
@@ -450,7 +436,7 @@ public class Index implements Serializable {
         Vector res = null;
         if (!clustColQuery)
             //traverse Index
-            res = loopUntilInclusive(LastCellCoordinates, term);
+            res = loopUntil(LastCellCoordinates, term,true);
         else
         //todo traverse table
         {
@@ -459,40 +445,36 @@ public class Index implements Serializable {
         return res;
     }
 
-    public Vector<Bucket.Record> loopUntilExclusive(int[] limits, SQLTerm term) {
+    public Vector<Bucket.Record> loopUntil(int[] limits, SQLTerm term,boolean inclusive)  {
         //nulls should be [9]
-        Vector<Bucket.Record> ref = new Vector<Bucket.Record>();
-        loopUntil(new int[limits.length], limits, 0, ref);
+        Vector<Bucket.Record> result = new Vector<Bucket.Record>();
+        int[] start=new int[limits.length];
+
+        getRecordsBetween(start, limits, 0, result);
+
         Vector<BucketInfo> lastCell = getCell(limits);
+        filterCell(lastCell,term,inclusive,result);
+        //loops on cell record by record adds records that match condition
+        return result;
+    }
+
+    private void filterCell(Vector<BucketInfo> lastCell, SQLTerm term, boolean inclusive,Vector result) {
+        //loops on cell record by record adds records that match condition
         for (BucketInfo bi : lastCell) {
             for (Bucket.Record r : bi.bucket.records) {
                 Object recordVal = r.values.get(term._strColumnName);
-                if (Table.GenericCompare(recordVal, term._objValue) < 0) {
-                    ref.add(r);
-                }
+                if (Table.GenericCompare(recordVal, term._objValue) < 0)
+                    result.add(r);
+
+                if (Table.GenericCompare(recordVal, term._objValue) == 0 && inclusive)
+                    result.add(r);
             }
         }
-        return ref;
     }
 
-    public Vector<Bucket.Record> loopUntilInclusive(int[] limits, SQLTerm term) {
-        //includes records in last cell satisfying cond
-        Vector<Bucket.Record> ref = new Vector<Bucket.Record>();
-        loopUntil(new int[limits.length], limits, 0, ref);
-        Vector<BucketInfo> lastCell = getCell(limits);
-        for (BucketInfo bi : lastCell) {
-            for (Bucket.Record r : bi.bucket.records) {
-                Object recordVal = r.values.get(term._strColumnName);
-                if (Table.GenericCompare(recordVal, term._objValue) <= 0) {
-                    ref.add(r);
-                }
-            }
-        }
-        return ref;
-    }
 
-    public void loopUntil(int[] curr, int[] limits, int depth, Vector<Bucket.Record> accumulated) {
-
+    public void getRecordsBetween(int[] curr, int[] limits, int depth, Vector<Bucket.Record> accumulated) {
+        //recursive n^m complexity gets all combinations of coordinates between start and end coordinates
         if (depth == limits.length) {
             Vector<BucketInfo> cell = getCell(curr);
             for (BucketInfo bi : cell) {
@@ -505,7 +487,7 @@ public class Index implements Serializable {
         for (int i = 0; i < limits[depth]; i++) { //excludes el last cell(limits)
             int[] newCurr = curr.clone();
             newCurr[depth] = i;
-            loopUntil(newCurr, limits, depth + 1, accumulated);
+            getRecordsBetween(newCurr, limits, depth + 1, accumulated);
         }
     }
 
@@ -535,7 +517,7 @@ public class Index implements Serializable {
                 }
             }
         }
-        loopUntil(pLusOne(start), pLusOne(this.getEnd()), 0, ref);
+        getRecordsBetween(pLusOne(start), pLusOne(this.getEnd()), 0, ref);
         //bazawed ones 3ala kol el array bta3 getEnd 3ashan loop until bet exclude akher cell
         //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2
         return ref;
@@ -568,7 +550,7 @@ public class Index implements Serializable {
                 }
             }
         }
-        loopUntil(pLusOne(start), pLusOne(this.getEnd()), 0, ref);
+        getRecordsBetween(pLusOne(start), pLusOne(this.getEnd()), 0, ref);
         //bazawed ones 3ala kol el array bta3 getEnd 3ashan loop until bet exclude akher cell
         //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2
         return ref;

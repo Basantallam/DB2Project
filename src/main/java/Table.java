@@ -548,6 +548,24 @@ public class Table implements Serializable {
         return res;
     }
 
+    public Vector loopTableUntilExclusive(int lastPageID) {
+        Vector res = new Vector();
+
+        for(tuple4 tuple: table){
+            //todo deserialize page
+            Page currPage = tuple.page;
+            if(currPage.id==lastPageID)
+                break;
+            for(Page.Pair record: currPage.records){
+                res.add(record);
+            }
+
+        }
+        //todo I: cond stop at lastcellcoordinates  B:asdek eih hena?
+
+        return res;
+    }
+
     public Vector applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
 
 
