@@ -506,7 +506,7 @@ public class Table implements Serializable {
                 while (recs.hasPrevious()) {
                     // removing records that violate the select statement
                     currRec = (Page.Pair) recs.previous();
-                    if (checkCond(currRec, term._strColumnName, term._objValue, term._strOperator))
+                    if (checkCond(currRec, term))
                         res.add(currRec);
                 }
                 DBApp.serialize(tableName+"_"+((tuple4) pagesItr.previous()).id,currPage);
@@ -549,24 +549,31 @@ public class Table implements Serializable {
         return res;
     }
 
-    public Vector loopUntil(double lastPageID,boolean inclusive) {
+    public Vector loopUntil(double lastPageID, SQLTerm term,boolean inclusive) throws DBAppException {
         Vector res = new Vector();
 
         for(tuple4 tuple: table){
             //todo deserialize page
             Page currPage = tuple.page;
             if(currPage.id==lastPageID) {
-                if (inclusive) {
-                    res.addAll(currPage.records);
-                }
+                filterPage(currPage,term,res);
                 break;
             }
             res.addAll(currPage.records);
         }
-        //todo I: cond stop at lastcellcoordinates  B:asdek eih hena?
+        //todo I: cond stop at lastcellcoordinates
 
         return res;
     }
+
+    private void filterPage(Page currPage, SQLTerm term,Vector result) throws DBAppException {
+        //loops on cell record by record adds records that match condition
+        for (Page.Pair rec : currPage.records) {
+                if (checkCond(rec,term))
+                    result.add(rec);
+            }
+    }
+
 
     public Vector applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
@@ -671,38 +678,25 @@ public class Table implements Serializable {
         return null;
     }
 
-    public static boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
+    public static boolean checkCond(Page.Pair rec, SQLTerm term) throws DBAppException {
+        String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
         Object recVal = rec.row.get(col);
         switch (operator) {
             case (">"):
-                if (GenericCompare(recVal, value) > 0)
-                    return true;
-                break;
+                    return (GenericCompare(recVal, value) > 0);
             case (">="):
-                if (GenericCompare(recVal, value) >= 0)
-                    return true;
-                break;
+                    return (GenericCompare(recVal, value) >= 0);
             case ("<"):
-                if (GenericCompare(recVal, value) < 0)
-                    return true;
-                break;
+                    return (GenericCompare(recVal, value) <0);
             case ("<="):
-                if (GenericCompare(recVal, value) <= 0)
-                    return true;
-                break;
+                return (GenericCompare(recVal, value) <= 0);
             case ("="):
-                if (GenericCompare(recVal, value) == 0)
-                    return true;
-                break;
+                return (GenericCompare(recVal, value) == 0);
             case ("!="):
-                if (GenericCompare(recVal, value) != 0)
-                    return true;
-                break;
+                return (GenericCompare(recVal, value) != 0);
             default:
                 throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
         }
-        return false;
-
     }
 
     public static class tuple4 implements Serializable {

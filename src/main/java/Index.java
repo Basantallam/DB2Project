@@ -404,7 +404,7 @@ public class Index implements Serializable {
             double lastPageID = pageFromCell(cell,term);
 
             Table t = (Table) DBApp.deserialize(term._strTableName);
-            res = t.loopUntil(lastPageID,false);
+            res = t.loopUntil(lastPageID,term,false);
 
         }
         return res;
@@ -467,19 +467,16 @@ public class Index implements Serializable {
         getRecordsBetween(start, limits, 0, result); // [start,limits[
 
         Vector<BucketInfo> lastCell = getCell(limits);
-        filterCell(lastCell,term,inclusive,result);
+        filterCell(lastCell,term,result);
         //loops on cell record by record adds records that match condition
         return result;
     }
 
-    private void filterCell(Vector<BucketInfo> cell, SQLTerm term, boolean inclusive,Vector result) {
+    private void filterCell(Vector<BucketInfo> cell, SQLTerm term,Vector result) {
         //loops on cell record by record adds records that match condition
         for (BucketInfo bi : cell) {
             for (Bucket.Record r : bi.bucket.records) {
-                Object recordVal = r.values.get(term._strColumnName);
-                if (Table.GenericCompare(recordVal, term._objValue) < 0)
-                    result.add(r);
-                if (Table.GenericCompare(recordVal, term._objValue) == 0 && inclusive)
+                if (checkCond(r,term))
                     result.add(r);
             }
         }
@@ -522,7 +519,7 @@ public class Index implements Serializable {
     public Vector<Bucket.Record> loopFrom(int[] start, SQLTerm term, boolean inclusive) {
         Vector<Bucket.Record> result = new Vector<Bucket.Record>();
         Vector<BucketInfo> firstCell = getCell(start);
-        filterCell(firstCell,term,inclusive,result);
+        filterCell(firstCell,term,result);
 
         getRecordsBetween(pLusOne(start), pLusOne(this.getEnd()), 0, result);
         //bazawed ones 3ala kol el array bta3 getEnd 3ashan getRecordsBetween bet exclude akher cell
