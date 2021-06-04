@@ -445,23 +445,38 @@ public class Table implements Serializable {
         }
     }
 
-    private Vector<Page.Pair> notEqual(SQLTerm term) {
-        //todo
-        return null;
+    private Vector<Page.Pair> notEqual(SQLTerm term) throws DBAppException {
+        //todo - i think done
+        Vector<Page.Pair> result = new Vector<>();
+        Table table = (Table) DBApp.deserialize(term._strTableName);
+        Page currPage;
+        for(tuple4 tuple :table.table){
+            currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
+            for (Page.Pair currRec : currPage.records) {
+                if (!(checkCond(currRec, term)))
+                    result.add(currRec);
+            }
+            DBApp.serialize(tableName + "_" + tuple.id, currPage);
+        }
+        DBApp.serialize(tableName,table);
+        return result;
     }
 
     private Vector<Page.Pair> getTableRecords(Vector<Bucket.Record> indexRecords) {
         Vector<Page.Pair> result = new Vector<>();
+        Table table = (Table) DBApp.deserialize(tableName);
         for(Bucket.Record indexRec :indexRecords){
-            Page p=table.get(PageIDtoIdx(indexRec.pageid)).page;
-//            Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-            //todo deserialize table and page
+//            Page p=table.get(PageIDtoIdx(indexRec.pageid)).page;
+            Page p = (Page) DBApp.deserialize(tableName + "_" + table.table.get(PageIDtoIdx(indexRec.pageid)));
+            //todo deserialize table and page - i think done
             for(Page.Pair tableRecord:p.records){
                 if(tableRecord.isEqual(indexRec)){
                     result.add(tableRecord);
                 }
             }
+            DBApp.serialize(tableName + "_" + table.table.get(PageIDtoIdx(indexRec.pageid)),p);
         }
+        DBApp.serialize(tableName,table);
         return result;
     }
     public Vector<Page.Pair> Equal(SQLTerm term){
@@ -472,6 +487,7 @@ public class Table implements Serializable {
         int rIdx = page.BinarySearch(term._objValue,page.records.size()-1,0);
         Vector result = new Vector();
         result.add(page.records.get(rIdx));
+        DBApp.serialize(tableName + "_" + table.get(pIdx),page);
         return result;
     }
     private Vector<Page.Pair> tableTraversal(SQLTerm term) throws DBAppException {
@@ -492,6 +508,8 @@ public class Table implements Serializable {
 
         //todo deserialize page - i think done
         int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
+        DBApp.serialize(tableName + "_" + table.get(pageIdx),page);
+        DBApp.serialize(term._strTableName,t);
         //check inclusive or exclusive fel binary search
         return t.loopUntil(pageIdx,recordIdx,term);
     }
@@ -504,6 +522,8 @@ public class Table implements Serializable {
 
         //todo deserialize page - i think done
         int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
+        DBApp.serialize(tableName + "_" + t.table.get(pageIdx),page);
+        DBApp.serialize(term._strTableName,t);
         //check inclusive or exclusive fl binary search
         return loopFrom(pageIdx,recordIdx,term);
     }
@@ -536,6 +556,8 @@ public class Table implements Serializable {
                     }
                 }
             }
+            DBApp.serialize(tableName + "_" + table.get(pIdx),currPage);
+
         }
         return res;
     }
@@ -553,7 +575,9 @@ public class Table implements Serializable {
                 Page.Pair record =currPage.records.get(rIdx);
                 res.add(record);
             }
+            DBApp.serialize(tableName + "_" + table.table.get(pIdx),currPage);
         }
+        DBApp.serialize(term._strTableName,table);
         return res;
     }
     public Vector<Page.Pair> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
@@ -722,7 +746,9 @@ public class Table implements Serializable {
         }
         public String print(String tableName) {
             Page p = (Page) DBApp.deserialize(tableName + "_" + id);
-            return p.toString();
+            String res =p.toString();
+            DBApp.serialize(tableName + "_" + id,p);
+            return res;
         }
     }
 
