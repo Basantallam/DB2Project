@@ -393,13 +393,12 @@ public class Index implements Serializable {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
-        //nulls should be [9]
         Vector res = null;
         if (!clustColQuery)
-            //traverse Index
+            // traverse Index
             res = loopUntil(LastCellCoordinates, term, false);
         else
-        //todo traverse table
+        //todo traverse sorted table
         {
             Vector<BucketInfo> cell = getCell(LastCellCoordinates);
             int lastPageID = pageFromCell(cell,term);
@@ -450,7 +449,7 @@ public class Index implements Serializable {
         Vector<Bucket.Record> result = new Vector<Bucket.Record>();
         int[] start=new int[limits.length];
 
-        getRecordsBetween(start, limits, 0, result);
+        getRecordsBetween(start, limits, 0, result); // [start,limits[
 
         Vector<BucketInfo> lastCell = getCell(limits);
         filterCell(lastCell,term,inclusive,result);
@@ -474,7 +473,7 @@ public class Index implements Serializable {
 
 
     public void getRecordsBetween(int[] curr, int[] limits, int depth, Vector<Bucket.Record> accumulated) {
-        //recursive n^m complexity gets all combinations of coordinates between start and end coordinates
+        //recursive n^m complexity gets all combinations of coordinates between [start,limits[
         if (depth == limits.length) {
             Vector<BucketInfo> cell = getCell(curr);
             for (BucketInfo bi : cell) {
@@ -484,7 +483,7 @@ public class Index implements Serializable {
             }
             return;
         }
-        for (int i = 0; i < limits[depth]; i++) { //excludes el last cell(limits)
+        for (int i = 0; i < limits[depth]; i++) { //excludes el last cell
             int[] newCurr = curr.clone();
             newCurr[depth] = i;
             getRecordsBetween(newCurr, limits, depth + 1, accumulated);
