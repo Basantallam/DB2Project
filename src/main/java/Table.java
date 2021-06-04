@@ -56,7 +56,6 @@ public class Table implements Serializable {
         else
             return 0;
     }
-
     public static Vector ANDing(Vector i1, Vector i2) {
         if(i1.size()==0|| i2.size()==0)return new Vector();
         //1st child AND
@@ -81,7 +80,6 @@ public class Table implements Serializable {
         }
         return res;
     }
-
     public static Vector ORing(Vector i1, Vector i2) {
         TreeSet s1 = new TreeSet(i1);
         TreeSet s2 = new TreeSet(i2);
@@ -89,7 +87,6 @@ public class Table implements Serializable {
         Vector res = new Vector(s1);
         return res;
     }
-
     public static Vector XORing(Vector i1, Vector i2) {
         Vector v2 = ANDing(i1, i2);
         Vector v1 = ORing(i1, i2);
@@ -122,7 +119,6 @@ public class Table implements Serializable {
         res.add(o1);
         return res;
     }
-
     public void insert(String pk, Hashtable<String, Object> colNameValue, boolean useIndex) {
         Object insertedPkValue = colNameValue.get(pk);
         int foundIdx = 0;
@@ -180,13 +176,11 @@ public class Table implements Serializable {
             }
         }
     }
-
     private int PageIDtoIdx(Double targetPageID) {
         return BinarySearchPageID(table.size() - 1, 0, targetPageID);
         // Binary search for the page ID
         // todo test this
     }
-
     public int BinarySearchPageID(int hi, int lo, Double targetID) {
         int mid = (hi + lo + 1) / 2;
         if (hi <= lo) {
@@ -199,7 +193,6 @@ public class Table implements Serializable {
             return BinarySearchPageID(mid - 1, lo, targetID);
         }
     }
-
     public Index chooseIndexPK() {
         Index indexSoFar = index.get(0);
         int min = (int) 1e6;
@@ -214,7 +207,6 @@ public class Table implements Serializable {
         }
         return indexSoFar;
     }
-
     public Index chooseIndexAnd(Vector<String> columnNames) {
         Index indexSoFar = null;
         int max = 0;
@@ -230,7 +222,6 @@ public class Table implements Serializable {
         }
         return indexSoFar;
     }
-
     public Vector<Index> chooseIndexOr(Vector<String> columnNames) {
 
         Vector<Index> res = new Vector<>();
@@ -241,19 +232,16 @@ public class Table implements Serializable {
         }
         return res;
     }
-
     private void indicesUpdate(Hashtable<String, Object> row, Double oldId, Double newId) {
         for (Index i : index) {
             i.updateAddress(row, oldId, newId);
         }
     }
-
     private void indicesInsert(Hashtable<String, Object> colNameValue, Double id) {
         for (Index i : index) {
             i.insert(colNameValue, id);
         }
     }
-
     private double CreateID(int prevIdx) {
         double prevId = table.get(prevIdx).id;
         if (table.size() == prevIdx + 1)
@@ -262,7 +250,6 @@ public class Table implements Serializable {
         return (prevId + nxtId) / 2.0;
 
     }
-
     public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue, boolean useIndex)
             throws Exception
     {
@@ -302,7 +289,6 @@ public class Table implements Serializable {
                 i.delete(row, pageId);
             }
     }
-
     private Object parse(String clusteringKeyValue) throws Exception {
         Object pk = table.get(0).min;
         if (pk instanceof Integer)
@@ -315,7 +301,6 @@ public class Table implements Serializable {
 
         return clusteringKeyValue;
     }
-
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
         if (useIndex) {
             Vector<Double>ids=chooseIndexAnd(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
@@ -363,7 +348,6 @@ public class Table implements Serializable {
             }
         }
     }
-
     public void updateMetadata(String pk, Hashtable<String, String> htblColNameType,
                                Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax) throws IOException {
         FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
@@ -407,14 +391,12 @@ public class Table implements Serializable {
         else
             return BinarySearch(searchkey, mid - 1, lo);
     }
-
     public Boolean createIndex(String[] columnNames, Hashtable<String, DBApp.minMax> ranges) {
         if (checkExists(columnNames)) return false; // check if index already exists
         Index i = new Index(this.tableName, columnNames, ranges, this.table, this.clusteringCol);
         index.add(i);
         return true;
     }
-
     private boolean checkExists(String[] columnNames) {
         HashSet<String> columns = new HashSet<>();
         Collections.addAll(columns, columnNames);
@@ -428,7 +410,6 @@ public class Table implements Serializable {
         }
         return false;
     }
-
     public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
         Vector terms = new Vector<SQLTerm>(); terms.add(term);
         Index index = useIndexSelect(terms);
@@ -442,7 +423,6 @@ public class Table implements Serializable {
              else return tableTraversal(term);
         }
     }
-
     private Vector indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
             case ("<"): case ("<="): return index.lessThan(term);
@@ -474,7 +454,6 @@ public class Table implements Serializable {
             default:throw new DBAppException("invalid operation");
         }
     }
-
     public Vector lessThan(SQLTerm term) throws DBAppException {
         Table t = (Table) DBApp.deserialize(term._strTableName);
         int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
@@ -506,7 +485,6 @@ public class Table implements Serializable {
             }
             return res;
     }
-
     public Vector loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
         //todo inclusive wala exclusive
         Vector res = new Vector();
@@ -526,7 +504,6 @@ public class Table implements Serializable {
         }
         return res;
     }
-
     public Vector loopFrom(int pageIdx, int recordIdx, SQLTerm term) throws DBAppException {
         Vector res = new Vector();
         //todo deserialize table
@@ -541,8 +518,6 @@ public class Table implements Serializable {
         }
         return res;
     }
-
-
     public Vector applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
             case ("AND"):
@@ -563,12 +538,10 @@ public class Table implements Serializable {
                 throw new DBAppException("Star operator must be one of AND, OR, XOR!");
         }
     }
-
     public void Stack(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         Stack<Object> stack = new Stack<Object>();
         Stack<DBApp.Operation> stackO = new Stack<DBApp.Operation>();
         stack.push(sqlTerms[0]);
-
         stack.push(sqlTerms[1]);
         stackO.push(new DBApp.Operation(arrayOperators[0]));
         for (int i = 2; i < arrayOperators.length; i++) {
@@ -588,8 +561,6 @@ public class Table implements Serializable {
             }
         }
         while (stack.size() > 1) {
-            System.out.println(stack);
-            System.out.println(stackO);
             Object a = stack.pop();
             Object b = stack.pop();
             DBApp.Operation o = stackO.pop();
@@ -597,7 +568,6 @@ public class Table implements Serializable {
             stack.push(res);
         }
     }
-
     private Vector ANDing(Object curr, Object next) throws DBAppException {
         //parent AND
         if (curr instanceof SQLTerm && next instanceof SQLTerm)
@@ -610,7 +580,6 @@ public class Table implements Serializable {
             return ANDing((Vector) curr, (Vector) next);
         }
     }
-
     private Vector ANDingI(SQLTerm term1, SQLTerm term2) {
         //2nd child AND
         // curr w next are SQL Terms
@@ -627,14 +596,12 @@ public class Table implements Serializable {
         }
         return result;
     }
-
     private Index useIndexSelect(Vector<SQLTerm> term1) {
         //vector can have 1 or 2 terms
         //momken nkhalee col names bas badal sql term kolo
         //todo
         return null;
     }
-
     public static boolean checkCond(Page.Pair rec, SQLTerm term) throws DBAppException {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
         Object recVal = rec.row.get(col);
@@ -671,7 +638,6 @@ public class Table implements Serializable {
         }
         fw.close();
     }
-
     public static class tuple4 implements Serializable {
         Double id;
         transient Page page;

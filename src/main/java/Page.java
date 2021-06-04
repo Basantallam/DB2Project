@@ -11,14 +11,12 @@ public class Page implements Serializable {
 	public String toString() {
 		return records.toString() + "";
 	}
-
 	public Page(Double id) {
 
 		records = new Vector<>();
 		this.id = id;
 
 	}
-
 	public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) {
 		Pair newPair = new Pair(pkvalue, colNameValue);
 		if (this.isFull()) {
@@ -37,7 +35,6 @@ public class Page implements Serializable {
 		}
 
 	}
-
 	public Vector<Hashtable<String, Object>> update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) {
 
 		Vector<Hashtable<String, Object>> updatedRows  ;
@@ -64,7 +61,6 @@ public class Page implements Serializable {
 				break;
 		return i;
 	}
-
 //	public Pair LinearSearch(Object searchkey) {
 //		Iterator<Pair> it = records.iterator();
 //		while (it.hasNext()) {
@@ -112,7 +108,6 @@ public class Page implements Serializable {
 			return BinarySearch(searchkey, hi, mid + 1);
 
 	}
-
 //	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
 //        // delete the record
 //        Iterator itr = records.iterator();
@@ -127,7 +122,7 @@ public class Page implements Serializable {
 //                records.remove(currRec);
 //
 //        }
-//    }
+//
 	public Vector<Hashtable<String, Object>> delete(Object pkValue, Hashtable<String, Object> columnNameValue) {
 
 		Vector<Hashtable<String, Object>> deletedRows = new Vector<>();
@@ -169,15 +164,12 @@ public class Page implements Serializable {
 		}
 		return deletedRows;
 	}
-
 	public boolean isEmpty() {
 		return records.isEmpty();
 	}
-
 	public boolean isFull() {
 		return records.size() == DBApp.capacity;
 	}
-
 	public static class Pair implements Serializable, Comparable<Pair> {
 		Object pk;
 		Hashtable<String, Object> row;
@@ -190,7 +182,6 @@ public class Page implements Serializable {
 		public String toString() {
 			return row.toString();
 		}
-
 		@Override
 		public int compareTo(Pair p) {
 			return  Table.GenericCompare(this.pk, p.pk);

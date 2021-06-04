@@ -14,9 +14,8 @@ public class Bucket implements Serializable {
         this.clusteringTable = clusteringCol;
         this.sortedIndex=sorted;
     }
-
     public Vector<Double> getInsertCoordinates(Hashtable<String, Object> row) {
-        //		vector containing min and max pages
+        //	vector containing min and max pages
         //min el awel w ba3den hi
         Vector<Double> res = new Vector<Double>();
         double lo=-1; double hi = -1;
@@ -29,13 +28,11 @@ public class Bucket implements Serializable {
         res.add(lo);res.add(hi);
     return res;
     }
-
     public void delete(Hashtable<String, Object> row, double pageId) {
         Object clusterValue = row.get(sortedIndex);
         int i = BinarySearch(clusterValue, records.size() - 1, 0);
         records.get(i).pageid=pageId;
     }
-
     public Record insert(Hashtable<String, Object> colNameValue, Double pageID) {
         Record newRecord = new Record(colNameValue, pageID);
         // binary search bucket should be sorted mesh ba insert w khalas
@@ -56,33 +53,25 @@ public class Bucket implements Serializable {
         }
 
     }
-
     public int BinarySearch(Object searchkey, int hi, int lo) {
         int mid = (hi + lo) / 2;
 
         if (lo >= hi)
             return mid;
-
         if (Table.GenericCompare(records.get(mid).values.get(sortedIndex), searchkey) > 0)// should be sortedIndex not clusterCol might be there is no clustering col
             return BinarySearch(searchkey, mid, lo);
         else
             return BinarySearch(searchkey, hi, mid + 1);
-
     }
-
     public void updateAddress(double oldAddress, double newAddress, Hashtable<String, Object> values) {
         Object sortingValue = values.get(sortedIndex);
         int i = BinarySearch(sortingValue, records.size() - 1, 0);
         if(records.get(i).pageid==oldAddress)
             records.get(i).pageid=newAddress;
-
-
     }
-
     public boolean isFull() {
         return this.records.size() == DBApp.indexCapacity;
     }
-
     public Vector<Double> deleteI(Hashtable<String, Object> columnNameValue) {
         Vector<Double>pages=new Vector<>();
         Object sortingValue = columnNameValue.get(sortedIndex);
@@ -100,7 +89,6 @@ public class Bucket implements Serializable {
             pages.add(records.remove(i).pageid);
         }return pages;
     }
-
     public void filterBucket(SQLTerm term, Vector result) {
         for (Bucket.Record r : records) {
             if (checkCond(r,term))
