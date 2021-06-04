@@ -122,33 +122,8 @@ public class Table implements Serializable {
         res.add(o1);
         return res;
     }
-
-    public static void main(String[] args) {
-
-        Vector<Integer> v1 = new Vector<Integer>();
-        Vector<Integer> v2 = new Vector<Integer>();
-        v1.add(1);
-        v1.add(2);
-        v1.add(3);
-        v1.add(4);
-        v1.add(5);
-        v1.add(6);
-        v1.add(7);
-        v1.add(8);
-        v1.add(9);
-        v2.add(3);
-        v2.add(4);
-        v2.add(7);
-        v2.add(13);
-        System.out.println(ANDing(v1, v2));
-        System.out.println(ORing(v1, v2));
-        System.out.println(XORing(v1, v2));
-
-
-    }
-
+    
     public void insert(String pk, Hashtable<String, Object> colNameValue, boolean useIndex) {
-
         Object insertedPkValue = colNameValue.get(pk);
         int foundIdx = 0;
         int hi = table.size() - 1; // idx
@@ -203,15 +178,13 @@ public class Table implements Serializable {
                 table.insertElementAt(newtuple, foundIdx + 1);
                 DBApp.serialize(tableName + "_" + newID, newPage);
             }
-
         }
-
-
     }
 
     private int PageIDtoIdx(Double targetPageID) {
         return BinarySearchPageID(table.size() - 1, 0, targetPageID);
         // Binary search for the page ID
+        // todo test this
     }
 
     public int BinarySearchPageID(int hi, int lo, Double targetID) {
@@ -428,10 +401,7 @@ public class Table implements Serializable {
 
     public int BinarySearch(Object searchkey, int hi, int lo) {
         int mid = (hi + lo + 1) / 2;
-
-        if (lo >= hi)
-            return mid;
-
+        if (lo >= hi) return mid;
         if (GenericCompare(table.get(mid).min, searchkey) < 0)
             return BinarySearch(searchkey, hi, mid);
         else
@@ -459,30 +429,6 @@ public class Table implements Serializable {
         return false;
     }
 
-    public void createCSV() throws IOException {
-        String path = "src\\main\\resources\\Basant\\" + this.tableName + "Table.csv";
-        FileWriter fw = new FileWriter(path);
-
-        for (int idx = 0; idx < table.size(); idx++) {
-            tuple4 t = table.get(idx);
-            Page p = (Page) DBApp.deserialize(tableName + "_" + t.id + "");
-
-            for (Page.Pair pair : p.records) {
-                String str = "";
-                Hashtable<String, Object> h = pair.row;
-                Set<String> s = h.keySet();
-                for (String o : s) {
-                    str += h.get(o).toString() + ", ";
-                }
-                str += "\n";
-
-                fw.write(str);
-            }
-            DBApp.serialize(tableName + "_" + t.id + "", p);
-        }
-        fw.close();
-    }
-
     public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
         Vector terms = new Vector<SQLTerm>(); terms.add(term);
         Index index = useIndexSelect(terms);
@@ -496,12 +442,10 @@ public class Table implements Serializable {
             switch (term._strOperator) {
                 case ("<"): case ("<="): return index.lessThan(term, traverseTable);
                 case (">"): case (">="): return index.greaterThan(term, traverseTable);
-                case ("="):
+                case ("="):  return null;
 //                   todo
-//                    return null;
-                case ("!="):
+                case ("!="):  return null;
 //                  todo  won't use index a7san
-                    return null;
             }
         }
         return new Vector();
@@ -511,8 +455,7 @@ public class Table implements Serializable {
         Vector res = new Vector();
             for(tuple4 tuple:table) {
                Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
-                for (Page.Pair currRec : currPage.records) {
-                    // adding records that match the select statement
+                for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
                     if (checkCond(currRec, term))
                         res.add(currRec);
                 }
@@ -540,7 +483,6 @@ public class Table implements Serializable {
         int index = PageIDtoIdx(firstPageID); //sure it works?
         //todo deserialize
         filterPage(table.get(index).page,term,res);
-
         for(int i = index+1;i<table.size();i++){
             //todo deserialize page
             Page currPage = table.get(i).page;
@@ -617,14 +559,13 @@ public class Table implements Serializable {
 
     private Vector ANDing(Object curr, Object next) throws DBAppException {
         //parent AND
-        if (curr instanceof SQLTerm && next instanceof SQLTerm) {
+        if (curr instanceof SQLTerm && next instanceof SQLTerm)
             return ANDingI((SQLTerm)curr, (SQLTerm)next); //momken nb2a nkhalee vector of SQLTerms mesh 2 only
-        } else {
-            if (curr instanceof SQLTerm) {
+         else {
+            if (curr instanceof SQLTerm)
                 curr = (Vector) resolveOneStatement((SQLTerm) curr);
-            } else if (next instanceof SQLTerm) {
+             else if (next instanceof SQLTerm)
                 next = (Vector) resolveOneStatement((SQLTerm) next);
-            }
             return ANDing((Vector) curr, (Vector) next);
         }
     }
@@ -657,21 +598,37 @@ public class Table implements Serializable {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
         Object recVal = rec.row.get(col);
         switch (operator) {
-            case (">"):
-                    return (GenericCompare(recVal, value) > 0);
-            case (">="):
-                    return (GenericCompare(recVal, value) >= 0);
-            case ("<"):
-                    return (GenericCompare(recVal, value) <0);
-            case ("<="):
-                return (GenericCompare(recVal, value) <= 0);
-            case ("="):
-                return (GenericCompare(recVal, value) == 0);
-            case ("!="):
-                return (GenericCompare(recVal, value) != 0);
-            default:
-                throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
+            case (">"): return (GenericCompare(recVal, value) > 0);
+            case (">="):return (GenericCompare(recVal, value) >= 0);
+            case ("<"): return (GenericCompare(recVal, value) <0);
+            case ("<="):return (GenericCompare(recVal, value) <= 0);
+            case ("="): return (GenericCompare(recVal, value) == 0);
+            case ("!="):return (GenericCompare(recVal, value) != 0);
+            default:throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
         }
+    }
+    public void createCSV() throws IOException {
+        String path = "src\\main\\resources\\Basant\\" + this.tableName + "Table.csv";
+        FileWriter fw = new FileWriter(path);
+
+        for (int idx = 0; idx < table.size(); idx++) {
+            tuple4 t = table.get(idx);
+            Page p = (Page) DBApp.deserialize(tableName + "_" + t.id + "");
+
+            for (Page.Pair pair : p.records) {
+                String str = "";
+                Hashtable<String, Object> h = pair.row;
+                Set<String> s = h.keySet();
+                for (String o : s) {
+                    str += h.get(o).toString() + ", ";
+                }
+                str += "\n";
+
+                fw.write(str);
+            }
+            DBApp.serialize(tableName + "_" + t.id + "", p);
+        }
+        fw.close();
     }
 
     public static class tuple4 implements Serializable {
@@ -686,11 +643,10 @@ public class Table implements Serializable {
             this.max = max;
             this.min = min;
         }
-
         public String print(String tableName) {
             Page p = (Page) DBApp.deserialize(tableName + "_" + id);
             return p.toString();
         }
-
     }
+
 }
