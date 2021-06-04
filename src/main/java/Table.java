@@ -498,15 +498,14 @@ public class Table implements Serializable {
             Page.Pair currRec;
 
             while (pagesItr.hasPrevious()) {
-                currPage = (Page) pagesItr.previous();
-                recs = (currPage.records).listIterator(currPage.records.size());
-
+                currPage = (Page) DBApp.deserialize(tableName+"_"+((tuple4) pagesItr.previous()).id);                recs = (currPage.records).listIterator(currPage.records.size());
                 while (recs.hasPrevious()) {
                     // removing records that violate the select statement
                     currRec = (Page.Pair) recs.previous();
                     if (checkCond(currRec, term._strColumnName, term._objValue, term._strOperator))
                         res.add(currRec);
                 }
+                DBApp.serialize(tableName+"_"+((tuple4) pagesItr.previous()).id,currPage);
             }
         }
         else {
