@@ -207,15 +207,24 @@ public class Table implements Serializable {
         }
         return indexSoFar;
     }
+    public Index chooseIndexRes(String col){
+        Vector <String> v=new Vector();
+        v.add(col);
+        Index i= chooseIndexAnd(v);
+        if(i.columnNames.size()>1)
+            return null;
+        else
+            return i;
+    }
+
     public Index chooseIndexAnd(Vector<String> columnNames) {
         Index indexSoFar = null;
         int size = Integer.MAX_VALUE;
         int max = 0;
         for (Index i : index) {
             int count = 0;
-            for (String cn : i.columnNames) {
+            for (String cn : i.columnNames)
                 if (columnNames.contains(cn)) count++;
-            }
             if (count > max) {
                 max = count;
                 indexSoFar = i;
@@ -231,11 +240,10 @@ public class Table implements Serializable {
     public Vector<Index> chooseIndexOr(Vector<String> columnNames) {
 
         Vector<Index> res = new Vector<>();
-        for (String cn : columnNames) {
-            for (Index i : index) {
+        for (String cn : columnNames)
+            for (Index i : index)
                 if (i.columnNames.contains(cn)) res.add(i);
-            }
-        }
+
         return res;
     }
     private void indicesUpdate(Hashtable<String, Object> row, Double oldId, Double newId) {
@@ -254,7 +262,6 @@ public class Table implements Serializable {
             return prevId + 1;
         double nxtId = table.get(prevIdx + 1).id;
         return (prevId + nxtId) / 2.0;
-
     }
     public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue, boolean useIndex)
             throws Exception
@@ -301,10 +308,8 @@ public class Table implements Serializable {
             return Integer.parseInt(clusteringKeyValue);
         else if (pk instanceof Double)
             return Double.parseDouble(clusteringKeyValue);
-        else if (pk instanceof Date) {
+        else if (pk instanceof Date)
             return new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
-        }
-
         return clusteringKeyValue;
     }
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
@@ -417,8 +422,7 @@ public class Table implements Serializable {
         return false;
     }
     public Vector<Page.Pair> resolveOneStatement(SQLTerm term) throws DBAppException {
-        Vector<String> terms = new Vector<String>(); terms.add(term._strColumnName);
-        Index index = chooseIndexAnd(terms);
+        Index index = chooseIndexRes(term._strColumnName);
         boolean clustered = this.clusteringCol.equals(term._strColumnName);
         if (null == index) {
             if (!clustered) return LinearScan(term);
@@ -617,7 +621,7 @@ public class Table implements Serializable {
         terms.add(term2._strColumnName);
         boolean clustering1=(term1._strColumnName==clusteringCol);
         boolean clustering2=(term2._strColumnName==clusteringCol);
-        Index index = chooseIndexAnd(terms);
+        Index index = chooseIndexAnd(terms);//todo is this method correct here??
         if (index != null) {
 //            Hashtable ht=new Hashtable();
 //            ht.put(term1._strColumnName,term1._objValue);
