@@ -447,7 +447,8 @@ public class Table implements Serializable {
         switch (term._strOperator) {
             case ("<"): case ("<="): return index.lessThan(term);
             case (">"): case (">="): return index.greaterThan(term);
-            case ("="):  return this.Equal(term);
+            case ("="):  return null;
+//                   todo exact
             case ("!="):  return null;
 //                  todo  won't use index a7san
             default: throw new DBAppException("invalid operation");
@@ -466,8 +467,7 @@ public class Table implements Serializable {
         switch (term._strOperator) {
             case ("<"): case ("<="):return this.lessThan(term);
             case (">"): case (">="): return this.greaterThan(term);
-            case ("="): return null;
-//                   todo
+            case ("="): return this.Equal(term);
             case ("!="):
                 return null;
 //                  todo  won't use index a7san
