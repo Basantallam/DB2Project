@@ -417,8 +417,8 @@ public class Table implements Serializable {
         return false;
     }
     public Vector<Page.Pair> resolveOneStatement(SQLTerm term) throws DBAppException {
-        Vector terms = new Vector<SQLTerm>(); terms.add(term);
-        Index index = useIndexSelect(terms);
+        Vector<String> terms = new Vector<String>(); terms.add(term._strColumnName);
+        Index index = chooseIndexAnd(terms);
         boolean clustered = this.clusteringCol.equals(term._strColumnName);
         if (null == index) {
             if (!clustered) return LinearScan(term);
@@ -566,19 +566,14 @@ public class Table implements Serializable {
     }
     public Vector<Page.Pair> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
-            case ("AND"):
-                return ANDing(curr, next);
+            case ("AND"): return ANDing(curr, next);
             case ("OR"):
-                if (curr instanceof SQLTerm)
-                    curr = resolveOneStatement((SQLTerm) curr);
-                if (next instanceof SQLTerm)
-                    next = resolveOneStatement((SQLTerm) next);
+                if (curr instanceof SQLTerm) curr = resolveOneStatement((SQLTerm) curr);
+                if (next instanceof SQLTerm) next = resolveOneStatement((SQLTerm) next);
                 return ORing((Vector) curr, (Vector) next);
             case ("XOR"):
-                if (curr instanceof SQLTerm)
-                    curr = resolveOneStatement((SQLTerm) curr);
-                if (next instanceof SQLTerm)
-                    next = resolveOneStatement((SQLTerm) next);
+                if (curr instanceof SQLTerm) curr = resolveOneStatement((SQLTerm) curr);
+                if (next instanceof SQLTerm) next = resolveOneStatement((SQLTerm) next);
                 return XORing((Vector) curr, (Vector) next);
             default:
                 throw new DBAppException("Star operator must be one of AND, OR, XOR!");
@@ -629,12 +624,12 @@ public class Table implements Serializable {
     private Vector<Page.Pair> ANDingI(SQLTerm term1, SQLTerm term2) throws DBAppException {
         //2nd AND child
         Vector result = new Vector();
-        Vector <SQLTerm> terms=new Vector<>();
-        terms.add(term1);
-        terms.add(term2);
+        Vector <String> terms=new Vector<String>();
+        terms.add(term1._strColumnName);
+        terms.add(term2._strColumnName);
         boolean clustering1=(term1._strColumnName==clusteringCol);
         boolean clustering2=(term2._strColumnName==clusteringCol);
-        Index index = useIndexSelect(terms);
+        Index index = chooseIndexAnd(terms);
         if (index != null) {
 //            Hashtable ht=new Hashtable();
 //            ht.put(term1._strColumnName,term1._objValue);
@@ -643,7 +638,7 @@ public class Table implements Serializable {
             //todo mesh 3arfaaaaa
         } else {
             if(clustering1){
-                Vector<Page.Pair> res1 = tableTraversal(term1);//todo pairs not grid records & inc exc
+                Vector<Page.Pair> res1 = tableTraversal(term1);//todo inc exc
                 for(Page.Pair record:res1){
                     if(checkCond(record,term2)){
                         result.add(record);
@@ -679,12 +674,12 @@ public class Table implements Serializable {
     }
 
 
-    private Index useIndexSelect(Vector<SQLTerm> term1) {
-        //vector can have 1 or 2 terms
-        //momken nkhalee col names bas badal sql term kolo
-        //todo
-        return null;
-    }
+//    private Index useIndexSelect(Vector<SQLTerm> term1) {
+//        //vector can have 1 or 2 terms
+//        //momken nkhalee col names bas badal sql term kolo
+//        //todo
+//        return null;
+//    }
     public static boolean checkCond(Page.Pair rec, SQLTerm term) throws DBAppException {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
         Object recVal = rec.row.get(col);
