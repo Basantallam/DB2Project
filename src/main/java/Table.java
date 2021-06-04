@@ -309,8 +309,9 @@ public class Table implements Serializable {
         Vector<Hashtable<String, Object>> updatedRows = p.update(pk, columnNameValue);
         DBApp.serialize(tableName + "_" + pageId, p);
 
-        assert updatedRows !=null;
-        updateIndices(updatedRows.get(0), updatedRows.get(1), columnNameValue, pageId);
+        if (updatedRows != null) {
+            updateIndices(updatedRows.get(0), updatedRows.get(1), columnNameValue, pageId);
+        }
 
     }
 
