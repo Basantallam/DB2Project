@@ -420,6 +420,9 @@ public class Table implements Serializable {
     public int BinarySearch(Object searchkey, int hi, int lo) {
         int mid = (hi + lo + 1) / 2;
         if (lo >= hi) return mid;
+        //todo remove print
+
+        System.out.println(searchkey instanceof Double);
         if (GenericCompare(table.get(mid).min, searchkey) < 0)
             return BinarySearch(searchkey, hi, mid);
         else
@@ -453,8 +456,8 @@ public class Table implements Serializable {
              else return tableTraversal(term);
         }
         else { //clustering or non-clustering to decide I'll traverse table or index
-             if(clustered) return indexTraversal(term, index);
-             else return tableTraversal(term);
+             if(clustered) return tableTraversal(term);
+             else return indexTraversal(term, index);
         }
     }
     private Vector<Page.Pair> indexTraversal(SQLTerm term, Index index) throws DBAppException {
@@ -755,6 +758,24 @@ public class Table implements Serializable {
                 fw.write(str);
             }
             DBApp.serialize(tableName + "_" + t.id + "", p);
+        }
+        fw.close();
+    }
+
+    public static void createCSVSelect(Iterator it) throws IOException {
+        String path = "src\\main\\resources\\Basant\\" + "Selection.csv";
+        FileWriter fw = new FileWriter(path);
+        while(it.hasNext()){
+            Page.Pair rec=(Page.Pair) it.next();
+            String str = "";
+            Hashtable<String, Object> h = rec.row;
+            Set<String> s = h.keySet();
+            for (String o : s) {
+                str += h.get(o).toString() + ", ";
+            }
+            str += "\n";
+
+            fw.write(str);
         }
         fw.close();
     }
