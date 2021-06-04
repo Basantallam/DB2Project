@@ -368,8 +368,11 @@ public class Index implements Serializable {
        // traverse Index
             res = loopUntil(LastCellCoordinates, term);
 
-        return res;
+        return (res);
     }
+
+
+
     private double pageFromCell(Vector<BucketInfo> cell,SQLTerm term) throws DBAppException {
         double maxPageID=0;
         for(BucketInfo bi:cell){ // cannot be binary search 3ashan mesh shart ykon el index sorted 3al col da fa laem linear
@@ -386,7 +389,6 @@ public class Index implements Serializable {
         //nulls should be [9]
         Vector<Bucket.Record> result = new Vector<Bucket.Record>();
         int[] start=new int[limits.length];
-
         int val=9;
         int idx=columnNames.indexOf(term._strColumnName);
 
@@ -399,6 +401,7 @@ public class Index implements Serializable {
         getRecordsBetween(start, limits, 0,term, result,idx,val); // [start,limits[
 
         Vector<BucketInfo> lastCell = getCell(limits);
+
         //loops on cell record by record adds records that match condition
         return result;
     }
