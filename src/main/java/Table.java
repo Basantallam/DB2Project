@@ -432,48 +432,42 @@ public class Table implements Serializable {
     public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
         Vector terms = new Vector<SQLTerm>(); terms.add(term);
         Index index = useIndexSelect(terms);
-        Vector res =new Vector<>();
         boolean clustered = this.clusteringCol.equals(term._strColumnName);
         if (null == index) {
-            if (!clustered) {
-                return LinearScan(term);
-            } else { //clustered todo binary search
-                switch (term._strOperator) {
-                    case ("<"): case ("<="):return this.lessThan(term);
-                    case (">"): case (">="): return this.greaterThan(term);
-                    case ("="): return null;
-//                   todo
-                    case ("!="):
-                        return null;
-//                  todo  won't use index a7san
-                }
-            }
+            if (!clustered) return LinearScan(term);
+             else return tableTraversal(term);
         }
-        else
-         { //clustering or non-clustering to decide I'll traverse table or index
-             if(clustered){
-                 switch (term._strOperator) {
-                     case ("<"): case ("<="): return index.lessThan(term);
-                     case (">"): case (">="): return index.greaterThan(term);
-                     case ("="):  return null;
-//                   todo
-                     case ("!="):  return null;
-//                  todo  won't use index a7san
-                 }
-             }
-             else{
-                 switch (term._strOperator) {
-                     case ("<"): case ("<="):return this.lessThan(term);
-                     case (">"): case (">="):return this.greaterThan(term);
-                     case ("="): return null;
-//                   todo
-                     case ("!="):return null;
-//                  todo  won't use index a7san
-                 }
-             }
+        else { //clustering or non-clustering to decide I'll traverse table or index
+             if(clustered) return indexTraversal(term, index);
+             else return tableTraversal(term);
         }
-        return res;
     }
+
+    private Vector indexTraversal(SQLTerm term, Index index) throws DBAppException {
+        switch (term._strOperator) {
+            case ("<"): case ("<="): return index.lessThan(term);
+            case (">"): case (">="): return index.greaterThan(term);
+            case ("="):  return null;
+//                   todo exact
+            case ("!="):  return null;
+//                  todo  won't use index a7san
+            default: throw new DBAppException("invalid operation");
+        }
+    }
+
+    private Vector tableTraversal(SQLTerm term) throws DBAppException {
+        switch (term._strOperator) {
+            case ("<"): case ("<="):return this.lessThan(term);
+            case (">"): case (">="): return this.greaterThan(term);
+            case ("="): return null;
+//                   todo
+            case ("!="):
+                return null;
+//                  todo  won't use index a7san
+            default:throw new DBAppException("invalid operation");
+        }
+    }
+
     public Vector lessThan(SQLTerm term) throws DBAppException {
         Table t = (Table) DBApp.deserialize(term._strTableName);
         int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
