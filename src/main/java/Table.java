@@ -420,9 +420,6 @@ public class Table implements Serializable {
     public int BinarySearch(Object searchkey, int hi, int lo) {
         int mid = (hi + lo + 1) / 2;
         if (lo >= hi) return mid;
-        //todo remove print
-
-        System.out.println(searchkey instanceof Double);
         if (GenericCompare(table.get(mid).min, searchkey) < 0)
             return BinarySearch(searchkey, hi, mid);
         else
@@ -493,15 +490,14 @@ public class Table implements Serializable {
         Vector<Page.Pair> result = new Vector<>();
         Table table = (Table) DBApp.deserialize(tableName);
         for(Bucket.Record indexRec :indexRecords){
-//            Page p=table.get(PageIDtoIdx(indexRec.pageid)).page;
-            Page p = (Page) DBApp.deserialize(tableName + "_" + table.table.get(PageIDtoIdx(indexRec.pageid)));
-            //todo deserialize table and page - i think done
+            Page p = (Page) DBApp.deserialize(tableName + "_" + (indexRec.pageid));
+
             for(Page.Pair tableRecord:p.records){
                 if(tableRecord.isEqual(indexRec)){
                     result.add(tableRecord);
                 }
             }
-            DBApp.serialize(tableName + "_" + table.table.get(PageIDtoIdx(indexRec.pageid)),p);
+            DBApp.serialize(tableName + "_" + (indexRec.pageid),p);
         }
         DBApp.serialize(tableName,table);
         return result;

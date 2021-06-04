@@ -407,9 +407,9 @@ public class Index implements Serializable {
     private void filterCell(Vector<BucketInfo> cell, SQLTerm term,Vector result) {
         // loops on cell record by record adds records that match condition
         for (BucketInfo bi : cell) {
-            Bucket b = (Bucket) DBApp.deserialize(tableName + "" + columnNames + "" + bi.id);
+            Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
            b.filterBucket(term,result);
-            //todo serialize Bucket
+            DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id,b);
 
         }
     }
@@ -423,11 +423,10 @@ public class Index implements Serializable {
             }
             else{
                 for (BucketInfo bi : cell){
-                    Bucket b = (Bucket) DBApp.deserialize(tableName + "" + columnNames + "" + bi.id);
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
                     result.addAll(b.records);
-
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id,b);
                 }
-                //todo serialize
 
             }
             return;
