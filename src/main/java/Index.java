@@ -54,7 +54,7 @@ public class Index implements Serializable {
         for (int i = 0; i <c.length ; i++) {
             long h = DBApp.code.get(c[i])==null?64:(long) DBApp.code.get(c[i]);
 
-          res+= h*Math.pow(63,c.length-i-1);
+            res+= h*Math.pow(63,c.length-i-1);
         }
         return res;
     }
@@ -354,7 +354,7 @@ public class Index implements Serializable {
             if(coordinates.get(ptr)==-1){
                 for(int i=0;i<10;i++) helper(coordinates,ptr+i,grid);
             }else {
-                 Vector<BucketInfo>cell= (Vector<BucketInfo>)((Object[])grid)[coordinates.get(ptr)];
+                Vector<BucketInfo>cell= (Vector<BucketInfo>)((Object[])grid)[coordinates.get(ptr)];
                 return cell;
             }
         }else {

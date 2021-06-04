@@ -537,26 +537,7 @@ public class Table implements Serializable {
                     break;
                 }
 
-// ma haza?:
-
-        ListIterator pagesItr = (this.table).listIterator(this.table.size());
-        ListIterator recs = null;
-        Vector res = new Vector();
-        Page currPage;
-        Page.Pair currRec;
-
-        while (pagesItr.hasPrevious()) {
-            currPage = (Page) DBApp.deserialize(tableName+"_"+((tuple4) pagesItr.previous()).id);
-            recs = (currPage.records).listIterator(currPage.records.size());
-
-            while (recs.hasPrevious()) {
-                // removing records that violate the select statement
-                currRec = (Page.Pair) recs.previous();
-                if (checkCond(currRec, term._strColumnName, term._objValue, term._strOperator))
-                    res.add(currRec);
-
             }
-            DBApp.serialize(tableName+"_"+((tuple4) pagesItr.previous()).id,currPage);
         }
         return res;
     }
@@ -669,34 +650,28 @@ public class Table implements Serializable {
     public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
         Object recVal = rec.row.get(col);
         switch (operator) {
-            case (">"):
+            case ">":
                 if (GenericCompare(recVal, value) > 0)
                     return true;
-                break;
-            case (">="):
+            case ">=":
                 if (GenericCompare(recVal, value) >= 0)
                     return true;
-                break;
-            case ("<"):
+            case "<":
                 if (GenericCompare(recVal, value) < 0)
                     return true;
-                break;
-            case ("<="):
+            case "<=":
                 if (GenericCompare(recVal, value) <= 0)
                     return true;
-                break;
-            case ("="):
+            case "=":
                 if (GenericCompare(recVal, value) == 0)
                     return true;
-                break;
-            case ("!="):
+            case "!=":
                 if (GenericCompare(recVal, value) != 0)
                     return true;
-                break;
             default:
                 throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
         }
-        return false;
+
 
     }
 
