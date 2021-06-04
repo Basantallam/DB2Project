@@ -389,23 +389,14 @@ public class Index implements Serializable {
         return null;
     }
 
-    public Vector lessThan(SQLTerm term, boolean traverseTable) throws DBAppException {
+    public Vector lessThan(SQLTerm term) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
         Vector res = null;
-        if (!traverseTable) // traverse Index
+       // traverse Index
             res = loopUntil(LastCellCoordinates, term);
-        else // traverse sorted table
-        {
-            Table t = (Table) DBApp.deserialize(term._strTableName);
-            int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
-            Page page=t.table.get(pageIdx).page;
-            //todo deserialize page
-            int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
-            //check inclusive or exclusive fel binary search
-            res = t.loopUntil(pageIdx,recordIdx,term);
-        }
+
         return res;
     }
 
@@ -473,25 +464,15 @@ public class Index implements Serializable {
         }
     }
 
-    public Vector greaterThan(SQLTerm term, boolean traverseTable) throws DBAppException {
+    public Vector greaterThan(SQLTerm term) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
         //nulls should be 0 3adi
         Vector res = null;
-        if (!traverseTable) {
             //traverse Index
             res = loopFrom(FirstCellCoordinates, term);
-        } else {
-            // traverse table
-            Table t = (Table) DBApp.deserialize(term._strTableName);
-            int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
-            Page page=t.table.get(pageIdx).page;
-            //todo deserialize page
-            int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
-            //check inclusive or exclusive fl binary search
-            res = t.loopFrom(pageIdx,recordIdx,term);
-        }
+
         return res;
     }
 

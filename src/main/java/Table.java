@@ -432,28 +432,67 @@ public class Table implements Serializable {
     public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
         Vector terms = new Vector<SQLTerm>(); terms.add(term);
         Index index = useIndexSelect(terms);
+        Vector res =new Vector<>();
         boolean clustered = this.clusteringCol.equals(term._strColumnName);
         if (null == index) {
             if (!clustered) {
                 return LinearScan(term);
             } else { //clustered todo binary search
-
+                switch (term._strOperator) {
+                    case ("<"): case ("<="):return this.lessThan(term);
+                    case (">"): case (">="): return this.greaterThan(term);
+                    case ("="): return null;
+//                   todo
+                    case ("!="):
+                        return null;
+//                  todo  won't use index a7san
+                }
             }
         }
         else
          { //clustering or non-clustering to decide I'll traverse table or index
-            switch (term._strOperator) {
-                case ("<"): case ("<="): return index.lessThan(term, clustered);
-                case (">"): case (">="): return index.greaterThan(term, clustered);
-                case ("="):  return null;
+             if(clustered){
+                 switch (term._strOperator) {
+                     case ("<"): case ("<="): return index.lessThan(term);
+                     case (">"): case (">="): return index.greaterThan(term);
+                     case ("="):  return null;
 //                   todo
-                case ("!="):  return null;
+                     case ("!="):  return null;
 //                  todo  won't use index a7san
-            }
+                 }
+             }
+             else{
+                 switch (term._strOperator) {
+                     case ("<"): case ("<="):return this.lessThan(term);
+                     case (">"): case (">="):return this.greaterThan(term);
+                     case ("="): return null;
+//                   todo
+                     case ("!="):return null;
+//                  todo  won't use index a7san
+                 }
+             }
         }
-        return new Vector();
+        return res;
     }
-
+    public Vector lessThan(SQLTerm term) throws DBAppException {
+        Table t = (Table) DBApp.deserialize(term._strTableName);
+        int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
+        Page page=t.table.get(pageIdx).page;
+        //todo deserialize page
+        int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
+        //check inclusive or exclusive fel binary search
+        return t.loopUntil(pageIdx,recordIdx,term);
+    }
+    public Vector greaterThan(SQLTerm term) throws DBAppException {
+        // traverse table
+        Table t = (Table) DBApp.deserialize(term._strTableName);
+        int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
+        Page page=t.table.get(pageIdx).page;
+        //todo deserialize page
+        int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
+        //check inclusive or exclusive fl binary search
+        return loopFrom(pageIdx,recordIdx,term);
+    }
     private Vector LinearScan(SQLTerm term) throws DBAppException {
         Vector res = new Vector();//loop on entire table.. every single record and check
             for(tuple4 tuple:table) {
