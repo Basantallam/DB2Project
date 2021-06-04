@@ -195,7 +195,7 @@ public class Index implements Serializable {
     }
 
     public int BinarySearchCell(Vector<BucketInfo> cell, Object searchKey, int hi, int lo) {
-        //binary search within one cell
+        //binary search within one cell returns index of bucket
         int mid = (hi + lo + 1) / 2;
         if (lo >= hi)
             return mid;
@@ -401,30 +401,45 @@ public class Index implements Serializable {
         //todo traverse sorted table
         {
             Vector<BucketInfo> cell = getCell(LastCellCoordinates);
-            int lastPageID = pageFromCell(cell,term);
+            double lastPageID = pageFromCell(cell,term);
 
             Table t = (Table) DBApp.deserialize(term._strTableName);
-            res = t.loopTableUntilExclusive(lastPageID);
+            res = t.loopUntil(lastPageID,false);
 
         }
         return res;
     }
 
-    private int pageFromCell(Vector<BucketInfo> cell,SQLTerm term) throws DBAppException {
-        ListIterator cellIt = cell.listIterator();
-        ListIterator currBucket;
-        Object currRec;
-        while(cellIt.hasNext()){
-            currBucket = (((BucketInfo) cellIt.next()).bucket.records).listIterator();
-            while(currBucket.hasNext()) {
-                currRec = currBucket.next();
-//                if (!(Table.checkCond(currRec, term._strColumnName, term._objValue, term._strOperator)))
+    private double pageFromCell(Vector<BucketInfo> cell,SQLTerm term) throws DBAppException {
+        double maxPageID=0;
+        for(BucketInfo bi:cell){ // cannot be binary search 3ashan mesh shart ykon el index sorted 3al col da fa laem linear
+            for(Bucket.Record record:bi.bucket.records){
+                if (checkCond(record, term)){
+                    maxPageID=Math.max(maxPageID,record.pageid);
+                }
             }
         }
-        return 0;
+        return maxPageID;
 
     }
 
+    private boolean checkCond(Bucket.Record record, SQLTerm term) {
+        switch (term._strOperator){
+            case("<"):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)<0;
+            case("<="):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)<=0;
+            case(">"):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)>0;
+            case(">="):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)>=0;
+            case("="):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)==0;
+            case("!="):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)!=0;
+            default: return false;
+        }
+    }
 
 
     public Vector lessThanOrEqual(SQLTerm term, boolean traverseTable) {
@@ -457,14 +472,13 @@ public class Index implements Serializable {
         return result;
     }
 
-    private void filterCell(Vector<BucketInfo> lastCell, SQLTerm term, boolean inclusive,Vector result) {
+    private void filterCell(Vector<BucketInfo> cell, SQLTerm term, boolean inclusive,Vector result) {
         //loops on cell record by record adds records that match condition
-        for (BucketInfo bi : lastCell) {
+        for (BucketInfo bi : cell) {
             for (Bucket.Record r : bi.bucket.records) {
                 Object recordVal = r.values.get(term._strColumnName);
                 if (Table.GenericCompare(recordVal, term._objValue) < 0)
                     result.add(r);
-
                 if (Table.GenericCompare(recordVal, term._objValue) == 0 && inclusive)
                     result.add(r);
             }
@@ -473,8 +487,8 @@ public class Index implements Serializable {
 
 
     public void getRecordsBetween(int[] curr, int[] limits, int depth, Vector<Bucket.Record> accumulated) {
-        //recursive n^m complexity gets all combinations of coordinates between [start,limits[
-        if (depth == limits.length) {
+        //recursive 10^n complexity gets all combinations of coordinates between [start,limits[
+        if (depth == limits.length) { // weselna besalama lel n dimensions bta3et cell
             Vector<BucketInfo> cell = getCell(curr);
             for (BucketInfo bi : cell) {
                 for (Bucket.Record r : bi.bucket.records) {

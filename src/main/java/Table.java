@@ -540,6 +540,7 @@ public class Table implements Serializable {
                 }
                 case ("!="): {
 //                  todo  won't use index a7san
+
                     break;
                 }
 
@@ -548,18 +549,19 @@ public class Table implements Serializable {
         return res;
     }
 
-    public Vector loopTableUntilExclusive(int lastPageID) {
+    public Vector loopUntil(double lastPageID,boolean inclusive) {
         Vector res = new Vector();
 
         for(tuple4 tuple: table){
             //todo deserialize page
             Page currPage = tuple.page;
-            if(currPage.id==lastPageID)
+            if(currPage.id==lastPageID) {
+                if (inclusive) {
+                    res.addAll(currPage.records);
+                }
                 break;
-            for(Page.Pair record: currPage.records){
-                res.add(record);
             }
-
+            res.addAll(currPage.records);
         }
         //todo I: cond stop at lastcellcoordinates  B:asdek eih hena?
 
@@ -567,8 +569,6 @@ public class Table implements Serializable {
     }
 
     public Vector applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
-
-
         switch (arrayOperator) {
             case ("AND"):
                 return ANDing(curr, next);
@@ -657,9 +657,9 @@ public class Table implements Serializable {
         terms.add(term2);
         Index index = useIndexSelect(terms);
         if (index != null) {
-
+//todo
         } else {
-
+//todo
         }
         return result;
     }
