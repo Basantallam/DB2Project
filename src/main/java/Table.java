@@ -484,46 +484,41 @@ public class Table implements Serializable {
     }
 
     public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
-        Vector res = new Vector();
         Vector terms = new Vector<SQLTerm>(); terms.add(term);
         Index index = useIndexSelect(terms);
         if (null == index) {
-            ListIterator pagesItr = (this.table).listIterator(this.table.size());
-            ListIterator recs = null;
-            Page currPage; Page.Pair currRec;
-            while (pagesItr.hasPrevious()) {
-                currPage = (Page) DBApp.deserialize(tableName + "_" + ((tuple4) pagesItr.previous()).id);
-                recs = (currPage.records).listIterator(currPage.records.size());
-                while (recs.hasPrevious()) {
-                    // removing records that violate the select statement
-                    currRec = (Page.Pair) recs.previous();
-                    if (checkCond(currRec, term))
-                        res.add(currRec);
-                }
-                DBApp.serialize(tableName + "_" + ((tuple4) pagesItr.previous()).id, currPage);
-            }
-       return res;
-        } else {
+             return resolveWithoutIndex(term);
+        }
+        else
+         {
             boolean traverseTable = this.clusteringCol.equals(term._strColumnName);
             //clustering or non-clustering to decide I'll traverse table or index
             switch (term._strOperator) {
-                case ("<"):
-                    return index.lessThan(term, traverseTable);
-                case ("<="):
-                    return index.lessThan(term, traverseTable);
-                case (">"):
-                    return index.greaterThan(term, traverseTable);
-                case (">="):
-                    return index.greaterThan(term, traverseTable);
+                case ("<"): case ("<="): return index.lessThan(term, traverseTable);
+                case (">"): case (">="): return index.greaterThan(term, traverseTable);
                 case ("="):
-//                    todo
-                    return null;
+//                   todo
+//                    return null;
                 case ("!="):
 //                  todo  won't use index a7san
                     return null;
             }
         }
-        return res;
+        return new Vector();
+    }
+
+    private Vector resolveWithoutIndex(SQLTerm term) throws DBAppException {
+        Vector res = new Vector();
+            for(tuple4 tuple:table) {
+               Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
+                for (Page.Pair currRec : currPage.records) {
+                    // adding records that match the select statement
+                    if (checkCond(currRec, term))
+                        res.add(currRec);
+                }
+                DBApp.serialize(tableName + "_" + tuple.id, currPage);
+            }
+            return res;
     }
 
     public Vector loopUntil(double lastPageID, SQLTerm term) throws DBAppException {
@@ -537,8 +532,6 @@ public class Table implements Serializable {
             }
             res.addAll(currPage.records);
         }
-        //todo cond stop at lastcellcoordinates ? ya3ni eih ya immo
-
         return res;
     }
 
@@ -558,37 +551,30 @@ public class Table implements Serializable {
 
     private void filterPage(Page currPage, SQLTerm term,Vector result) throws DBAppException {
         //loops on cell record by record adds records that match condition
-        for (Page.Pair rec : currPage.records) {
+        for (Page.Pair rec : currPage.records)
                 if (checkCond(rec,term))
                     result.add(rec);
-            }
     }
-
 
     public Vector applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
             case ("AND"):
                 return ANDing(curr, next);
             case ("OR"):
-                if (curr instanceof SQLTerm) {
+                if (curr instanceof SQLTerm)
                     curr = resolveOneStatement((SQLTerm) curr);
-                }
-                if (next instanceof SQLTerm) {
+                if (next instanceof SQLTerm)
                     next = resolveOneStatement((SQLTerm) next);
-                }
                 return ORing((Vector) curr, (Vector) next);
             case ("XOR"):
-                if (curr instanceof SQLTerm) {
+                if (curr instanceof SQLTerm)
                     curr = resolveOneStatement((SQLTerm) curr);
-                }
-                if (next instanceof SQLTerm) {
+                if (next instanceof SQLTerm)
                     next = resolveOneStatement((SQLTerm) next);
-                }
                 return XORing((Vector) curr, (Vector) next);
             default:
                 throw new DBAppException("Star operator must be one of AND, OR, XOR!");
         }
-
     }
 
     public void Stack(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
@@ -632,8 +618,7 @@ public class Table implements Serializable {
     private Vector ANDing(Object curr, Object next) throws DBAppException {
         //parent AND
         if (curr instanceof SQLTerm && next instanceof SQLTerm) {
-            return ANDingI((SQLTerm)curr, (SQLTerm)next);
-            //momken nb2a nkhalee vector of SQLTerms mesh 2 only
+            return ANDingI((SQLTerm)curr, (SQLTerm)next); //momken nb2a nkhalee vector of SQLTerms mesh 2 only
         } else {
             if (curr instanceof SQLTerm) {
                 curr = (Vector) resolveOneStatement((SQLTerm) curr);
@@ -704,7 +689,6 @@ public class Table implements Serializable {
 
         public String print(String tableName) {
             Page p = (Page) DBApp.deserialize(tableName + "_" + id);
-
             return p.toString();
         }
 

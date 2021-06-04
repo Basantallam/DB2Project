@@ -394,18 +394,14 @@ public class Index implements Serializable {
         hashtable.put(term._strColumnName, term._objValue);
         int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
         Vector res = null;
-        if (!traverseTable)
-            // traverse Index
+        if (!traverseTable) // traverse Index
             res = loopUntil(LastCellCoordinates, term);
-        else
-        //todo traverse sorted table
+        else // traverse sorted table
         {
             Vector<BucketInfo> cell = getCell(LastCellCoordinates);
             double lastPageID = pageFromCell(cell,term);
-
             Table t = (Table) DBApp.deserialize(term._strTableName);
             res = t.loopUntil(lastPageID,term);
-
         }
         return res;
     }
