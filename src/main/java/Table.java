@@ -580,22 +580,56 @@ public class Table implements Serializable {
             return ANDing((Vector) curr, (Vector) next);
         }
     }
-    private Vector ANDingI(SQLTerm term1, SQLTerm term2) {
+    private Vector<Page.Pair> ANDingI(SQLTerm term1, SQLTerm term2) throws DBAppException {
         //2nd child AND
-        // curr w next are SQL Terms
         //todo anding with Index momken nkhalee vector of sql terms
-        Vector result = null;
+        Vector result = new Vector();
         Vector <SQLTerm> terms=new Vector<>();
         terms.add(term1);
         terms.add(term2);
+        boolean clustering1=(term1._strColumnName==clusteringCol);
+        boolean clustering2=(term2._strColumnName==clusteringCol);
         Index index = useIndexSelect(terms);
         if (index != null) {
         //todo
         } else {
-        //todo
+            if(clustering1){
+                Vector<Page.Pair> res1 = tableTraversal(term1);//todo pairs not grid records
+                for(Page.Pair record:res1){
+                    if(checkCond(record,term2)){
+                        result.add(record);
+                    }
+                }
+            }
+            else if(clustering2){
+                Vector<Page.Pair> res2 = tableTraversal(term2);
+                for(Page.Pair record:res2){
+                    if(checkCond(record,term1)){
+                        result.add(record);
+                    }
+                }
+            }
+            else{
+                return this.LinearScan(term1,term2);
+            }
         }
         return result;
     }
+
+    private Vector<Page.Pair> LinearScan(SQLTerm term1, SQLTerm term2) throws DBAppException {
+        Vector res = new Vector();//loop on entire table.. every single record and check
+        for(tuple4 tuple:table) {
+            Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
+            for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
+                if (checkCond(currRec, term1)&&checkCond(currRec,term2))
+                    res.add(currRec);
+            }
+            DBApp.serialize(tableName + "_" + tuple.id, currPage);
+        }
+        return res;
+    }
+
+
     private Index useIndexSelect(Vector<SQLTerm> term1) {
         //vector can have 1 or 2 terms
         //momken nkhalee col names bas badal sql term kolo
