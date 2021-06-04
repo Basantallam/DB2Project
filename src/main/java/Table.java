@@ -510,21 +510,24 @@ public class Table implements Serializable {
         }
         else {
 
+            boolean clustColQuery=this.clusteringCol.equals(term._strColumnName);
+            //clustering or non-clustering to decide I'll traverse table or index
+
             switch (term._strOperator) {
                 case ("<"): {
-                    res=index.lessThan(term);
+                    res=index.lessThan(term,clustColQuery);
                     break;
                 }
                 case ("<="): {
-                    res=index.lessThanOrEqual(term);
+                    res=index.lessThanOrEqual(term,clustColQuery);
                     break;
                 }
                 case (">"): {
-                    res=index.greaterThan(term);
+                    res=index.greaterThan(term,clustColQuery);
                     break;
                 }
                 case (">="): {
-                    res=index.greaterThanOrEqual(term);
+                    res=index.greaterThanOrEqual(term,clustColQuery);
                     break;
                 }
                 case ("="): {

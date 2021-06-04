@@ -370,22 +370,36 @@ public class Index implements Serializable {
         }return null;
     }
 
-    public Vector lessThan(SQLTerm term) {
+    public Vector lessThan(SQLTerm term, boolean clustColQuery) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] LastCellCoordinates = this.getCellCoordinates(hashtable,true);
         //nulls should be [9]
-        Vector res = loopUntilExclusive(LastCellCoordinates,term);
+        Vector res =null;
+        if(!clustColQuery)
+            //traverse Index
+            res = loopUntilExclusive(LastCellCoordinates,term);
+        else
+            //todo traverse table
+        {
 
+        }
         return res;
     }
-    public Vector lessThanOrEqual(SQLTerm term) {
+    public Vector lessThanOrEqual(SQLTerm term, boolean clustColQuery) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] LastCellCoordinates = this.getCellCoordinates(hashtable,true);
         //nulls should be 9
-        Vector res = loopUntilInclusive(LastCellCoordinates,term);
+        Vector res =null;
+        if(!clustColQuery)
+            //traverse Index
+            res = loopUntilInclusive(LastCellCoordinates,term);
+        else
+            //todo traverse table
+        {
 
+        }
         return res;
     }
     public Vector<Bucket.Record> loopUntilExclusive(int[]limits, SQLTerm term){
@@ -436,12 +450,20 @@ public class Index implements Serializable {
         }
     }
 
-    public Vector greaterThan(SQLTerm term) {
+    public Vector greaterThan(SQLTerm term, boolean clustColQuery) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
         //nulls should be 0 3adi
-        return this.loopFromExclusive(FirstCellCoordinates,term);
+        Vector res=null;
+        if(!clustColQuery){
+            //traverse Index
+            res=loopFromExclusive(FirstCellCoordinates,term);
+        }
+        else{
+            //todo traverse table
+        }
+        return res;
     }
 
     public Vector<Bucket.Record> loopFromInclusive(int[] start,SQLTerm term){
@@ -493,7 +515,7 @@ public class Index implements Serializable {
         //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2
         return ref;
     }
-    public Vector greaterThanOrEqual(SQLTerm term) {
+    public Vector greaterThanOrEqual(SQLTerm term, boolean clustColQuery) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
