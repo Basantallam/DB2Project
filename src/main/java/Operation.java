@@ -84,7 +84,7 @@ public class Operation {
 //        System.out.println(stackO);
 //        System.out.println(stack.pop());
         int[] curr= {0,0,0};
-        int[] lim= {2,2,2};
+        int[] lim= {2,1,0};
 
         Vector<Integer> v = new Vector<>();
         loop(curr,lim,0,v);

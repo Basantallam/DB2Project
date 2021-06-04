@@ -101,6 +101,29 @@ public class Bucket implements Serializable {
         }return pages;
     }
 
+    public void filterBucket(SQLTerm term, Vector result) {
+        for (Bucket.Record r : records) {
+            if (checkCond(r,term))
+                result.add(r);
+        }
+    }
+    static boolean checkCond(Bucket.Record record, SQLTerm term) {
+        switch (term._strOperator){
+            case("<"):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)<0;
+            case("<="):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)<=0;
+            case(">"):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)>0;
+            case(">="):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)>=0;
+            case("="):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)==0;
+            case("!="):
+                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)!=0;
+            default: return false;
+        }
+    }
     class Record implements Serializable{
         Hashtable<String, Object> values;
         double pageid;

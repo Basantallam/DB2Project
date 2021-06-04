@@ -410,7 +410,7 @@ public class Index implements Serializable {
         double maxPageID=0;
         for(BucketInfo bi:cell){ // cannot be binary search 3ashan mesh shart ykon el index sorted 3al col da fa laem linear
             for(Bucket.Record record:bi.bucket.records){
-                if (checkCond(record, term)){
+                if (Bucket.checkCond(record, term)){
                     maxPageID=Math.max(maxPageID,record.pageid);
                 }
             }
@@ -419,65 +419,54 @@ public class Index implements Serializable {
 
     }
 
-    private boolean checkCond(Bucket.Record record, SQLTerm term) {
-        switch (term._strOperator){
-            case("<"):
-                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)<0;
-            case("<="):
-                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)<=0;
-            case(">"):
-                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)>0;
-            case(">="):
-                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)>=0;
-            case("="):
-                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)==0;
-            case("!="):
-                return Table.GenericCompare(record.values.get(term._strColumnName),term._objValue)!=0;
-            default: return false;
-        }
-    }
-
-
-
     public Vector<Bucket.Record> loopUntil(int[] limits, SQLTerm term)  {
         //nulls should be [9]
         Vector<Bucket.Record> result = new Vector<Bucket.Record>();
         int[] start=new int[limits.length];
 
-        getRecordsBetween(start, limits, 0, result); // [start,limits[
+        int val=9;
+        int idx=columnNames.indexOf(term._strColumnName);
+
+        for(int i=0;i<limits.length;i++){
+            if(limits[i]!=9){
+                val=limits[i];
+                break;
+            }
+        }
+        getRecordsBetween(start, limits, 0,term, result,idx,val); // [start,limits[
 
         Vector<BucketInfo> lastCell = getCell(limits);
-        filterCell(lastCell,term,result);
         //loops on cell record by record adds records that match condition
         return result;
     }
 
     private void filterCell(Vector<BucketInfo> cell, SQLTerm term,Vector result) {
-        //loops on cell record by record adds records that match condition
+        // loops on cell record by record adds records that match condition
         for (BucketInfo bi : cell) {
-            for (Bucket.Record r : bi.bucket.records) {
-                if (checkCond(r,term))
-                    result.add(r);
-            }
+           bi.bucket.filterBucket(term,result);
         }
     }
 
-
-    public void getRecordsBetween(int[] curr, int[] limits, int depth, Vector<Bucket.Record> accumulated) {
+    public void getRecordsBetween(int[] curr, int[] limits, int depth, SQLTerm term, Vector<Bucket.Record> result
+            , int filterIdx, int filterVal) {
         //recursive 10^n complexity gets all combinations of coordinates between [start,limits[
         if (depth == limits.length) { // weselna besalama lel n dimensions bta3et cell
             Vector<BucketInfo> cell = getCell(curr);
-            for (BucketInfo bi : cell) {
-                for (Bucket.Record r : bi.bucket.records) {
-                    accumulated.add(r);
-                }
+            if(curr[filterIdx]==filterVal){
+                filterCell(cell,term,result);
+            }
+            else{
+                for (BucketInfo bi : cell)
+                    result.addAll(bi.bucket.records);
+                //todo return page record
             }
             return;
         }
         for (int i = 0; i < limits[depth]; i++) { //excludes el last cell
             int[] newCurr = curr.clone();
             newCurr[depth] = i;
-            getRecordsBetween(newCurr, limits, depth + 1, accumulated);
+            getRecordsBetween(newCurr, limits, depth + 1, term,result,filterIdx,filterVal);
+            
         }
     }
 
@@ -504,12 +493,19 @@ public class Index implements Serializable {
 
     public Vector<Bucket.Record> loopFrom(int[] start, SQLTerm term) {
         Vector<Bucket.Record> result = new Vector<Bucket.Record>();
-        Vector<BucketInfo> firstCell = getCell(start);
-        filterCell(firstCell,term,result);
 
-        getRecordsBetween(pLusOne(start), pLusOne(this.getEnd()), 0, result);
-        //bazawed ones 3ala kol el array bta3 getEnd 3ashan getRecordsBetween bet exclude akher cell
-        //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2 fel start
+        int val=0;
+        int idx=columnNames.indexOf(term._strColumnName);
+
+        for(int i=0;i<start.length;i++){
+            if(start[i]!=0){
+                val=start[i];
+                break;
+            }
+        }
+        getRecordsBetween(start, pLusOne(this.getEnd()), 0,term, result,idx,val); // [start,limits[
+       //todo validate start and end
+
         return result;
     }
 

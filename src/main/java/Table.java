@@ -122,7 +122,7 @@ public class Table implements Serializable {
         res.add(o1);
         return res;
     }
-    
+
     public void insert(String pk, Hashtable<String, Object> colNameValue, boolean useIndex) {
         Object insertedPkValue = colNameValue.get(pk);
         int foundIdx = 0;
