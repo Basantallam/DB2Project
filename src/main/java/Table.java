@@ -321,7 +321,7 @@ public class Table implements Serializable {
                 if (p.isEmpty()) {//todo
 
                 } else {
-//todo
+                //todo
                 }
             }
         } else if (pk.equals(""))
@@ -688,14 +688,7 @@ public class Table implements Serializable {
         }
         return res;
     }
-
-
-//    private Index useIndexSelect(Vector<SQLTerm> term1) {
-//        //vector can have 1 or 2 terms
-//        //momken nkhalee col names bas badal sql term kolo
-//        //todo
-//        return null;
-//    }
+    
     public static boolean checkCond(Page.Pair rec, SQLTerm term) throws DBAppException {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
         Object recVal = rec.row.get(col);
