@@ -554,19 +554,14 @@ public class Table implements Serializable {
     }
     public Vector<Page.Pair> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
-            case ("AND"):
-                return ANDing(curr, next);
+            case ("AND"): return ANDing(curr, next);
             case ("OR"):
-                if (curr instanceof SQLTerm)
-                    curr = resolveOneStatement((SQLTerm) curr);
-                if (next instanceof SQLTerm)
-                    next = resolveOneStatement((SQLTerm) next);
+                if (curr instanceof SQLTerm) curr = resolveOneStatement((SQLTerm) curr);
+                if (next instanceof SQLTerm) next = resolveOneStatement((SQLTerm) next);
                 return ORing((Vector) curr, (Vector) next);
             case ("XOR"):
-                if (curr instanceof SQLTerm)
-                    curr = resolveOneStatement((SQLTerm) curr);
-                if (next instanceof SQLTerm)
-                    next = resolveOneStatement((SQLTerm) next);
+                if (curr instanceof SQLTerm) curr = resolveOneStatement((SQLTerm) curr);
+                if (next instanceof SQLTerm) next = resolveOneStatement((SQLTerm) next);
                 return XORing((Vector) curr, (Vector) next);
             default:
                 throw new DBAppException("Star operator must be one of AND, OR, XOR!");
@@ -631,7 +626,7 @@ public class Table implements Serializable {
             //todo mesh 3arfaaaaa
         } else {
             if(clustering1){
-                Vector<Page.Pair> res1 = tableTraversal(term1);//todo pairs not grid records & inc exc
+                Vector<Page.Pair> res1 = tableTraversal(term1);//todo inc exc
                 for(Page.Pair record:res1){
                     if(checkCond(record,term2)){
                         result.add(record);
