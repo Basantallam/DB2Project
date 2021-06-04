@@ -309,14 +309,18 @@ public class Table implements Serializable {
     }
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
         if (useIndex) {
-            HashSet<Double> ids=chooseIndexAnd(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
-            for (double id:ids) {
-                Page p = (Page) DBApp.deserialize(tableName + "_" + id);
-                p.delete(null, columnNameValue);
-                if (p.isEmpty()) {//todo
-
-                } else {
-//todo
+            if(!pk.equals("")){
+                //todo with index has pk
+            }
+            else{
+                HashSet<Double> ids=chooseIndexAnd(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
+                for (double id:ids) {
+                    Page p = (Page) DBApp.deserialize(tableName + "_" + id);
+                    Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
+                    int idx=PageIDtoIdx(id);
+                    tuple4 t = table.get(idx);
+                    indicesDelete(deletedrows, p.id);
+                    deleteRefactorPage(p, idx, t);
                 }
             }
         } else if (pk.equals(""))
@@ -324,16 +328,8 @@ public class Table implements Serializable {
                 Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
                 Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
                 indicesDelete(deletedrows, p.id);
-
-                if (p.isEmpty()) {
-                    int idx = table.indexOf(t);
-                    table.remove(idx);
-                    new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
-                } else {
-                    t.min = p.records.firstElement().pk;
-                    t.max = p.records.lastElement().pk;
-                    DBApp.serialize(tableName + "_" + t.id, p);
-                }
+                int idx = table.indexOf(t);
+                deleteRefactorPage(p,idx,t);
             }
         else {
             Object pkValue = columnNameValue.get(pk);
@@ -342,18 +338,23 @@ public class Table implements Serializable {
             int idx = BinarySearch(pkValue, hi, lo);
             tuple4 t = table.get(idx);
             Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-            Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
+            Vector<Hashtable<String, Object>> deletedrows = p.delete(pkValue, columnNameValue);
             indicesDelete(deletedrows, p.id);
-            if (p.isEmpty()) {
-                table.remove(idx);
-                new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
-            } else {
-                t.min = p.records.firstElement().pk;
-                t.max = p.records.lastElement().pk;
-                DBApp.serialize(tableName + "_" + t.id, p);
-            }
+            deleteRefactorPage(p, idx, t);
         }
     }
+
+    private void deleteRefactorPage(Page page, int idx, tuple4 t) {
+        if (page.isEmpty()) {
+            table.remove(idx);
+            new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
+        } else {
+            t.min = page.records.firstElement().pk;
+            t.max = page.records.lastElement().pk;
+            DBApp.serialize(tableName + "_" + t.id, page);
+        }
+    }
+
     public void updateMetadata(String pk, Hashtable<String, String> htblColNameType,
                                Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax) throws IOException {
         FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
