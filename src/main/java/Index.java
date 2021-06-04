@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.Serializable;
 import java.util.*;
 
@@ -273,14 +274,24 @@ public class Index implements Serializable {
         insert(newRow, pageId);
     }
     public void delete(Hashtable<String, Object> row, double pageId) {
-        int[] cellIdx = getCellCoordinates(row, false);//false sah?
+        int[] cellIdx = getCellCoordinates(row, false);//false sah? A: sa7
         Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
         Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
         b.delete(arrangedHash, pageId);
-        DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+        deleteRefactorBucket(b,cell,bi);
+    }
+    private void deleteRefactorBucket(Bucket b, Vector<BucketInfo> cell, BucketInfo bi) {
+        if (b.isEmpty()) {
+            cell.remove(bi);
+            new File("src/main/resources/data/" + tableName + "_" + columnNames + "_" + bi.id+ ".ser").delete();
+        } else {
+            bi.max = b.records.lastElement().values.get(columnNames.get(0));
+            bi.min = b.records.firstElement().values.get(columnNames.get(0));
+            DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+        }
     }
     public Vector<Double> narrowPageRange(Hashtable<String, Object> colNameValue) {
         int[] cellIdx = getCellCoordinates(colNameValue, false);
