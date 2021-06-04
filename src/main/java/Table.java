@@ -223,8 +223,9 @@ public class Table implements Serializable {
         int max = 0;
         for (Index i : index) {
             int count = 0;
-            for (String cn : i.columnNames)
+            for (String cn : i.columnNames) {
                 if (columnNames.contains(cn)) count++;
+            }
             if (count > max) {
                 max = count;
                 indexSoFar = i;
@@ -240,10 +241,11 @@ public class Table implements Serializable {
     public Vector<Index> chooseIndexOr(Vector<String> columnNames) {
 
         Vector<Index> res = new Vector<>();
-        for (String cn : columnNames)
-            for (Index i : index)
+        for (String cn : columnNames) {
+            for (Index i : index) {
                 if (i.columnNames.contains(cn)) res.add(i);
-
+            }
+        }
         return res;
     }
     private void indicesUpdate(Hashtable<String, Object> row, Double oldId, Double newId) {
@@ -262,6 +264,7 @@ public class Table implements Serializable {
             return prevId + 1;
         double nxtId = table.get(prevIdx + 1).id;
         return (prevId + nxtId) / 2.0;
+
     }
     public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue, boolean useIndex)
             throws Exception
@@ -308,20 +311,26 @@ public class Table implements Serializable {
             return Integer.parseInt(clusteringKeyValue);
         else if (pk instanceof Double)
             return Double.parseDouble(clusteringKeyValue);
-        else if (pk instanceof Date)
+        else if (pk instanceof Date) {
             return new SimpleDateFormat("yyyy-MM-dd").parse(clusteringKeyValue);
+        }
+
         return clusteringKeyValue;
     }
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
         if (useIndex) {
-            HashSet<Double> ids=chooseIndexAnd(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
-            for (double id:ids) {
-                Page p = (Page) DBApp.deserialize(tableName + "_" + id);
-                p.delete(null, columnNameValue);
-                if (p.isEmpty()) {
-                    //todo
-                } else {
-                   //todo
+            if(!pk.equals("")){
+                //todo with index has pk
+            }
+            else{
+                HashSet<Double> ids=chooseIndexAnd(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
+                for (double id:ids) {
+                    Page p = (Page) DBApp.deserialize(tableName + "_" + id);
+                    Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
+                    int idx=PageIDtoIdx(id);
+                    tuple4 t = table.get(idx);
+                    indicesDelete(deletedrows, p.id);
+                    deleteRefactorPage(p, idx,t);
                 }
             }
         } else if (pk.equals(""))
@@ -329,16 +338,8 @@ public class Table implements Serializable {
                 Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
                 Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
                 indicesDelete(deletedrows, p.id);
-
-                if (p.isEmpty()) {
-                    int idx = table.indexOf(t);
-                    table.remove(idx);
-                    new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
-                } else {
-                    t.min = p.records.firstElement().pk;
-                    t.max = p.records.lastElement().pk;
-                    DBApp.serialize(tableName + "_" + t.id, p);
-                }
+                int idx = table.indexOf(t);
+                deleteRefactorPage(p,idx,t);
             }
         else {
             Object pkValue = columnNameValue.get(pk);
@@ -349,16 +350,21 @@ public class Table implements Serializable {
             Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
             Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
             indicesDelete(deletedrows, p.id);
-            if (p.isEmpty()) {
-                table.remove(idx);
-                new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
-            } else {
-                t.min = p.records.firstElement().pk;
-                t.max = p.records.lastElement().pk;
-                DBApp.serialize(tableName + "_" + t.id, p);
-            }
+            deleteRefactorPage(p,idx,t);
         }
     }
+
+    private void deleteRefactorPage(Page page, int idx, tuple4 t) {
+        if (page.isEmpty()) {
+            table.remove(idx);
+            new File("src/main/resources/data/" + tableName + "_" + t.id + ".ser").delete();
+        } else {
+            t.min = page.records.firstElement().pk;
+            t.max = page.records.lastElement().pk;
+            DBApp.serialize(tableName + "_" + t.id, page);
+        }
+    }
+
     public void updateMetadata(String pk, Hashtable<String, String> htblColNameType,
                                Hashtable<String, String> htblColNameMin, Hashtable<String, String> htblColNameMax) throws IOException {
         FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
@@ -422,7 +428,8 @@ public class Table implements Serializable {
         return false;
     }
     public Vector<Page.Pair> resolveOneStatement(SQLTerm term) throws DBAppException {
-        Index index = chooseIndexRes(term._strColumnName);
+        Vector<String> terms = new Vector<String>(); terms.add(term._strColumnName);
+        Index index = chooseIndexAnd(terms);
         boolean clustered = this.clusteringCol.equals(term._strColumnName);
         if (null == index) {
             if (!clustered) return LinearScan(term);
@@ -542,24 +549,22 @@ public class Table implements Serializable {
     public Vector<Page.Pair> loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
         //todo inclusive wala exclusive
         Vector res = new Vector();
-        for(int pIdx=0 ; pIdx<=pageIdx ; pIdx++){
+        for(int pIdx=0;pIdx<=pageIdx;pIdx++){
             //todo deserialize page - i think done
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
 //            Page currPage = table.get(pIdx).page;
 
-            for(int rIdx=0 ; rIdx<table.get(pIdx).page.records.size() ; rIdx++){
+            for(int rIdx=0;rIdx<table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
+                res.add(record);
                 if(pIdx==pageIdx){
                     if(rIdx==recordIdx){
-                        if(checkCond(record,term))
-                            res.add(record);
                         break;
                     }
                 }
-                res.add(record);
-
             }
             DBApp.serialize(tableName + "_" + table.get(pIdx),currPage);
+
         }
         return res;
     }
@@ -568,19 +573,15 @@ public class Table implements Serializable {
         Vector res = new Vector();
         //todo deserialize table - i think done
         Table table = (Table) DBApp.deserialize(term._strTableName);
-        int rIdx=recordIdx;
-        for(int pIdx = pageIdx; pIdx<=table.table.size() ; pIdx++){
+
+        for(int pIdx=pageIdx;pIdx<=table.table.size();pIdx++){
             //todo deserialize page - i think done
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.table.get(pIdx));
-            for(; rIdx<table.table.get(pIdx).page.records.size();rIdx++){ //el semicolon el fel for ma2sooda leave it pls
+//            Page currPage = table.get(pIdx).page;
+            for(int rIdx=(pageIdx==pIdx?recordIdx:0);rIdx<table.table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
-                if(rIdx==recordIdx && pageIdx==pIdx) {
-                    if (checkCond(record, term)) res.add(record);
-                }
-                else
-                   res.add(record);
+                res.add(record);
             }
-            rIdx = 0;
             DBApp.serialize(tableName + "_" + table.table.get(pIdx),currPage);
         }
         DBApp.serialize(term._strTableName,table);
@@ -653,7 +654,7 @@ public class Table implements Serializable {
         terms.add(term2._strColumnName);
         boolean clustering1=(term1._strColumnName==clusteringCol);
         boolean clustering2=(term2._strColumnName==clusteringCol);
-        Index index = chooseIndexAnd(terms);//todo is this method correct here??
+        Index index = chooseIndexAnd(terms);
         if (index != null) {
 //            Hashtable ht=new Hashtable();
 //            ht.put(term1._strColumnName,term1._objValue);
@@ -697,6 +698,13 @@ public class Table implements Serializable {
         return res;
     }
 
+
+//    private Index useIndexSelect(Vector<SQLTerm> term1) {
+//        //vector can have 1 or 2 terms
+//        //momken nkhalee col names bas badal sql term kolo
+//        //todo
+//        return null;
+//    }
     public static boolean checkCond(Page.Pair rec, SQLTerm term) throws DBAppException {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
         Object recVal = rec.row.get(col);
