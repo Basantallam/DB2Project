@@ -389,12 +389,12 @@ public class Index implements Serializable {
         return null;
     }
 
-    public Vector lessThan(SQLTerm term, boolean clustColQuery) throws DBAppException {
+    public Vector lessThan(SQLTerm term, boolean traverseTable) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
         Vector res = null;
-        if (!clustColQuery)
+        if (!traverseTable)
             // traverse Index
             res = loopUntil(LastCellCoordinates, term, false);
         else
@@ -427,13 +427,13 @@ public class Index implements Serializable {
 
 
 
-    public Vector lessThanOrEqual(SQLTerm term, boolean clustColQuery) {
+    public Vector lessThanOrEqual(SQLTerm term, boolean traverseTable) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
         //nulls should be 9
         Vector res = null;
-        if (!clustColQuery)
+        if (!traverseTable)
             //traverse Index
             res = loopUntil(LastCellCoordinates, term,true);
         else
@@ -490,36 +490,30 @@ public class Index implements Serializable {
         }
     }
 
-    public Vector greaterThan(SQLTerm term, boolean clustColQuery) {
+    public Vector greaterThan(SQLTerm term, boolean traverseTable) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] FirstCellCoordinates = this.getCellCoordinates(hashtable, false);
         //nulls should be 0 3adi
         Vector res = null;
-        if (!clustColQuery) {
+        if (!traverseTable) {
             //traverse Index
-            res = loopFromExclusive(FirstCellCoordinates, term);
+            res = loopFrom(FirstCellCoordinates, term,false);
         } else {
             //todo traverse table
         }
         return res;
     }
 
-    public Vector<Bucket.Record> loopFromInclusive(int[] start, SQLTerm term) {
-        Vector<Bucket.Record> ref = new Vector<Bucket.Record>();
+    public Vector<Bucket.Record> loopFrom(int[] start, SQLTerm term, boolean inclusive) {
+        Vector<Bucket.Record> result = new Vector<Bucket.Record>();
         Vector<BucketInfo> firstCell = getCell(start);
-        for (BucketInfo bi : firstCell) {
-            for (Bucket.Record r : bi.bucket.records) {
-                Object recordVal = r.values.get(term._strColumnName);
-                if (Table.GenericCompare(recordVal, term._objValue) >= 0) {
-                    ref.add(r);
-                }
-            }
-        }
-        getRecordsBetween(pLusOne(start), pLusOne(this.getEnd()), 0, ref);
-        //bazawed ones 3ala kol el array bta3 getEnd 3ashan loop until bet exclude akher cell
-        //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2
-        return ref;
+        filterCell(firstCell,term,inclusive,result);
+
+        getRecordsBetween(pLusOne(start), pLusOne(this.getEnd()), 0, result);
+        //bazawed ones 3ala kol el array bta3 getEnd 3ashan getRecordsBetween bet exclude akher cell
+        //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2 fel start
+        return result;
     }
 
 
@@ -538,29 +532,14 @@ public class Index implements Serializable {
         return end;
     }
 
-    public Vector<Bucket.Record> loopFromExclusive(int[] start, SQLTerm term) {
-        Vector<Bucket.Record> ref = new Vector<Bucket.Record>();
-        Vector<BucketInfo> firstCell = getCell(start);
-        for (BucketInfo bi : firstCell) {
-            for (Bucket.Record r : bi.bucket.records) {
-                Object recordVal = r.values.get(term._strColumnName);
-                if (Table.GenericCompare(recordVal, term._objValue) > 0) {
-                    ref.add(r);
-                }
-            }
-        }
-        getRecordsBetween(pLusOne(start), pLusOne(this.getEnd()), 0, ref);
-        //bazawed ones 3ala kol el array bta3 getEnd 3ashan loop until bet exclude akher cell
-        //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2
-        return ref;
-    }
 
-    public Vector greaterThanOrEqual(SQLTerm term, boolean clustColQuery) {
+
+    public Vector greaterThanOrEqual(SQLTerm term, boolean traverseTable) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] FirstCellCoordinates = this.getCellCoordinates(hashtable, false);
         //nulls should be 0 3adi
-        return this.loopFromInclusive(FirstCellCoordinates, term);
+        return this.loopFrom(FirstCellCoordinates, term,true);
     }
 
     class BucketInfo implements Serializable {
