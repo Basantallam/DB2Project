@@ -441,9 +441,21 @@ public class Table implements Serializable {
         }
     }
 
-    private Vector<Page.Pair> notEqual(SQLTerm term) {
-        //todo
-        return null;
+    private Vector<Page.Pair> notEqual(SQLTerm term) throws DBAppException {
+        //todo - i think done
+        Vector<Page.Pair> result = new Vector<>();
+        Table table = (Table) DBApp.deserialize(term._strTableName);
+        Page currPage;
+        for(tuple4 tuple :table.table){
+            currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
+            for (Page.Pair currRec : currPage.records) {
+                if (!(checkCond(currRec, term)))
+                    result.add(currRec);
+            }
+            DBApp.serialize(tableName + "_" + tuple.id, currPage);
+        }
+        DBApp.serialize(tableName,table);
+        return result;
     }
 
     private Vector<Page.Pair> getTableRecords(Vector<Bucket.Record> indexRecords) {
