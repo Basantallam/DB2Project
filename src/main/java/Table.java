@@ -290,7 +290,9 @@ public class Table implements Serializable {
 
     }
 
-    public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue, boolean useIndex) throws Exception {
+    public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue, boolean useIndex)
+            throws Exception
+    {
         Object pk = parse(clusteringKeyValue);
         int idx = 0;
         int hi = table.size() - 1; // idx
@@ -343,7 +345,7 @@ public class Table implements Serializable {
 
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
         if (useIndex) {
-            Vector<Double>ids=chooseIndexAnd((Vector<String>) columnNameValue.keySet()).delete(columnNameValue);
+            Vector<Double>ids=chooseIndexAnd(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
             for (double id:ids) {
                 Page p = (Page) DBApp.deserialize(tableName + "_" + id);
                 p.delete(null, columnNameValue);

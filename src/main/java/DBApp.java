@@ -211,10 +211,10 @@ public class DBApp implements DBAppInterface {
 				String[] metadata = (line).split(", ");
 
 				if (metadata[0].equals(tableName)) {
-
+					if (metadata[4].equals("True"))
+						indexed.add(metadata[1]);
 					if (colNameValue.containsKey(metadata[1])) {
-						if (metadata[4].equals("True"))
-							indexed.add(metadata[1]);
+
 						if (metadata[3].equals("True"))
 							pk = metadata[1];
 						if (GenericCompare(colNameValue.get(metadata[1]), metadata[5]) < 0
@@ -272,6 +272,7 @@ public class DBApp implements DBAppInterface {
 			String format = formatter.format(a);
 			return (double) (format).compareTo((String) b);
 		} else
+			if(((String)a).length() != ((String)b).length()) return (double)((String)a).length()-((String)b).length();
 			return (double) ((String) a).compareTo((String) b);
 	}
 
