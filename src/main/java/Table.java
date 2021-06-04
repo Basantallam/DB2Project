@@ -320,12 +320,12 @@ public class Table implements Serializable {
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
         if (useIndex) {
             if(!pk.equals("")){
+                int lo=0; int hi = table.size()-1;
                 Index chosenIndex = chooseIndexPK();
                 if(chosenIndex==null) {
-                    deleteWithoutIndex(pk, columnNameValue);
+                    deleteWithPK(columnNameValue,pk,hi,lo);
                     return;
                 }
-                int lo=0; int hi = table.size()-1;
                 Vector<Double> narrowedDown = chosenIndex.narrowPageRange(columnNameValue);
                 if (narrowedDown.firstElement() == -1) lo = PageIDtoIdx(narrowedDown.firstElement());
                 if (narrowedDown.lastElement() == -1) hi = PageIDtoIdx(narrowedDown.lastElement());
@@ -358,7 +358,6 @@ public class Table implements Serializable {
             int hi = table.size() - 1; // idx
             int lo = 0;// idx
             deleteWithPK(columnNameValue, pk, hi, lo);
-
         }
     }
 
