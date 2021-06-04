@@ -303,68 +303,49 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.grid[0])[0]))); // 2d
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
     }
-    public Vector<Double> delete(Hashtable<String, Object> columnNameValue) {
-        Vector<Double> pages = new Vector<>();
+    public HashSet<Double> delete(Hashtable<String, Object> columnNameValue) {
+        HashSet<Double> pages = new HashSet<>();
         Vector<Integer> coordinates = getCellsCoordinates(columnNameValue);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
-        if (coordinates.get(0) == -1) {
-            for (int i = 0; i < grid.length; i++) {
-                cells.add(helper(coordinates, 1, grid[i]));
-            }
-        } else {
-            cells.add(helper(coordinates, 1, grid[coordinates.get(0)]));
-        }
+        getAllCells(coordinates,0, grid,cells );
         for (Vector<BucketInfo> cell : cells) {
             Hashtable<String, Object> arrangedHash = arrangeHashtable(columnNameValue);
-            if (columnNameValue.containsKey(clusteringCol)) {
-                Object searchKey = columnNameValue.get(clusteringCol);
+            if (columnNameValue.containsKey(columnNames.get(0))) {
+                Object searchKey = columnNameValue.get(columnNames.get(0));
                 BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
                 Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                Vector<Double> p = b.deleteI(arrangedHash);
-                for (double x : p) {
-                    pages.add(x);
-                }
+                pages.addAll(b.deleteI(arrangedHash));
                 DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
             } else {
                 for (BucketInfo bi : cell) {
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                    Vector<Double> p = b.deleteI(arrangedHash);
-                    for (double x : p) {
-                        pages.add(x);
-                    }
+                    pages.addAll(b.deleteI(arrangedHash));
                     DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
                 }
             }
         }
         return pages;
     }
-    private Vector<BucketInfo> helper(Vector<Integer> coordinates, int ptr, Object grid) {
-        if (ptr >= coordinates.size() && ptr < coordinates.size() + 10) {
-            Vector<BucketInfo> cell = (Vector<BucketInfo>) ((Object[]) grid)[ptr - coordinates.size()];
-            return cell;
-        } else if (ptr == coordinates.size() - 1) {
-            if (coordinates.get(ptr) == -1) {
-                for (int i = 0; i < 10; i++) helper(coordinates, ptr + i, grid);
-            } else {
-                Vector<BucketInfo> cell = (Vector<BucketInfo>) ((Object[]) grid)[coordinates.get(ptr)];
-                return cell;
-            }
+    private void getAllCells(Vector<Integer> coordinates, int ptr, Object grid, Vector<Vector<BucketInfo>> cells) {
+        if (ptr == coordinates.size() - 1) {
+            if (coordinates.get(ptr) == -1)
+                for (int i = 0; i < 10; i++)
+                    cells.add((Vector<BucketInfo>) ((Object[]) grid)[i]);
+            else
+                 cells.add((Vector<BucketInfo>) ((Object[]) grid)[coordinates.get(ptr)]);
+
         } else {
             Object[] cell = ((Object[]) grid);
             int x = coordinates.get(ptr);
             if (coordinates.get(x) == -1) {
-
                 for (int i = 0; i < cell.length; i++) {
                     Object y = ((Object[]) cell)[i];
-                    grid = y;
-                    return helper(coordinates, ptr + 1, grid);
+                    grid =  y;
+                    getAllCells(coordinates, ptr + 1, grid,cells );
                 }
-            } else {
-                return helper(coordinates, ptr + 1, cell[x]);
-            }
-
+            } else
+                getAllCells(coordinates, ptr + 1, cell[x],cells );
         }
-        return null;
     }
     public Vector lessThan(SQLTerm term) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
