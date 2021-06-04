@@ -447,14 +447,21 @@ public class Table implements Serializable {
         switch (term._strOperator) {
             case ("<"): case ("<="): return index.lessThan(term);
             case (">"): case (">="): return index.greaterThan(term);
-            case ("="):  return null;
-//                   todo exact
+            case ("="):  return this.Equal(term);
             case ("!="):  return null;
 //                  todo  won't use index a7san
             default: throw new DBAppException("invalid operation");
         }
     }
-
+    public Vector Equal(SQLTerm term){
+        int pIdx=this.BinarySearch(term._objValue,table.size()-1,0);
+        //todo deserialize
+        Page page =table.get(pIdx).page;
+        int rIdx = page.BinarySearch(term._objValue,page.records.size()-1,0);
+        Vector result = new Vector();
+        result.add(page.records.get(rIdx));
+        return result;
+    }
     private Vector tableTraversal(SQLTerm term) throws DBAppException {
         switch (term._strOperator) {
             case ("<"): case ("<="):return this.lessThan(term);
@@ -501,6 +508,7 @@ public class Table implements Serializable {
     }
 
     public Vector loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
+        //todo inclusive wala exclusive
         Vector res = new Vector();
         for(int pIdx=0;pIdx<=pageIdx;pIdx++){
             //todo deserialize page
@@ -534,12 +542,6 @@ public class Table implements Serializable {
         return res;
     }
 
-    private void filterPage(Page currPage, SQLTerm term,Vector result) throws DBAppException {
-        //loops on cell record by record adds records that match condition
-        for (Page.Pair rec : currPage.records)
-                if (checkCond(rec,term))
-                    result.add(rec);
-    }
 
     public Vector applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
@@ -570,8 +572,6 @@ public class Table implements Serializable {
         stack.push(sqlTerms[1]);
         stackO.push(new DBApp.Operation(arrayOperators[0]));
         for (int i = 2; i < arrayOperators.length; i++) {
-            System.out.println(stack);
-            System.out.println(stackO);
             SQLTerm n = sqlTerms[i];
             DBApp.Operation op = new DBApp.Operation(arrayOperators[i - 1]);
             DBApp.Operation top = stackO.peek();
@@ -593,10 +593,8 @@ public class Table implements Serializable {
             Object a = stack.pop();
             Object b = stack.pop();
             DBApp.Operation o = stackO.pop();
-
             Vector res = applyOp(a, b, o.op);
             stack.push(res);
-
         }
     }
 
@@ -623,9 +621,9 @@ public class Table implements Serializable {
         terms.add(term2);
         Index index = useIndexSelect(terms);
         if (index != null) {
-//todo
+        //todo
         } else {
-//todo
+        //todo
         }
         return result;
     }
