@@ -115,6 +115,11 @@ public class Bucket implements Serializable {
             default: return false;
         }
     }
+
+    public boolean isEmpty() {
+        return records.isEmpty();
+    }
+
     class Record implements Serializable{
         Hashtable<String, Object> values;
         double pageid;

@@ -320,7 +320,16 @@ public class Table implements Serializable {
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
         if (useIndex) {
             if(!pk.equals("")){
-                //todo with index has pk
+                int lo=0; int hi = table.size()-1;
+                Index chosenIndex = chooseIndexPK();
+                if(chosenIndex==null) {
+                    deleteWithPK(columnNameValue,pk,hi,lo);
+                    return;
+                }
+                Vector<Double> narrowedDown = chosenIndex.narrowPageRange(columnNameValue);
+                if (narrowedDown.firstElement() == -1) lo = PageIDtoIdx(narrowedDown.firstElement());
+                if (narrowedDown.lastElement() == -1) hi = PageIDtoIdx(narrowedDown.lastElement());
+                deleteWithPK(columnNameValue,pk,hi,lo);
             }
             else{
                 HashSet<Double> ids=chooseIndexAnd(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
@@ -333,7 +342,11 @@ public class Table implements Serializable {
                     deleteRefactorPage(p, idx,t);
                 }
             }
-        } else if (pk.equals(""))
+        } else deleteWithoutIndex(pk, columnNameValue);
+    }
+
+    private void deleteWithoutIndex(String pk, Hashtable<String, Object> columnNameValue) {
+        if (pk.equals(""))
             for (tuple4 t : table) {
                 Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
                 Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
@@ -342,16 +355,20 @@ public class Table implements Serializable {
                 deleteRefactorPage(p,idx,t);
             }
         else {
-            Object pkValue = columnNameValue.get(pk);
             int hi = table.size() - 1; // idx
             int lo = 0;// idx
-            int idx = BinarySearch(pkValue, hi, lo);
-            tuple4 t = table.get(idx);
-            Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-            Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
-            indicesDelete(deletedrows, p.id);
-            deleteRefactorPage(p,idx,t);
+            deleteWithPK(columnNameValue, pk, hi, lo);
         }
+    }
+
+    private void deleteWithPK(Hashtable<String, Object> columnNameValue, String pk, int hi, int lo) {
+        Object pkValue = columnNameValue.get(pk);
+        int idx = BinarySearch(pkValue, hi, lo);
+        tuple4 t = table.get(idx);
+        Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
+        Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
+        indicesDelete(deletedrows, p.id);
+        deleteRefactorPage(p,idx,t);
     }
 
     private void deleteRefactorPage(Page page, int idx, tuple4 t) {
