@@ -347,7 +347,6 @@ public class DBApp implements DBAppInterface {
 				if (!(colInTable(sqlTerms[i + 1]._strTableName, sqlTerms[i + 1]._strColumnName, sqlTerms[i + 1]._objValue)))
 					throw new DBAppException("Invalid input, check column name and the value's data type");
 				Vector next = table.resolveOneStatement(sqlTerms[i + 1]);
-				Boolean indexExist = false;            //todo fix the false, how to determine index?
 				curr = table.applyOp(curr, next, arrayOperators[i]);
 			}
 		}

@@ -264,7 +264,7 @@ public class Index implements Serializable {
                        Hashtable<String, Object> updatedValues, double pageId) {
         Boolean update = false;
         for (String s : columnNames)
-            if (updatedValues.containsKey(s)) { //todo if ranges different
+            if (updatedValues.containsKey(s)) {
                 update = true;
                 break;
             }

@@ -22,7 +22,7 @@ public class Page implements Serializable {
 				return newPair;
 			else {
 
-				int i = BinarySearch(pkvalue,records.size()-1,0); //todo if it is working
+				int i = BinarySearch(pkvalue,records.size()-1,0); // working ???
 				records.insertElementAt(newPair, i); // full capacity+1
 				return records.remove(DBApp.capacity);
 			}
@@ -138,7 +138,6 @@ public class Page implements Serializable {
 				}
 				if (and){
 					deletedRows.add(r.row);
-					//todo add deleted rows
 					it.remove();
 				}
 			}

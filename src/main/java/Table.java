@@ -676,7 +676,7 @@ public class Table implements Serializable {
 //            ht.put(term1._strColumnName,term1._objValue);
 //            ht.put(term2._strColumnName,term2._objValue);
 //            Vector<Index.BucketInfo> v=index.getCell(index.getCellCoordinates(ht,false));
-            //todo mesh 3arfaaaaa
+            //todo mesh 3arfaaaaa law mafeesh wa2t nshelha
         } else {
             if(clustering1){
                 Vector<Page.Pair> res1 = tableTraversal(term1);//todo inc exc
@@ -715,12 +715,7 @@ public class Table implements Serializable {
     }
 
 
-//    private Index useIndexSelect(Vector<SQLTerm> term1) {
-//        //vector can have 1 or 2 terms
-//        //momken nkhalee col names bas badal sql term kolo
-//        //todo
-//        return null;
-//    }
+
     public static boolean checkCond(Page.Pair rec, SQLTerm term) throws DBAppException {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
         Object recVal = rec.row.get(col);
