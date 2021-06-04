@@ -1,9 +1,7 @@
 import java.io.Serializable;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Vector;
-import java.util.Collections;
+import java.lang.reflect.GenericArrayType;
+import java.util.*;
+
 public class Page implements Serializable {
 	Double id;
 	Vector<Pair> records;
@@ -185,6 +183,15 @@ public class Page implements Serializable {
 		@Override
 		public int compareTo(Pair p) {
 			return  Table.GenericCompare(this.pk, p.pk);
+		}
+
+		public boolean isEqual(Bucket.Record indexRec) {
+			Set<String> cols = indexRec.values.keySet();
+			for(String col:cols){
+				if(Table.GenericCompare(indexRec.values.get(col),row.get(col))!=0)
+				return false;
+			}
+			return true;
 		}
 	}
 

@@ -56,7 +56,7 @@ public class Table implements Serializable {
         else
             return 0;
     }
-    public static Vector ANDing(Vector i1, Vector i2) {
+    public static Vector ANDing(Vector i1, Vector i2) { //Intersect Set Operation
         if(i1.size()==0|| i2.size()==0)return new Vector();
         //1st child AND
         Collections.sort(i1);
@@ -80,14 +80,14 @@ public class Table implements Serializable {
         }
         return res;
     }
-    public static Vector ORing(Vector i1, Vector i2) {
+    public static Vector ORing(Vector i1, Vector i2) { //Union Set Operation
         TreeSet s1 = new TreeSet(i1);
         TreeSet s2 = new TreeSet(i2);
         s1.addAll(s2);
         Vector res = new Vector(s1);
         return res;
     }
-    public static Vector XORing(Vector i1, Vector i2) {
+    public static Vector XORing(Vector i1, Vector i2) { //Set Operation
         Vector v2 = ANDing(i1, i2);
         Vector v1 = ORing(i1, i2);
         Vector res = new Vector();
@@ -425,7 +425,7 @@ public class Table implements Serializable {
     }
     private Vector indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
-            case ("<"): case ("<="): return index.lessThan(term);
+            case ("<"): case ("<="): return getTableRecords(index.lessThan(term));
             case (">"): case (">="): return index.greaterThan(term);
             case ("="):  return null;
 //                   todo exact
@@ -433,6 +433,19 @@ public class Table implements Serializable {
 //                  todo  won't use index a7san
             default: throw new DBAppException("invalid operation");
         }
+    }
+    private Vector<Page.Pair> getTableRecords(Vector<Bucket.Record> indexRecords) {
+        Vector<Page.Pair> result = new Vector<>();
+        for(Bucket.Record indexRec :indexRecords){
+            Page p=table.get(PageIDtoIdx(indexRec.pageid)).page;
+            //todo deserialize table and page
+            for(Page.Pair tableRecord:p.records){
+                if(tableRecord.isEqual(indexRec)){
+                    result.add(tableRecord);
+                }
+            }
+        }
+        return result;
     }
     public Vector Equal(SQLTerm term){
         int pIdx=this.BinarySearch(term._objValue,table.size()-1,0);
@@ -571,7 +584,7 @@ public class Table implements Serializable {
     private Vector ANDing(Object curr, Object next) throws DBAppException {
         //parent AND
         if (curr instanceof SQLTerm && next instanceof SQLTerm)
-            return ANDingI((SQLTerm)curr, (SQLTerm)next); //momken nb2a nkhalee vector of SQLTerms mesh 2 only
+            return ANDingI((SQLTerm)curr, (SQLTerm)next);
          else {
             if (curr instanceof SQLTerm)
                 curr = (Vector) resolveOneStatement((SQLTerm) curr);
@@ -581,8 +594,7 @@ public class Table implements Serializable {
         }
     }
     private Vector<Page.Pair> ANDingI(SQLTerm term1, SQLTerm term2) throws DBAppException {
-        //2nd child AND
-        //todo anding with Index momken nkhalee vector of sql terms
+        //2nd AND child
         Vector result = new Vector();
         Vector <SQLTerm> terms=new Vector<>();
         terms.add(term1);
@@ -591,10 +603,14 @@ public class Table implements Serializable {
         boolean clustering2=(term2._strColumnName==clusteringCol);
         Index index = useIndexSelect(terms);
         if (index != null) {
-        //todo
+//            Hashtable ht=new Hashtable();
+//            ht.put(term1._strColumnName,term1._objValue);
+//            ht.put(term2._strColumnName,term2._objValue);
+//            Vector<Index.BucketInfo> v=index.getCell(index.getCellCoordinates(ht,false));
+            //todo mesh 3arfaaaaa
         } else {
             if(clustering1){
-                Vector<Page.Pair> res1 = tableTraversal(term1);//todo pairs not grid records
+                Vector<Page.Pair> res1 = tableTraversal(term1);//todo pairs not grid records & inc exc
                 for(Page.Pair record:res1){
                     if(checkCond(record,term2)){
                         result.add(record);
