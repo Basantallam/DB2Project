@@ -209,6 +209,7 @@ public class Table implements Serializable {
     }
     public Index chooseIndexAnd(Vector<String> columnNames) {
         Index indexSoFar = null;
+        int size = Integer.MAX_VALUE;
         int max = 0;
         for (Index i : index) {
             int count = 0;
@@ -218,6 +219,11 @@ public class Table implements Serializable {
             if (count > max) {
                 max = count;
                 indexSoFar = i;
+            }else{
+                if(count==max && i.columnNames.size()<size) {
+                    max = count;
+                    indexSoFar = i;
+                }
             }
         }
         return indexSoFar;

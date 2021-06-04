@@ -362,6 +362,7 @@ public class Index implements Serializable {
             } else {
                 return helper(coordinates, ptr + 1, cell[x]);
             }
+
         }
         return null;
     }
