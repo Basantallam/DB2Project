@@ -428,7 +428,6 @@ public class Index implements Serializable {
             else{
                 for (BucketInfo bi : cell)
                     result.addAll(bi.bucket.records);
-                //todo return page record
             }
             return;
         }

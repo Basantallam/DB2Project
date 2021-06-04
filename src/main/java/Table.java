@@ -435,11 +435,17 @@ public class Table implements Serializable {
             case (">"): case (">="): return getTableRecords(index.greaterThan(term));
             case ("="): return getTableRecords(null);
 //                   todo exact
-            case ("!="):  return null;
-//                  todo  won't use index a7san
+            case ("!="): return notEqual(term);
+//  won't use index kda kda
             default: throw new DBAppException("invalid operation");
         }
     }
+
+    private Vector<Page.Pair> notEqual(SQLTerm term) {
+        //todo
+        return null;
+    }
+
     private Vector<Page.Pair> getTableRecords(Vector<Bucket.Record> indexRecords) {
         Vector<Page.Pair> result = new Vector<>();
         for(Bucket.Record indexRec :indexRecords){
@@ -467,9 +473,8 @@ public class Table implements Serializable {
             case ("<"): case ("<="):return this.lessThan(term);
             case (">"): case (">="): return this.greaterThan(term);
             case ("="): return this.Equal(term);
-            case ("!="):
-                return null;
-//                  todo  won't use index a7san
+            case ("!="): return notEqual(term);
+//  won't use index kda kda
             default:throw new DBAppException("invalid operation");
         }
     }
