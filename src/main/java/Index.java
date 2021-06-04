@@ -424,20 +424,21 @@ public class Index implements Serializable {
     }
 
     private Vector loopTableUntilExclusive(int lastPageID, SQLTerm term) {
-        Vector res = null;
+        Vector res = new Vector();
         Table t = (Table) DBApp.deserialize(term._strTableName);
-        ListIterator pagesItr = (t.table).listIterator(t.table.size());
-        ListIterator recs = null;
-        Page currPage;
-        while(pagesItr.hasNext()){
-            currPage = (Page) pagesItr.next();
-            if(currPage.id==null) //todo cond stop at lastcellcoordinates
+
+        for(Table.tuple4 tuple: t.table){
+            //todo deserialize page
+            Page currPage = tuple.page;
+            if(currPage.id==lastPageID)
                 break;
-            recs = currPage.records.listIterator(currPage.records.size());
-            while(recs.hasNext()) {
-                res.add(recs.next());
+            for(Page.Pair record: currPage.records){
+                res.add(record);
             }
+
         }
+         //todo I: cond stop at lastcellcoordinates  B:asdek eih hena?
+
         return res;
     }
 
