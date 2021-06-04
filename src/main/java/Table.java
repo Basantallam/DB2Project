@@ -80,14 +80,14 @@ public class Table implements Serializable {
         }
         return res;
     }
-    public static Vector ORing(Vector i1, Vector i2) { //Union Set Operation
+    public static Vector<Page.Pair> ORing(Vector i1, Vector i2) { //Union Set Operation
         TreeSet s1 = new TreeSet(i1);
         TreeSet s2 = new TreeSet(i2);
         s1.addAll(s2);
         Vector res = new Vector(s1);
         return res;
     }
-    public static Vector XORing(Vector i1, Vector i2) { //Set Operation
+    public static Vector<Page.Pair> XORing(Vector i1, Vector i2) { //Set Operation
         Vector v2 = ANDing(i1, i2);
         Vector v1 = ORing(i1, i2);
         Vector res = new Vector();
@@ -416,7 +416,7 @@ public class Table implements Serializable {
         }
         return false;
     }
-    public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
+    public Vector<Page.Pair> resolveOneStatement(SQLTerm term) throws DBAppException {
         Vector terms = new Vector<SQLTerm>(); terms.add(term);
         Index index = useIndexSelect(terms);
         boolean clustered = this.clusteringCol.equals(term._strColumnName);
@@ -429,11 +429,11 @@ public class Table implements Serializable {
              else return tableTraversal(term);
         }
     }
-    private Vector indexTraversal(SQLTerm term, Index index) throws DBAppException {
+    private Vector<Page.Pair> indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
             case ("<"): case ("<="): return getTableRecords(index.lessThan(term));
-            case (">"): case (">="): return index.greaterThan(term);
-            case ("="):  return null;
+            case (">"): case (">="): return getTableRecords(index.greaterThan(term));
+            case ("="): return getTableRecords(null);
 //                   todo exact
             case ("!="):  return null;
 //                  todo  won't use index a7san
@@ -453,7 +453,7 @@ public class Table implements Serializable {
         }
         return result;
     }
-    public Vector Equal(SQLTerm term){
+    public Vector<Page.Pair> Equal(SQLTerm term){
         int pIdx=this.BinarySearch(term._objValue,table.size()-1,0);
         //todo deserialize
         Page page =table.get(pIdx).page;
@@ -462,7 +462,7 @@ public class Table implements Serializable {
         result.add(page.records.get(rIdx));
         return result;
     }
-    private Vector tableTraversal(SQLTerm term) throws DBAppException {
+    private Vector<Page.Pair> tableTraversal(SQLTerm term) throws DBAppException {
         switch (term._strOperator) {
             case ("<"): case ("<="):return this.lessThan(term);
             case (">"): case (">="): return this.greaterThan(term);
@@ -473,7 +473,7 @@ public class Table implements Serializable {
             default:throw new DBAppException("invalid operation");
         }
     }
-    public Vector lessThan(SQLTerm term) throws DBAppException {
+    public Vector<Page.Pair> lessThan(SQLTerm term) throws DBAppException {
         Table t = (Table) DBApp.deserialize(term._strTableName);
         int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
         Page page=t.table.get(pageIdx).page;
@@ -482,7 +482,7 @@ public class Table implements Serializable {
         //check inclusive or exclusive fel binary search
         return t.loopUntil(pageIdx,recordIdx,term);
     }
-    public Vector greaterThan(SQLTerm term) throws DBAppException {
+    public Vector<Page.Pair> greaterThan(SQLTerm term) throws DBAppException {
         // traverse table
         Table t = (Table) DBApp.deserialize(term._strTableName);
         int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
@@ -492,7 +492,7 @@ public class Table implements Serializable {
         //check inclusive or exclusive fl binary search
         return loopFrom(pageIdx,recordIdx,term);
     }
-    private Vector LinearScan(SQLTerm term) throws DBAppException {
+    private Vector<Page.Pair> LinearScan(SQLTerm term) throws DBAppException {
         Vector res = new Vector();//loop on entire table.. every single record and check
             for(tuple4 tuple:table) {
                Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
@@ -504,7 +504,7 @@ public class Table implements Serializable {
             }
             return res;
     }
-    public Vector loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
+    public Vector<Page.Pair> loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
         //todo inclusive wala exclusive
         Vector res = new Vector();
         for(int pIdx=0;pIdx<=pageIdx;pIdx++){
@@ -523,8 +523,8 @@ public class Table implements Serializable {
         }
         return res;
     }
-    public Vector loopFrom(int pageIdx, int recordIdx, SQLTerm term) throws DBAppException {
-        Vector res = new Vector();
+    public Vector<Page.Pair> loopFrom(int pageIdx, int recordIdx, SQLTerm term) throws DBAppException {
+        Vector<Page.Pair> res = new Vector();
         //todo deserialize table
 
         for(int pIdx=pageIdx;pIdx<=table.size();pIdx++){
@@ -537,7 +537,7 @@ public class Table implements Serializable {
         }
         return res;
     }
-    public Vector applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
+    public Vector<Page.Pair> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
             case ("AND"):
                 return ANDing(curr, next);
@@ -587,7 +587,7 @@ public class Table implements Serializable {
             stack.push(res);
         }
     }
-    private Vector ANDing(Object curr, Object next) throws DBAppException {
+    private Vector<Page.Pair> ANDing(Object curr, Object next) throws DBAppException {
         //parent AND
         if (curr instanceof SQLTerm && next instanceof SQLTerm)
             return ANDingI((SQLTerm)curr, (SQLTerm)next);

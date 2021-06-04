@@ -439,7 +439,7 @@ public class Index implements Serializable {
             
         }
     }
-    public Vector greaterThan(SQLTerm term) throws DBAppException {
+    public Vector<Bucket.Record> greaterThan(SQLTerm term) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
