@@ -307,13 +307,14 @@ public class Index implements Serializable {
         Vector<Double> pages = new Vector<>();
         Vector<Integer> coordinates = getCellsCoordinates(columnNameValue);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
-        if (coordinates.get(0) == -1) {
-            for (int i = 0; i < grid.length; i++) {
-                cells.add(helper(coordinates, 1, grid[i]));
-            }
-        } else {
-            cells.add(helper(coordinates, 1, grid[coordinates.get(0)]));
-        }
+        getAllCells(coordinates,0, grid,cells );
+//        if (coordinates.get(0) == -1) {
+//            for (int i = 0; i < grid.length; i++) {
+//                cells.add(helper(coordinates, 1, grid, grid[i]));
+//            }
+//        } else {
+//            cells.add(helper(coordinates, 1, grid, grid[coordinates.get(0)]));
+//        }
         for (Vector<BucketInfo> cell : cells) {
             Hashtable<String, Object> arrangedHash = arrangeHashtable(columnNameValue);
             if (columnNameValue.containsKey(clusteringCol)) {
@@ -338,33 +339,26 @@ public class Index implements Serializable {
         }
         return pages;
     }
-    private Vector<BucketInfo> helper(Vector<Integer> coordinates, int ptr, Object grid) {
-        if (ptr >= coordinates.size() && ptr < coordinates.size() + 10) {
-            Vector<BucketInfo> cell = (Vector<BucketInfo>) ((Object[]) grid)[ptr - coordinates.size()];
-            return cell;
-        } else if (ptr == coordinates.size() - 1) {
-            if (coordinates.get(ptr) == -1) {
-                for (int i = 0; i < 10; i++) helper(coordinates, ptr + i, grid);
-            } else {
-                Vector<BucketInfo> cell = (Vector<BucketInfo>) ((Object[]) grid)[coordinates.get(ptr)];
-                return cell;
-            }
+    private void getAllCells(Vector<Integer> coordinates, int ptr, Object grid, Vector<Vector<BucketInfo>> cells) {
+        if (ptr == coordinates.size() - 1) {
+            if (coordinates.get(ptr) == -1)
+                for (int i = 0; i < 10; i++)
+                    cells.add((Vector<BucketInfo>) ((Object[]) grid)[i]);
+            else
+                 cells.add((Vector<BucketInfo>) ((Object[]) grid)[coordinates.get(ptr)]);
+
         } else {
             Object[] cell = ((Object[]) grid);
             int x = coordinates.get(ptr);
             if (coordinates.get(x) == -1) {
-
                 for (int i = 0; i < cell.length; i++) {
                     Object y = ((Object[]) cell)[i];
-                    grid = y;
-                    return helper(coordinates, ptr + 1, grid);
+                    grid =  y;
+                    getAllCells(coordinates, ptr + 1, grid,cells );
                 }
-            } else {
-                return helper(coordinates, ptr + 1, cell[x]);
-            }
-
+            } else
+                getAllCells(coordinates, ptr + 1, cell[x],cells );
         }
-        return null;
     }
     public Vector lessThan(SQLTerm term) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
