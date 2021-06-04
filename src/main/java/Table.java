@@ -318,10 +318,10 @@ public class Table implements Serializable {
             for (double id:ids) {
                 Page p = (Page) DBApp.deserialize(tableName + "_" + id);
                 p.delete(null, columnNameValue);
-                if (p.isEmpty()) {//todo
-
+                if (p.isEmpty()) {
+                    //todo
                 } else {
-                //todo
+                   //todo
                 }
             }
         } else if (pk.equals(""))
@@ -542,22 +542,24 @@ public class Table implements Serializable {
     public Vector<Page.Pair> loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
         //todo inclusive wala exclusive
         Vector res = new Vector();
-        for(int pIdx=0;pIdx<=pageIdx;pIdx++){
+        for(int pIdx=0 ; pIdx<=pageIdx ; pIdx++){
             //todo deserialize page - i think done
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
 //            Page currPage = table.get(pIdx).page;
 
-            for(int rIdx=0;rIdx<table.get(pIdx).page.records.size();rIdx++){
+            for(int rIdx=0 ; rIdx<table.get(pIdx).page.records.size() ; rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
-                res.add(record);
                 if(pIdx==pageIdx){
                     if(rIdx==recordIdx){
+                        if(checkCond(record,term))
+                            res.add(record);
                         break;
                     }
                 }
+                res.add(record);
+
             }
             DBApp.serialize(tableName + "_" + table.get(pIdx),currPage);
-
         }
         return res;
     }
@@ -566,15 +568,19 @@ public class Table implements Serializable {
         Vector res = new Vector();
         //todo deserialize table - i think done
         Table table = (Table) DBApp.deserialize(term._strTableName);
-
-        for(int pIdx=pageIdx;pIdx<=table.table.size();pIdx++){
+        int rIdx=recordIdx;
+        for(int pIdx = pageIdx; pIdx<=table.table.size() ; pIdx++){
             //todo deserialize page - i think done
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.table.get(pIdx));
-//            Page currPage = table.get(pIdx).page;
-            for(int rIdx=(pageIdx==pIdx?recordIdx:0);rIdx<table.table.get(pIdx).page.records.size();rIdx++){
+            for(; rIdx<table.table.get(pIdx).page.records.size();rIdx++){ //el semicolon el fel for ma2sooda leave it pls
                 Page.Pair record =currPage.records.get(rIdx);
-                res.add(record);
+                if(rIdx==recordIdx && pageIdx==pIdx) {
+                    if (checkCond(record, term)) res.add(record);
+                }
+                else
+                   res.add(record);
             }
+            rIdx = 0;
             DBApp.serialize(tableName + "_" + table.table.get(pIdx),currPage);
         }
         DBApp.serialize(term._strTableName,table);
@@ -688,7 +694,7 @@ public class Table implements Serializable {
         }
         return res;
     }
-    
+
     public static boolean checkCond(Page.Pair rec, SQLTerm term) throws DBAppException {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
         Object recVal = rec.row.get(col);
