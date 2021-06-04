@@ -58,6 +58,7 @@ public class Table implements Serializable {
     }
 
     public static Vector ANDing(Vector i1, Vector i2) {
+        if(i1.size()==0|| i2.size()==0)return new Vector();
         //1st child AND
         Collections.sort(i1);
         Collections.sort(i2);
