@@ -488,7 +488,7 @@ public class Table implements Serializable {
 
     private Vector<Page.Pair> getTableRecords(Vector<Bucket.Record> indexRecords) {
         Vector<Page.Pair> result = new Vector<>();
-        Table table = (Table) DBApp.deserialize(tableName);
+
         for(Bucket.Record indexRec :indexRecords){
             Page p = (Page) DBApp.deserialize(tableName + "_" + (indexRec.pageid));
 
@@ -499,7 +499,6 @@ public class Table implements Serializable {
             }
             DBApp.serialize(tableName + "_" + (indexRec.pageid),p);
         }
-        DBApp.serialize(tableName,table);
         return result;
     }
     public Vector<Page.Pair> Equal(SQLTerm term){
