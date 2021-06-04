@@ -132,16 +132,15 @@ public class Index implements Serializable {
         return idx;
     }
     public Vector<Integer> getCellsCoordinates(Hashtable<String, Object> values) {
+        Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(values));
         Vector<Integer> coordinates = new Vector<Integer>();
 
         Set<String> set = values.keySet();
         int IndexDimension = columnNames.size();
-        Hashtable<String, Object> colValues = new Hashtable<String, Object>();
 
         for (int ptr = 0; ptr < IndexDimension; ptr++) {
             String col = columnNames.get(ptr);
             if (set.contains(col)) {
-                colValues.put(col, values.get(col));
                 String colName = columnNames.get(ptr);
                 Object min = ranges.get(colName).min;
                 Object max = ranges.get(colName).max;

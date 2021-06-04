@@ -719,7 +719,7 @@ public class Milestone1Tests {
 
         Hashtable<String, String> minValues = new Hashtable<>();
         minValues.put("date_added", "1901-01-01");
-        minValues.put("course_id", "0000");
+        minValues.put("course_id", "000");
         minValues.put("course_name", "AAAAAA");
         minValues.put("hours", "1");
 
