@@ -88,7 +88,7 @@ public class Index implements Serializable {
     }
     public int[] getCellCoordinates(Hashtable<String, Object> values, boolean nine) {// added boolean for range queries
         Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(values));
-        int[] coordinates = new int[colValues.size()];
+        int[] coordinates = new int[columnNames.size()];
 
         for (int i = 0; i < columnNames.size(); i++) {
             String colName = columnNames.get(i);
@@ -166,7 +166,8 @@ public class Index implements Serializable {
             if (set.contains(col)) {
                 extracted.put(col, values.get(col));
             } else {
-                extracted.put(col, null);
+                //todo aragaha?:
+//                extracted.put(col, null);
             }
         }
         return extracted;
@@ -405,7 +406,10 @@ public class Index implements Serializable {
     private void filterCell(Vector<BucketInfo> cell, SQLTerm term,Vector result) {
         // loops on cell record by record adds records that match condition
         for (BucketInfo bi : cell) {
-           bi.bucket.filterBucket(term,result);
+            Bucket b = (Bucket) DBApp.deserialize(tableName + "" + columnNames + "" + bi.id);
+           b.filterBucket(term,result);
+            //todo serialize Bucket
+
         }
     }
     public void getRecordsBetween(int[] curr, int[] limits, int depth, SQLTerm term, Vector<Bucket.Record> result
@@ -417,8 +421,13 @@ public class Index implements Serializable {
                 filterCell(cell,term,result);
             }
             else{
-                for (BucketInfo bi : cell)
-                    result.addAll(bi.bucket.records);
+                for (BucketInfo bi : cell){
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "" + columnNames + "" + bi.id);
+                    result.addAll(b.records);
+
+                }
+                //todo serialize
+
             }
             return;
         }
@@ -426,7 +435,6 @@ public class Index implements Serializable {
             int[] newCurr = curr.clone();
             newCurr[depth] = i;
             getRecordsBetween(newCurr, limits, depth + 1, term,result,filterIdx,filterVal);
-            
         }
     }
     public Vector<Bucket.Record> greaterThan(SQLTerm term) throws DBAppException {
@@ -483,6 +491,9 @@ public class Index implements Serializable {
             this.bucket = new Bucket(id, clusteringCol, columnNames.get(0));
             this.max = null;
             this.min = null;
+        }
+        public String toString(){
+            return "id:"+id+"size "+size+" bucket "+bucket;
         }
     }
 }

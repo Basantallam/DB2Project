@@ -470,30 +470,6 @@ public class DBApp implements DBAppInterface {
 //            e.printStackTrace();
 //        }
 	}
-//    When to use Index:
-//    Age = 20 and city = Egypt
-//            (any index is okay)
-//
-//    Age = 20 or city = Egypt
-//            (must have all even in separate indices)
-//    Age = 20 xor city = Egypt
-//            (must have all even in separate indices)
-//
-//    Indices :
-//            1. age / salary
-//  2. salary/city
-//    When to use Index:
-//    Age = 20 and city = Egypt
-//            (any index is okay)
-//
-//    Age = 20 or city = Egypt
-//            (must have all even in separate indices)
-//    Age = 20 xor city = Egypt
-//            (must have all even in separate indices)
-//
-//    Indices :
-//            1. age / salary
-//  2. salary/city
 
 	public static class minMax implements Serializable  {
 		Object max;
