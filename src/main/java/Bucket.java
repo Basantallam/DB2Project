@@ -77,17 +77,19 @@ public class Bucket implements Serializable {
         HashSet<Double> pages=new HashSet();
         Object sortingValue = columnNameValue.get(sortedIndex);
         if(sortingValue==null){
-            for (Record r:records) {
-                for (String s: r.values.keySet()) {
-                    if(columnNameValue.get(s).equals(r.values.get(s))) {
-                        records.remove(r);
+            for (Record r:records)
+                for (String s: columnNameValue.keySet())
+                    if(columnNameValue.get(s).equals(r.values.get(s)))
                         pages.add(r.pageid);
-                    }
-                }
-            }
+
         }else{
             int i = BinarySearch(sortingValue, records.size() - 1, 0);
-            pages.add(records.remove(i).pageid);
+            for (int j = i; j < records.size(); j++) {
+                if(!records.get(j).values.get(sortedIndex).equals(sortingValue))break;
+                for (String s: columnNameValue.keySet())
+                    if(columnNameValue.get(s).equals(records.get(j).values.get(s)))
+                        pages.add(records.get(j).pageid);
+            }
         }return pages;
     }
     public void filterBucket(SQLTerm term, Vector result) {

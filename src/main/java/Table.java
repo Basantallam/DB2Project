@@ -309,7 +309,7 @@ public class Table implements Serializable {
     }
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
         if (useIndex) {
-            Vector<Double>ids=chooseIndexAnd(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
+            HashSet<Double> ids=chooseIndexAnd(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
             for (double id:ids) {
                 Page p = (Page) DBApp.deserialize(tableName + "_" + id);
                 p.delete(null, columnNameValue);
