@@ -303,29 +303,23 @@ public class Index implements Serializable {
 //		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.grid[0])[0]))); // 2d
 //		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
     }
-    public Vector<Double> delete(Hashtable<String, Object> columnNameValue) {
-        Vector<Double> pages = new Vector<>();
+    public HashSet<Double> delete(Hashtable<String, Object> columnNameValue) {
+        HashSet<Double> pages = new HashSet<>();
         Vector<Integer> coordinates = getCellsCoordinates(columnNameValue);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells );
         for (Vector<BucketInfo> cell : cells) {
             Hashtable<String, Object> arrangedHash = arrangeHashtable(columnNameValue);
-            if (columnNameValue.containsKey(clusteringCol)) {
-                Object searchKey = columnNameValue.get(clusteringCol);
+            if (columnNameValue.containsKey(columnNames.get(0))) {
+                Object searchKey = columnNameValue.get(columnNames.get(0));
                 BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
                 Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                Vector<Double> p = b.deleteI(arrangedHash);
-                for (double x : p) {
-                    pages.add(x);
-                }
+                pages.addAll(b.deleteI(arrangedHash));
                 DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
             } else {
                 for (BucketInfo bi : cell) {
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                    Vector<Double> p = b.deleteI(arrangedHash);
-                    for (double x : p) {
-                        pages.add(x);
-                    }
+                    pages.addAll(b.deleteI(arrangedHash));
                     DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
                 }
             }
