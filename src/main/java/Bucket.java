@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -72,8 +73,8 @@ public class Bucket implements Serializable {
     public boolean isFull() {
         return this.records.size() == DBApp.indexCapacity;
     }
-    public Vector<Double> deleteI(Hashtable<String, Object> columnNameValue) {
-        Vector<Double>pages=new Vector<>();
+    public HashSet<Double> deleteI(Hashtable<String, Object> columnNameValue) {
+        HashSet<Double> pages=new HashSet();
         Object sortingValue = columnNameValue.get(sortedIndex);
         if(sortingValue==null){
             for (Record r:records) {
