@@ -80,14 +80,14 @@ public class Table implements Serializable {
         }
         return res;
     }
-    public static Vector<Page.Pair> ORing(Vector i1, Vector i2) { //Union Set Operation
+    public static Vector<Hashtable> ORing(Vector i1, Vector i2) { //Union Set Operation
         TreeSet s1 = new TreeSet(i1);
         TreeSet s2 = new TreeSet(i2);
         s1.addAll(s2);
         Vector res = new Vector(s1);
         return res;
     }
-    public static Vector<Page.Pair> XORing(Vector i1, Vector i2) { //Set Operation
+    public static Vector<Hashtable> XORing(Vector i1, Vector i2) { //Set Operation
         Vector v2 = ANDing(i1, i2);
         Vector v1 = ORing(i1, i2);
         Vector res = new Vector();
@@ -444,7 +444,7 @@ public class Table implements Serializable {
         }
         return false;
     }
-    public Vector<Page.Pair> resolveOneStatement(SQLTerm term) throws DBAppException {
+    public Vector<Hashtable> resolveOneStatement(SQLTerm term) throws DBAppException {
         Vector<String> terms = new Vector<String>(); terms.add(term._strColumnName);
         Index index = chooseIndexAnd(terms);
         boolean clustered = this.clusteringCol.equals(term._strColumnName);
@@ -457,11 +457,12 @@ public class Table implements Serializable {
              else return indexTraversal(term, index);
         }
     }
-    private Vector<Page.Pair> indexTraversal(SQLTerm term, Index index) throws DBAppException {
+    private Vector<Hashtable> indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
             case ("<"): case ("<="): return getTableRecords(index.lessThan(term));
             case (">"): case (">="): return getTableRecords(index.greaterThan(term));
-            case ("="): return getTableRecords(null);
+            case ("="):
+//                return getTableRecords(null);
 //                   todo exact
             case ("!="): return notEqual(term);
 //  won't use index kda kda
@@ -469,16 +470,16 @@ public class Table implements Serializable {
         }
     }
 
-    private Vector<Page.Pair> notEqual(SQLTerm term) throws DBAppException {
+    private Vector<Hashtable> notEqual(SQLTerm term) throws DBAppException {
         //todo - i think done
-        Vector<Page.Pair> result = new Vector<>();
+        Vector<Hashtable> result = new Vector<>();
         Table table = (Table) DBApp.deserialize(term._strTableName);
         Page currPage;
         for(tuple4 tuple :table.table){
             currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
             for (Page.Pair currRec : currPage.records) {
-                if (!(checkCond(currRec, term)))
-                    result.add(currRec);
+                if (!(checkCond(currRec.row, term)))
+                    result.add(currRec.row);
             }
             DBApp.serialize(tableName + "_" + tuple.id, currPage);
         }
@@ -486,22 +487,23 @@ public class Table implements Serializable {
         return result;
     }
 
-    private Vector<Page.Pair> getTableRecords(Vector<Bucket.Record> indexRecords) {
-        Vector<Page.Pair> result = new Vector<>();
-
+    private Vector<Hashtable> getTableRecords(Vector<Bucket.Record> indexRecords) {
+        Vector<Hashtable> result = new Vector<>();
+        Table table = (Table) DBApp.deserialize(tableName);
         for(Bucket.Record indexRec :indexRecords){
             Page p = (Page) DBApp.deserialize(tableName + "_" + (indexRec.pageid));
 
             for(Page.Pair tableRecord:p.records){
                 if(tableRecord.isEqual(indexRec)){
-                    result.add(tableRecord);
+                    result.add(tableRecord.row);
                 }
             }
             DBApp.serialize(tableName + "_" + (indexRec.pageid),p);
         }
+        DBApp.serialize(tableName,table);
         return result;
     }
-    public Vector<Page.Pair> Equal(SQLTerm term){
+    public Vector<Hashtable> Equal(SQLTerm term){
         int pIdx=this.BinarySearch(term._objValue,table.size()-1,0);
         //todo deserialize - i think done
         Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
@@ -512,7 +514,7 @@ public class Table implements Serializable {
         DBApp.serialize(tableName + "_" + table.get(pIdx),page);
         return result;
     }
-    private Vector<Page.Pair> tableTraversal(SQLTerm term) throws DBAppException {
+    private Vector<Hashtable> tableTraversal(SQLTerm term) throws DBAppException {
         switch (term._strOperator) {
             case ("<"): case ("<="):return this.lessThan(term);
             case (">"): case (">="): return this.greaterThan(term);
@@ -522,7 +524,7 @@ public class Table implements Serializable {
             default:throw new DBAppException("invalid operation");
         }
     }
-    public Vector<Page.Pair> lessThan(SQLTerm term) throws DBAppException {
+    public Vector<Hashtable> lessThan(SQLTerm term) throws DBAppException {
         Table t = (Table) DBApp.deserialize(term._strTableName);
         int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
 //        Page page=t.table.get(pageIdx).page;
@@ -535,7 +537,7 @@ public class Table implements Serializable {
         //check inclusive or exclusive fel binary search
         return t.loopUntil(pageIdx,recordIdx,term);
     }
-    public Vector<Page.Pair> greaterThan(SQLTerm term) throws DBAppException {
+    public Vector<Hashtable> greaterThan(SQLTerm term) throws DBAppException {
         // traverse table
         Table t = (Table) DBApp.deserialize(term._strTableName);
         int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
@@ -549,19 +551,19 @@ public class Table implements Serializable {
         //check inclusive or exclusive fl binary search
         return loopFrom(pageIdx,recordIdx,term);
     }
-    private Vector<Page.Pair> LinearScan(SQLTerm term) throws DBAppException {
+    private Vector<Hashtable> LinearScan(SQLTerm term) throws DBAppException {
         Vector res = new Vector();//loop on entire table.. every single record and check
             for(tuple4 tuple:table) {
                Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
                 for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
-                    if (checkCond(currRec, term))
+                    if (checkCond(currRec.row, term))
                         res.add(currRec);
                 }
                 DBApp.serialize(tableName + "_" + tuple.id, currPage);
             }
             return res;
     }
-    public Vector<Page.Pair> loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
+    public Vector<Hashtable> loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
         //todo inclusive wala exclusive
         Vector res = new Vector();
         for(int pIdx=0;pIdx<=pageIdx;pIdx++){
@@ -584,7 +586,7 @@ public class Table implements Serializable {
         return res;
     }
 
-    public Vector<Page.Pair> loopFrom(int pageIdx, int recordIdx, SQLTerm term) throws DBAppException {
+    public Vector<Hashtable> loopFrom(int pageIdx, int recordIdx, SQLTerm term) throws DBAppException {
         Vector res = new Vector();
         //todo deserialize table - i think done
         Table table = (Table) DBApp.deserialize(term._strTableName);
@@ -602,7 +604,7 @@ public class Table implements Serializable {
         DBApp.serialize(term._strTableName,table);
         return res;
     }
-    public Vector<Page.Pair> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
+    public Vector<Hashtable> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
             case ("AND"): return ANDing(curr, next);
             case ("OR"):
@@ -617,7 +619,7 @@ public class Table implements Serializable {
                 throw new DBAppException("Star operator must be one of AND, OR, XOR!");
         }
     }
-    public Vector<Page.Pair> Stack(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
+    public Vector<Hashtable> Stack(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         Stack<Object> stack = new Stack<Object>();
         Stack<DBApp.Operation> stackO = new Stack<DBApp.Operation>();
         stack.push(sqlTerms[0]);
@@ -647,9 +649,9 @@ public class Table implements Serializable {
             Vector res = applyOp(a, b, o.op);
             stack.push(res);
         }
-        return (Vector<Page.Pair>) stack.pop();
+        return (Vector<Hashtable>) stack.pop();
     }
-    private Vector<Page.Pair> ANDing(Object curr, Object next) throws DBAppException {
+    private Vector<Hashtable> ANDing(Object curr, Object next) throws DBAppException {
         //parent AND
         if (curr instanceof SQLTerm && next instanceof SQLTerm)
             return ANDingI((SQLTerm)curr, (SQLTerm)next);
@@ -661,7 +663,7 @@ public class Table implements Serializable {
             return ANDing((Vector) curr, (Vector) next);
         }
     }
-    private Vector<Page.Pair> ANDingI(SQLTerm term1, SQLTerm term2) throws DBAppException {
+    private Vector<Hashtable> ANDingI(SQLTerm term1, SQLTerm term2) throws DBAppException {
         //2nd AND child
         Vector result = new Vector();
         Vector <String> terms=new Vector<String>();
@@ -675,19 +677,19 @@ public class Table implements Serializable {
 //            ht.put(term1._strColumnName,term1._objValue);
 //            ht.put(term2._strColumnName,term2._objValue);
 //            Vector<Index.BucketInfo> v=index.getCell(index.getCellCoordinates(ht,false));
-            //todo mesh 3arfaaaaa law mafeesh wa2t nshelha
+            //todo mesh 3arfaaaaa
         } else {
             if(clustering1){
-                Vector<Page.Pair> res1 = tableTraversal(term1);//todo inc exc
-                for(Page.Pair record:res1){
+                Vector<Hashtable> res1 = tableTraversal(term1);//todo inc exc
+                for(Hashtable record:res1){
                     if(checkCond(record,term2)){
                         result.add(record);
                     }
                 }
             }
             else if(clustering2){
-                Vector<Page.Pair> res2 = tableTraversal(term2);
-                for(Page.Pair record:res2){
+                Vector<Hashtable> res2 = tableTraversal(term2);
+                for(Hashtable record:res2){
                     if(checkCond(record,term1)){
                         result.add(record);
                     }
@@ -700,12 +702,12 @@ public class Table implements Serializable {
         return result;
     }
 
-    private Vector<Page.Pair> LinearScan(SQLTerm term1, SQLTerm term2) throws DBAppException {
+    private Vector<Hashtable> LinearScan(SQLTerm term1, SQLTerm term2) throws DBAppException {
         Vector res = new Vector();//loop on entire table.. every single record and check
         for(tuple4 tuple:table) {
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
             for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
-                if (checkCond(currRec, term1)&&checkCond(currRec,term2))
+                if (checkCond(currRec.row, term1)&&checkCond(currRec.row,term2))
                     res.add(currRec);
             }
             DBApp.serialize(tableName + "_" + tuple.id, currPage);
@@ -714,10 +716,15 @@ public class Table implements Serializable {
     }
 
 
-
-    public static boolean checkCond(Page.Pair rec, SQLTerm term) throws DBAppException {
+//    private Index useIndexSelect(Vector<SQLTerm> term1) {
+//        //vector can have 1 or 2 terms
+//        //momken nkhalee col names bas badal sql term kolo
+//        //todo
+//        return null;
+//    }
+    public static boolean checkCond(Hashtable rec, SQLTerm term) throws DBAppException {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
-        Object recVal = rec.row.get(col);
+        Object recVal = rec.get(col);
         switch (operator) {
             case (">"): return (GenericCompare(recVal, value) > 0);
             case (">="):return (GenericCompare(recVal, value) >= 0);
@@ -729,7 +736,7 @@ public class Table implements Serializable {
         }
     }
     public void createCSV() throws IOException {
-        String path = "src\\main\\resources\\Basant\\" + this.tableName + "Table.csv";
+        String path = "src\\main\\resources\\Basant\\" + this.tableName + "_Table.csv";
         FileWriter fw = new FileWriter(path);
 
         for (int idx = 0; idx < table.size(); idx++) {
@@ -756,9 +763,9 @@ public class Table implements Serializable {
         String path = "src\\main\\resources\\Basant\\" + "Selection.csv";
         FileWriter fw = new FileWriter(path);
         while(it.hasNext()){
-            Page.Pair rec=(Page.Pair) it.next();
+            Hashtable rec=(Hashtable) it.next();
             String str = "";
-            Hashtable<String, Object> h = rec.row;
+            Hashtable<String, Object> h = rec;
             Set<String> s = h.keySet();
             for (String o : s) {
                 str += h.get(o).toString() + ", ";
