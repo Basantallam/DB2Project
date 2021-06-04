@@ -486,7 +486,7 @@ public class Table implements Serializable {
     }
 
     public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
-        Vector res = null;
+        Vector res = new Vector();;
         Vector terms = new Vector<SQLTerm>();
         terms.add(term);
         Index index=useIndexSelect(terms);
