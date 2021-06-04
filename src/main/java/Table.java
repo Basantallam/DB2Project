@@ -444,6 +444,7 @@ public class Table implements Serializable {
         Vector<Page.Pair> result = new Vector<>();
         for(Bucket.Record indexRec :indexRecords){
             Page p=table.get(PageIDtoIdx(indexRec.pageid)).page;
+//            Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
             //todo deserialize table and page
             for(Page.Pair tableRecord:p.records){
                 if(tableRecord.isEqual(indexRec)){
@@ -455,8 +456,9 @@ public class Table implements Serializable {
     }
     public Vector Equal(SQLTerm term){
         int pIdx=this.BinarySearch(term._objValue,table.size()-1,0);
-        //todo deserialize
-        Page page =table.get(pIdx).page;
+        //todo deserialize - i think done
+        Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
+//        Page page =table.get(pIdx).page;
         int rIdx = page.BinarySearch(term._objValue,page.records.size()-1,0);
         Vector result = new Vector();
         result.add(page.records.get(rIdx));
@@ -476,8 +478,10 @@ public class Table implements Serializable {
     public Vector lessThan(SQLTerm term) throws DBAppException {
         Table t = (Table) DBApp.deserialize(term._strTableName);
         int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
-        Page page=t.table.get(pageIdx).page;
-        //todo deserialize page
+//        Page page=t.table.get(pageIdx).page;
+        Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pageIdx));
+
+        //todo deserialize page - i think done
         int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
         //check inclusive or exclusive fel binary search
         return t.loopUntil(pageIdx,recordIdx,term);
@@ -486,8 +490,10 @@ public class Table implements Serializable {
         // traverse table
         Table t = (Table) DBApp.deserialize(term._strTableName);
         int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
-        Page page=t.table.get(pageIdx).page;
-        //todo deserialize page
+//        Page page=t.table.get(pageIdx).page;
+        Page page = (Page) DBApp.deserialize(tableName + "_" + t.table.get(pageIdx));
+
+        //todo deserialize page - i think done
         int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
         //check inclusive or exclusive fl binary search
         return loopFrom(pageIdx,recordIdx,term);
@@ -508,8 +514,9 @@ public class Table implements Serializable {
         //todo inclusive wala exclusive
         Vector res = new Vector();
         for(int pIdx=0;pIdx<=pageIdx;pIdx++){
-            //todo deserialize page
-            Page currPage = table.get(pIdx).page;
+            //todo deserialize page - i think done
+            Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
+//            Page currPage = table.get(pIdx).page;
 
             for(int rIdx=0;rIdx<table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
@@ -525,12 +532,14 @@ public class Table implements Serializable {
     }
     public Vector loopFrom(int pageIdx, int recordIdx, SQLTerm term) throws DBAppException {
         Vector res = new Vector();
-        //todo deserialize table
+        //todo deserialize table - i think done
+        Table table = (Table) DBApp.deserialize(term._strTableName);
 
-        for(int pIdx=pageIdx;pIdx<=table.size();pIdx++){
-            //todo deserialize page
-            Page currPage = table.get(pIdx).page;
-            for(int rIdx=(pageIdx==pIdx?recordIdx:0);rIdx<table.get(pIdx).page.records.size();rIdx++){
+        for(int pIdx=pageIdx;pIdx<=table.table.size();pIdx++){
+            //todo deserialize page - i think done
+            Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.table.get(pIdx));
+//            Page currPage = table.get(pIdx).page;
+            for(int rIdx=(pageIdx==pIdx?recordIdx:0);rIdx<table.table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
                 res.add(record);
             }
