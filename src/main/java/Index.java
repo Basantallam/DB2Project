@@ -19,7 +19,7 @@ public class Index implements Serializable {
 
         this.ranges = ranges; // O(1) to find cell index
 
-        Object[] temp = new Vector[10];// todo of type
+        Object[] temp = new Vector[10];
         Object[] temp1 = new Object[10];
         for (int i = 0; i < 10; i++) {
             temp[i] = new Vector<BucketInfo>();
