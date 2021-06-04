@@ -650,28 +650,34 @@ public class Table implements Serializable {
     public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
         Object recVal = rec.row.get(col);
         switch (operator) {
-            case ">":
+            case (">"):
                 if (GenericCompare(recVal, value) > 0)
                     return true;
-            case ">=":
+                break;
+            case (">="):
                 if (GenericCompare(recVal, value) >= 0)
                     return true;
-            case "<":
+                break;
+            case ("<"):
                 if (GenericCompare(recVal, value) < 0)
                     return true;
-            case "<=":
+                break;
+            case ("<="):
                 if (GenericCompare(recVal, value) <= 0)
                     return true;
-            case "=":
+                break;
+            case ("="):
                 if (GenericCompare(recVal, value) == 0)
                     return true;
-            case "!=":
+                break;
+            case ("!="):
                 if (GenericCompare(recVal, value) != 0)
                     return true;
+                break;
             default:
                 throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
         }
-
+        return false;
 
     }
 
