@@ -502,6 +502,7 @@ public class Table implements Serializable {
                 if (checkCond(currRec, term._strColumnName, term._objValue, term._strOperator))
                     res.add(currRec);
             }
+            DBApp.serialize(tableName+"_"+((tuple4) pagesItr.previous()).id,currPage);
         }
         return res;
     }
