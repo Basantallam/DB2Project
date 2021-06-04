@@ -352,7 +352,7 @@ public class Table implements Serializable {
                 if (p.isEmpty()) {//todo
 
                 } else {
-
+//todo
                 }
             }
         } else if (pk.equals(""))
@@ -370,7 +370,6 @@ public class Table implements Serializable {
                     t.max = p.records.lastElement().pk;
                     DBApp.serialize(tableName + "_" + t.id, p);
                 }
-
             }
         else {
             Object pkValue = columnNameValue.get(pk);
@@ -389,9 +388,7 @@ public class Table implements Serializable {
                 t.max = p.records.lastElement().pk;
                 DBApp.serialize(tableName + "_" + t.id, p);
             }
-
         }
-
     }
 
     public void updateMetadata(String pk, Hashtable<String, String> htblColNameType,
@@ -439,13 +436,10 @@ public class Table implements Serializable {
             return BinarySearch(searchkey, hi, mid);
         else
             return BinarySearch(searchkey, mid - 1, lo);
-
     }
 
     public Boolean createIndex(String[] columnNames, Hashtable<String, DBApp.minMax> ranges) {
         if (checkExists(columnNames)) return false; // check if index already exists
-
-
         Index i = new Index(this.tableName, columnNames, ranges, this.table, this.clusteringCol);
         index.add(i);
         return true;
@@ -490,18 +484,15 @@ public class Table implements Serializable {
     }
 
     public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
-        Vector res = new Vector();;
-        Vector terms = new Vector<SQLTerm>();
-        terms.add(term);
-        Index index=useIndexSelect(terms);
-        if(null==index) {
+        Vector res = new Vector();
+        Vector terms = new Vector<SQLTerm>(); terms.add(term);
+        Index index = useIndexSelect(terms);
+        if (null == index) {
             ListIterator pagesItr = (this.table).listIterator(this.table.size());
             ListIterator recs = null;
-            Page currPage;
-            Page.Pair currRec;
-
+            Page currPage; Page.Pair currRec;
             while (pagesItr.hasPrevious()) {
-                currPage = (Page) DBApp.deserialize(tableName+"_"+((tuple4) pagesItr.previous()).id);
+                currPage = (Page) DBApp.deserialize(tableName + "_" + ((tuple4) pagesItr.previous()).id);
                 recs = (currPage.records).listIterator(currPage.records.size());
                 while (recs.hasPrevious()) {
                     // removing records that violate the select statement
@@ -509,49 +500,34 @@ public class Table implements Serializable {
                     if (checkCond(currRec, term))
                         res.add(currRec);
                 }
-                DBApp.serialize(tableName+"_"+((tuple4) pagesItr.previous()).id,currPage);
+                DBApp.serialize(tableName + "_" + ((tuple4) pagesItr.previous()).id, currPage);
             }
-        }
-        else {
-
-            boolean traverseTable=this.clusteringCol.equals(term._strColumnName);
+       return res;
+        } else {
+            boolean traverseTable = this.clusteringCol.equals(term._strColumnName);
             //clustering or non-clustering to decide I'll traverse table or index
-
             switch (term._strOperator) {
-                case ("<"): {
-                    res=index.lessThan(term,traverseTable);
-                    break;
-                }
-                case ("<="): {
-                    res=index.lessThanOrEqual(term,traverseTable);
-                    break;
-                }
-                case (">"): {
-                    res=index.greaterThan(term,traverseTable);
-                    break;
-                }
-                case (">="): {
-                    res=index.greaterThanOrEqual(term,traverseTable);
-                    break;
-                }
-                case ("="): {
+                case ("<"):
+                    return index.lessThan(term, traverseTable);
+                case ("<="):
+                    return index.lessThan(term, traverseTable);
+                case (">"):
+                    return index.greaterThan(term, traverseTable);
+                case (">="):
+                    return index.greaterThan(term, traverseTable);
+                case ("="):
 //                    todo
-                    break;
-                }
-                case ("!="): {
+                    return null;
+                case ("!="):
 //                  todo  won't use index a7san
-
-                    break;
-                }
-
+                    return null;
             }
         }
         return res;
     }
 
-    public Vector loopUntil(double lastPageID, SQLTerm term,boolean inclusive) throws DBAppException {
+    public Vector loopUntil(double lastPageID, SQLTerm term) throws DBAppException {
         Vector res = new Vector();
-
         for(tuple4 tuple: table){
             //todo deserialize page
             Page currPage = tuple.page;
@@ -561,8 +537,22 @@ public class Table implements Serializable {
             }
             res.addAll(currPage.records);
         }
-        //todo I: cond stop at lastcellcoordinates
+        //todo cond stop at lastcellcoordinates ? ya3ni eih ya immo
 
+        return res;
+    }
+
+    public Vector loopFrom(double firstPageID, SQLTerm term) throws DBAppException {
+        Vector res = new Vector();
+        int index = PageIDtoIdx(firstPageID); //sure it works?
+        //todo deserialize
+        filterPage(table.get(index).page,term,res);
+
+        for(int i = index+1;i<table.size();i++){
+            //todo deserialize page
+            Page currPage = table.get(i).page;
+            res.addAll(currPage.records);
+        }
         return res;
     }
 

@@ -396,7 +396,7 @@ public class Index implements Serializable {
         Vector res = null;
         if (!traverseTable)
             // traverse Index
-            res = loopUntil(LastCellCoordinates, term, false);
+            res = loopUntil(LastCellCoordinates, term);
         else
         //todo traverse sorted table
         {
@@ -404,7 +404,7 @@ public class Index implements Serializable {
             double lastPageID = pageFromCell(cell,term);
 
             Table t = (Table) DBApp.deserialize(term._strTableName);
-            res = t.loopUntil(lastPageID,term,false);
+            res = t.loopUntil(lastPageID,term);
 
         }
         return res;
@@ -442,24 +442,8 @@ public class Index implements Serializable {
     }
 
 
-    public Vector lessThanOrEqual(SQLTerm term, boolean traverseTable) {
-        Hashtable<String, Object> hashtable = new Hashtable<>();
-        hashtable.put(term._strColumnName, term._objValue);
-        int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
-        //nulls should be 9
-        Vector res = null;
-        if (!traverseTable)
-            //traverse Index
-            res = loopUntil(LastCellCoordinates, term,true);
-        else
-        //todo traverse table
-        {
 
-        }
-        return res;
-    }
-
-    public Vector<Bucket.Record> loopUntil(int[] limits, SQLTerm term,boolean inclusive)  {
+    public Vector<Bucket.Record> loopUntil(int[] limits, SQLTerm term)  {
         //nulls should be [9]
         Vector<Bucket.Record> result = new Vector<Bucket.Record>();
         int[] start=new int[limits.length];
@@ -501,22 +485,28 @@ public class Index implements Serializable {
         }
     }
 
-    public Vector greaterThan(SQLTerm term, boolean traverseTable) {
+    public Vector greaterThan(SQLTerm term, boolean traverseTable) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable, false);
+        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
         //nulls should be 0 3adi
         Vector res = null;
         if (!traverseTable) {
             //traverse Index
-            res = loopFrom(FirstCellCoordinates, term,false);
+            res = loopFrom(FirstCellCoordinates, term);
         } else {
-            //todo traverse table
+            // traverse table
+            Vector<BucketInfo> cell = getCell(FirstCellCoordinates);
+            double firstPageID = pageFromCell(cell,term);
+
+            Table t = (Table) DBApp.deserialize(term._strTableName);
+            res = t.loopFrom(firstPageID,term);
+
         }
         return res;
     }
 
-    public Vector<Bucket.Record> loopFrom(int[] start, SQLTerm term, boolean inclusive) {
+    public Vector<Bucket.Record> loopFrom(int[] start, SQLTerm term) {
         Vector<Bucket.Record> result = new Vector<Bucket.Record>();
         Vector<BucketInfo> firstCell = getCell(start);
         filterCell(firstCell,term,result);
@@ -543,15 +533,6 @@ public class Index implements Serializable {
         return end;
     }
 
-
-
-    public Vector greaterThanOrEqual(SQLTerm term, boolean traverseTable) {
-        Hashtable<String, Object> hashtable = new Hashtable<>();
-        hashtable.put(term._strColumnName, term._objValue);
-        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable, false);
-        //nulls should be 0 3adi
-        return this.loopFrom(FirstCellCoordinates, term,true);
-    }
 
     class BucketInfo implements Serializable {
         long id;
