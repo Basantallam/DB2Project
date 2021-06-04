@@ -308,13 +308,6 @@ public class Index implements Serializable {
         Vector<Integer> coordinates = getCellsCoordinates(columnNameValue);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells );
-//        if (coordinates.get(0) == -1) {
-//            for (int i = 0; i < grid.length; i++) {
-//                cells.add(helper(coordinates, 1, grid, grid[i]));
-//            }
-//        } else {
-//            cells.add(helper(coordinates, 1, grid, grid[coordinates.get(0)]));
-//        }
         for (Vector<BucketInfo> cell : cells) {
             Hashtable<String, Object> arrangedHash = arrangeHashtable(columnNameValue);
             if (columnNameValue.containsKey(clusteringCol)) {
