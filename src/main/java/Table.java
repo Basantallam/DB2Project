@@ -601,7 +601,7 @@ public class Table implements Serializable {
                 throw new DBAppException("Star operator must be one of AND, OR, XOR!");
         }
     }
-    public void Stack(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
+    public Vector<Page.Pair> Stack(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         Stack<Object> stack = new Stack<Object>();
         Stack<DBApp.Operation> stackO = new Stack<DBApp.Operation>();
         stack.push(sqlTerms[0]);
@@ -623,6 +623,7 @@ public class Table implements Serializable {
                 stackO.push(op);
             }
         }
+
         while (stack.size() > 1) {
             Object a = stack.pop();
             Object b = stack.pop();
@@ -630,6 +631,7 @@ public class Table implements Serializable {
             Vector res = applyOp(a, b, o.op);
             stack.push(res);
         }
+        return (Vector<Page.Pair>) stack.pop();
     }
     private Vector<Page.Pair> ANDing(Object curr, Object next) throws DBAppException {
         //parent AND

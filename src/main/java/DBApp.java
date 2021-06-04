@@ -337,20 +337,23 @@ public class DBApp implements DBAppInterface {
 		if (!(DB.contains(sqlTerms[0]._strTableName)))
 			throw new DBAppException("Table does not exist in Database");
 		Table table = (Table) deserialize(sqlTerms[0]._strTableName);
-
-		if (!(colInTable(sqlTerms[0]._strTableName, sqlTerms[0]._strColumnName, sqlTerms[0]._objValue)))
-			throw new DBAppException("Invalid input, check column name and the value's data type");
-		Vector curr = table.resolveOneStatement(sqlTerms[0]);
-
-		for (int i = 0; i < sqlTerms.length - 1; i++) {
-			if (!(colInTable(sqlTerms[i+1]._strTableName, sqlTerms[i+1]._strColumnName, sqlTerms[i+1]._objValue)))
+		Vector<Page.Pair> res=new Vector<>();
+		if(sqlTerms.length<2) {
+			if (!(colInTable(sqlTerms[0]._strTableName, sqlTerms[0]._strColumnName, sqlTerms[0]._objValue)))
 				throw new DBAppException("Invalid input, check column name and the value's data type");
+			Vector curr = table.resolveOneStatement(sqlTerms[0]);
 
-			Vector next = table.resolveOneStatement(sqlTerms[i+1]);
-			Boolean indexExist = false; 			//todo fix the false, how to determine index?
-			curr = table.applyOp(curr,next,arrayOperators[i]);
+			for (int i = 0; i < sqlTerms.length - 1; i++) {
+				if (!(colInTable(sqlTerms[i + 1]._strTableName, sqlTerms[i + 1]._strColumnName, sqlTerms[i + 1]._objValue)))
+					throw new DBAppException("Invalid input, check column name and the value's data type");
+				Vector next = table.resolveOneStatement(sqlTerms[i + 1]);
+				Boolean indexExist = false;            //todo fix the false, how to determine index?
+				curr = table.applyOp(curr, next, arrayOperators[i]);
+			}
 		}
-		return curr.iterator();
+		else
+			res=table.Stack(sqlTerms,arrayOperators);
+		return res.iterator();
 	}
 
 
