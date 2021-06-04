@@ -497,12 +497,12 @@ public class Table implements Serializable {
         if(null==index) {
             ListIterator pagesItr = (this.table).listIterator(this.table.size());
             ListIterator recs = null;
-
             Page currPage;
             Page.Pair currRec;
 
             while (pagesItr.hasPrevious()) {
-                currPage = (Page) DBApp.deserialize(tableName+"_"+((tuple4) pagesItr.previous()).id);                recs = (currPage.records).listIterator(currPage.records.size());
+                currPage = (Page) DBApp.deserialize(tableName+"_"+((tuple4) pagesItr.previous()).id);
+                recs = (currPage.records).listIterator(currPage.records.size());
                 while (recs.hasPrevious()) {
                     // removing records that violate the select statement
                     currRec = (Page.Pair) recs.previous();
@@ -653,7 +653,7 @@ public class Table implements Serializable {
         return null;
     }
 
-    public boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
+    public static boolean checkCond(Page.Pair rec, String col, Object value, String operator) throws DBAppException {
         Object recVal = rec.row.get(col);
         switch (operator) {
             case (">"):

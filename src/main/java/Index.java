@@ -36,6 +36,7 @@ public class Index implements Serializable {
         this.fill(table);
 
     }
+
     private void fillColumnNames(String[] columnNames) {
         this.columnNames = new Vector<>();
         for (String s : columnNames) {
@@ -45,16 +46,18 @@ public class Index implements Serializable {
                 this.columnNames.add(s);
         }
     }
-    public static long parseString(String s) {
-        char[] c= s.toCharArray();
-        long res= 0;
-        for (int i = 0; i <c.length ; i++) {
-            long h = DBApp.code.get(c[i])==null?64:(long) DBApp.code.get(c[i]);
 
-            res+= h*Math.pow(63,c.length-i-1);
+    public static long parseString(String s) {
+        char[] c = s.toCharArray();
+        long res = 0;
+        for (int i = 0; i < c.length; i++) {
+            long h = DBApp.code.get(c[i]) == null ? 64 : (long) DBApp.code.get(c[i]);
+
+            res += h * Math.pow(63, c.length - i - 1);
         }
         return res;
     }
+
     private Vector<DBApp.minMax> arrangeRanges(Hashtable<String, DBApp.minMax> ranges) {
         Set<String> set = ranges.keySet();
         int IndexDimension = columnNames.size();
@@ -67,6 +70,7 @@ public class Index implements Serializable {
         }
         return arrangedRanges;
     }
+
     public Object deepClone(Object[] org) {
         Object[] clone = new Object[org.length];
         if (org[0] instanceof Object[]) {
@@ -77,6 +81,7 @@ public class Index implements Serializable {
 
         return clone;
     }
+
     private void fill(Vector<Table.tuple4> table) {
         for (Table.tuple4 t : table) {
             double pageId = t.id;
@@ -87,7 +92,7 @@ public class Index implements Serializable {
         }
     }
 
-    public int[] getCellCoordinates(Hashtable<String, Object> values,boolean nine) {// added boolean for range queries
+    public int[] getCellCoordinates(Hashtable<String, Object> values, boolean nine) {// added boolean for range queries
         Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(values));
         int[] coordinates = new int[colValues.size()];
 
@@ -98,12 +103,11 @@ public class Index implements Serializable {
 
             Object value = colValues.get(colName);
             if (value == null) {
-                coordinates[i]=nine?9:0; //depending on bool ha7ot 0 wala 9
-            }
-            else {
-                int idx = (value instanceof Long|| value instanceof Date) ? ( getIdxLong(min, max, value))
-                        : getIdxDouble((double)min, (double)max, (double)value);
-                coordinates[i]=idx;
+                coordinates[i] = nine ? 9 : 0; //depending on bool ha7ot 0 wala 9
+            } else {
+                int idx = (value instanceof Long || value instanceof Date) ? (getIdxLong(min, max, value))
+                        : getIdxDouble((double) min, (double) max, (double) value);
+                coordinates[i] = idx;
             }
 
         }
@@ -111,20 +115,25 @@ public class Index implements Serializable {
     }
 
     private int getIdxDouble(double min, double max, double value) {
-        double cellWidth = ((max- min) + 1) / 10.0; //range el cell kam raqam
-        return (int)( Math.floor((value- min) / (cellWidth)));
+        double cellWidth = ((max - min) + 1) / 10.0; //range el cell kam raqam
+        return (int) (Math.floor((value - min) / (cellWidth)));
     }
 
     private int getIdxLong(Object minimum, Object maximum, Object valueToAdd) {
-        long min; long max; long value;
-        if (minimum instanceof Date){
-            min= ((Date) minimum).getTime();max=((Date)maximum).getTime();value=((Date)valueToAdd).getTime();
+        long min;
+        long max;
+        long value;
+        if (minimum instanceof Date) {
+            min = ((Date) minimum).getTime();
+            max = ((Date) maximum).getTime();
+            value = ((Date) valueToAdd).getTime();
+        } else {
+            min = (long) minimum;
+            max = (long) maximum;
+            value = (long) valueToAdd;
         }
-        else{
-            min = (long) minimum; max= (long) maximum;value= (long) valueToAdd;
-        }
-        long cellWidth = ((max- min) + 1) / 10; //range el cell kam raqam
-        int idx = (int) ((value- min) / (cellWidth)); // O(1)
+        long cellWidth = ((max - min) + 1) / 10; //range el cell kam raqam
+        int idx = (int) ((value - min) / (cellWidth)); // O(1)
 //        if ((value- min) % (cellWidth) > 0) {
 //            idx++; //ceil //I think floor
 //        }
@@ -146,8 +155,8 @@ public class Index implements Serializable {
                 Object min = ranges.get(colName).min;
                 Object max = ranges.get(colName).max;
                 Object value = colValues.get(colName);
-                int idx= (value instanceof Long|| value instanceof Date) ? ( getIdxLong(min, max, value))
-                        : getIdxDouble((double)min, (double)max, (double)value);
+                int idx = (value instanceof Long || value instanceof Date) ? (getIdxLong(min, max, value))
+                        : getIdxDouble((double) min, (double) max, (double) value);
                 coordinates.add(idx);
             } else {
                 coordinates.add(-1);
@@ -155,6 +164,7 @@ public class Index implements Serializable {
         }
         return coordinates;
     }
+
     public Hashtable<String, Object> arrangeHashtable(Hashtable<String, Object> values) {
         //takhod kol el record teraga3 el values eli fel Index columns bass
 
@@ -172,16 +182,18 @@ public class Index implements Serializable {
         }
         return extracted;
     }
+
     public void updateAddress(Hashtable<String, Object> row, Double oldId, Double newId) {
-        int[] cellIdx = getCellCoordinates(row,false);
+        int[] cellIdx = getCellCoordinates(row, false);
         Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
-        Bucket b = (Bucket) DBApp.deserialize(tableName + "_"+columnNames+"_" + bi.id);
+        Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
         Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
         b.updateAddress(oldId, newId, arrangedHash);
-        DBApp.serialize(tableName + "_"+columnNames+"_" + bi.id, b);
+        DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
     }
+
     public int BinarySearchCell(Vector<BucketInfo> cell, Object searchKey, int hi, int lo) {
         //binary search within one cell
         int mid = (hi + lo + 1) / 2;
@@ -192,21 +204,22 @@ public class Index implements Serializable {
         else
             return BinarySearchCell(cell, searchKey, mid - 1, lo);
     }
+
     public void insert(Hashtable<String, Object> colNameValue, Double id) {
-        int[] cellIdx = getCellCoordinates(colNameValue,false);
+        int[] cellIdx = getCellCoordinates(colNameValue, false);
         Vector<BucketInfo> cell = getCell(cellIdx);
         int bucketInfoIdx;
         BucketInfo foundBI;
         Bucket b;
-        if(cell.size()==0){
-            bucketInfoIdx=0;
-            foundBI=new BucketInfo();
+        if (cell.size() == 0) {
+            bucketInfoIdx = 0;
+            foundBI = new BucketInfo();
             cell.add(foundBI);
-            b=foundBI.bucket;
-        }else {
+            b = foundBI.bucket;
+        } else {
             bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
             foundBI = cell.get(bucketInfoIdx);
-            b = (Bucket) DBApp.deserialize(tableName + "_"+columnNames+"_" + foundBI.id);
+            b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + foundBI.id);
         }
         Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
         Bucket.Record returned = b.insert(arrangedHash, id);
@@ -215,20 +228,20 @@ public class Index implements Serializable {
             foundBI.max = b.records.lastElement().values.get(columnNames.get(0));
             foundBI.min = b.records.firstElement().values.get(columnNames.get(0));
         }
-        DBApp.serialize(tableName +"_"+columnNames+"_" + foundBI.id, b);
+        DBApp.serialize(tableName + "_" + columnNames + "_" + foundBI.id, b);
         foundBI.size++;
         if (returned != null) {
             foundBI.size--;
             boolean create = true;
             if (cell.size() - 1 > bucketInfoIdx) {
                 int nxtIdx = bucketInfoIdx + 1;
-                Bucket nxtBucket = (Bucket) DBApp.deserialize(tableName +"_"+columnNames+"_" + cell.get(nxtIdx).id);
+                Bucket nxtBucket = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + cell.get(nxtIdx).id);
                 if (!nxtBucket.isFull()) {
                     create = false;
                     nxtBucket.insert(returned.values, id);
                 }
                 cell.get(nxtIdx).min = returned.values.get(columnNames.get(0));
-                DBApp.serialize(tableName +"_"+columnNames+"_" + cell.get(nxtIdx).id, nxtBucket);
+                DBApp.serialize(tableName + "_" + columnNames + "_" + cell.get(nxtIdx).id, nxtBucket);
             }
 
             if (create) {
@@ -237,11 +250,12 @@ public class Index implements Serializable {
                 newBI.bucket.insert(returned.values, id);
                 newBI.size++;
                 cell.insertElementAt(newBI, bucketInfoIdx + 1);
-                DBApp.serialize(tableName +"_"+columnNames+"_" + newBI.id, newBI.bucket);
+                DBApp.serialize(tableName + "_" + columnNames + "_" + newBI.id, newBI.bucket);
             }
         }
     }
-    public Vector<BucketInfo> getCell(int[]  cellIdx) {
+
+    public Vector<BucketInfo> getCell(int[] cellIdx) {
 
         Object cell = grid[cellIdx[0]];
         for (int i = 1; i < cellIdx.length; i++) {
@@ -253,9 +267,9 @@ public class Index implements Serializable {
     }
 
     private Hashtable<String, Object> checkformatall(Hashtable<String, Object> colNameValue) {
-        Hashtable<String,Object> parsed = (Hashtable<String, Object>) colNameValue.clone();
-        for(String i:parsed.keySet())
-            if(parsed.get(i) instanceof String) {
+        Hashtable<String, Object> parsed = (Hashtable<String, Object>) colNameValue.clone();
+        for (String i : parsed.keySet())
+            if (parsed.get(i) instanceof String) {
                 parsed.replace(i, parseString((String) parsed.get(i)));
             }
 
@@ -277,28 +291,31 @@ public class Index implements Serializable {
     }
 
     public void delete(Hashtable<String, Object> row, double pageId) {
-        int[] cellIdx = getCellCoordinates(row,false);//false sah?
+        int[] cellIdx = getCellCoordinates(row, false);//false sah?
         Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
-        Bucket b = (Bucket) DBApp.deserialize(tableName +"_"+columnNames+"_" + bi.id);
+        Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
         Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
-        b.delete(arrangedHash,pageId);
-        DBApp.serialize(tableName +"_"+columnNames+"_" + bi.id, b);
+        b.delete(arrangedHash, pageId);
+        DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
     }
+
     public Vector<Double> narrowPageRange(Hashtable<String, Object> colNameValue) {
-        int[] cellIdx = getCellCoordinates(colNameValue,false);
+        int[] cellIdx = getCellCoordinates(colNameValue, false);
         Vector<BucketInfo> cell = getCell(cellIdx);
         int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
         BucketInfo foundBI = cell.get(bucketInfoIdx);
-        Bucket b = (Bucket) DBApp.deserialize(tableName +"_"+columnNames+"_" + foundBI.id);
+        Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + foundBI.id);
         Vector res = b.getInsertCoordinates(colNameValue);
-        DBApp.serialize(tableName +"_"+columnNames+"_" + foundBI.id,b);
+        DBApp.serialize(tableName + "_" + columnNames + "_" + foundBI.id, b);
         return res;
     }
+
     public int getSize() {
         return columnNames.size();
     }
+
     public static void main(String[] args) {
 //		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
 //		Index idx = new Index("tablename",stringarr, new Hashtable<>(), this.table);
@@ -309,54 +326,55 @@ public class Index implements Serializable {
     }
 
     public Vector<Double> delete(Hashtable<String, Object> columnNameValue) {
-        Vector<Double>pages=new Vector<>();
+        Vector<Double> pages = new Vector<>();
         Vector<Integer> coordinates = getCellsCoordinates(columnNameValue);
-        Vector<Vector<BucketInfo>> cells=new Vector<>();
+        Vector<Vector<BucketInfo>> cells = new Vector<>();
         if (coordinates.get(0) == -1) {
-            for (int i=0;i<grid.length;i++) {
-                cells.add(helper(coordinates,1, grid[i]));
+            for (int i = 0; i < grid.length; i++) {
+                cells.add(helper(coordinates, 1, grid[i]));
             }
-        }else{
-            cells.add(helper(coordinates,1, grid[coordinates.get(0)]));
+        } else {
+            cells.add(helper(coordinates, 1, grid[coordinates.get(0)]));
         }
-        for (Vector<BucketInfo> cell:cells) {
+        for (Vector<BucketInfo> cell : cells) {
             Hashtable<String, Object> arrangedHash = arrangeHashtable(columnNameValue);
-            if(columnNameValue.containsKey(clusteringCol)){
+            if (columnNameValue.containsKey(clusteringCol)) {
                 Object searchKey = columnNameValue.get(clusteringCol);
                 BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
-                Bucket b = (Bucket) DBApp.deserialize(tableName +"_"+columnNames+"_" + bi.id);
-                Vector<Double>p=b.deleteI(arrangedHash);
-                for (double x:p) {
+                Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                Vector<Double> p = b.deleteI(arrangedHash);
+                for (double x : p) {
                     pages.add(x);
                 }
-                DBApp.serialize(tableName +"_"+columnNames+"_" + bi.id, b);
-            }else {
+                DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+            } else {
                 for (BucketInfo bi : cell) {
-                    Bucket b = (Bucket) DBApp.deserialize(tableName +"_"+columnNames+"_" + bi.id);
-                    Vector<Double>p=b.deleteI(arrangedHash);
-                    for (double x:p) {
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    Vector<Double> p = b.deleteI(arrangedHash);
+                    for (double x : p) {
                         pages.add(x);
                     }
-                    DBApp.serialize(tableName +"_"+columnNames+"_" + bi.id, b);
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
                 }
             }
-        }return pages;
-    }
-    private Vector<BucketInfo> helper(Vector<Integer> coordinates, int ptr,Object grid) {
-        if(ptr>=coordinates.size() && ptr <coordinates.size()+10){
-            Vector<BucketInfo>cell= (Vector<BucketInfo>)((Object[])grid)[ptr-coordinates.size()];
-            return cell;
         }
-        else if(ptr==coordinates.size()-1){
-            if(coordinates.get(ptr)==-1){
-                for(int i=0;i<10;i++) helper(coordinates,ptr+i,grid);
-            }else {
-                Vector<BucketInfo>cell= (Vector<BucketInfo>)((Object[])grid)[coordinates.get(ptr)];
+        return pages;
+    }
+
+    private Vector<BucketInfo> helper(Vector<Integer> coordinates, int ptr, Object grid) {
+        if (ptr >= coordinates.size() && ptr < coordinates.size() + 10) {
+            Vector<BucketInfo> cell = (Vector<BucketInfo>) ((Object[]) grid)[ptr - coordinates.size()];
+            return cell;
+        } else if (ptr == coordinates.size() - 1) {
+            if (coordinates.get(ptr) == -1) {
+                for (int i = 0; i < 10; i++) helper(coordinates, ptr + i, grid);
+            } else {
+                Vector<BucketInfo> cell = (Vector<BucketInfo>) ((Object[]) grid)[coordinates.get(ptr)];
                 return cell;
             }
-        }else {
-            Object[]cell=((Object[])grid);
-            int x=coordinates.get(ptr);
+        } else {
+            Object[] cell = ((Object[]) grid);
+            int x = coordinates.get(ptr);
             if (coordinates.get(x) == -1) {
 
                 for (int i = 0; i < cell.length; i++) {
@@ -364,120 +382,159 @@ public class Index implements Serializable {
                     grid = y;
                     return helper(coordinates, ptr + 1, grid);
                 }
-            }else{
+            } else {
                 return helper(coordinates, ptr + 1, cell[x]);
             }
-        }return null;
+        }
+        return null;
     }
 
-    public Vector lessThan(SQLTerm term, boolean clustColQuery) {
+    public Vector lessThan(SQLTerm term, boolean clustColQuery) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] LastCellCoordinates = this.getCellCoordinates(hashtable,true);
+        int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
         //nulls should be [9]
-        Vector res =null;
-        if(!clustColQuery)
+        Vector res = null;
+        if (!clustColQuery)
             //traverse Index
-            res = loopUntilExclusive(LastCellCoordinates,term);
+            res = loopUntilExclusive(LastCellCoordinates, term);
         else
-            //todo traverse table
+        //todo traverse table
         {
-
+            Vector<BucketInfo> cell = getCell(LastCellCoordinates);
+            int lastPageID = pageFromCell(cell,term);
+            res = loopTableUntilExclusive(lastPageID, term);
         }
         return res;
     }
+
+    private int pageFromCell(Vector<BucketInfo> cell,SQLTerm term) throws DBAppException {
+        ListIterator cellIt = cell.listIterator();
+        ListIterator currBucket;
+        Object currRec;
+        while(cellIt.hasNext()){
+            currBucket = (((BucketInfo) cellIt.next()).bucket.records).listIterator();
+            while(currBucket.hasNext()) {
+                currRec = currBucket.next();
+//                if (!(Table.checkCond(currRec, term._strColumnName, term._objValue, term._strOperator)))
+            }
+        }
+        return 0;
+
+    }
+
+    private Vector loopTableUntilExclusive(int lastPageID, SQLTerm term) {
+        Vector res = null;
+        Table t = (Table) DBApp.deserialize(term._strTableName);
+        ListIterator pagesItr = (t.table).listIterator(t.table.size());
+        ListIterator recs = null;
+        Page currPage;
+        while(pagesItr.hasNext()){
+            currPage = (Page) pagesItr.next();
+            if(currPage.id==null) //todo cond stop at lastcellcoordinates
+                break;
+            recs = currPage.records.listIterator(currPage.records.size());
+            while(recs.hasNext()) {
+                res.add(recs.next());
+            }
+        }
+        return res;
+    }
+
     public Vector lessThanOrEqual(SQLTerm term, boolean clustColQuery) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] LastCellCoordinates = this.getCellCoordinates(hashtable,true);
+        int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
         //nulls should be 9
-        Vector res =null;
-        if(!clustColQuery)
+        Vector res = null;
+        if (!clustColQuery)
             //traverse Index
-            res = loopUntilInclusive(LastCellCoordinates,term);
+            res = loopUntilInclusive(LastCellCoordinates, term);
         else
-            //todo traverse table
+        //todo traverse table
         {
 
         }
         return res;
     }
-    public Vector<Bucket.Record> loopUntilExclusive(int[]limits, SQLTerm term){
-        //nulls should be [9]
-        Vector<Bucket.Record> ref=new Vector<Bucket.Record>();
-        loopUntil(new int[limits.length],limits,0,ref);
-        Vector <BucketInfo> lastCell= getCell(limits);
-        for(BucketInfo bi :lastCell){
-            for(Bucket.Record r:bi.bucket.records){
-                Object recordVal= r.values.get(term._strColumnName);
-                if(Table.GenericCompare(recordVal,term._objValue)<0){
-                    ref.add(r);
-                }
-            }
-        }
-        return ref;
-    }
-    public Vector<Bucket.Record> loopUntilInclusive(int[]limits,SQLTerm term){
-        //includes records in last cell satisfying cond
-        Vector<Bucket.Record> ref=new Vector<Bucket.Record>();
-        loopUntil(new int[limits.length],limits,0,ref);
-        Vector <BucketInfo> lastCell= getCell(limits);
-        for(BucketInfo bi :lastCell){
-            for(Bucket.Record r:bi.bucket.records){
-                Object recordVal= r.values.get(term._strColumnName);
-                if(Table.GenericCompare(recordVal,term._objValue)<=0){
-                    ref.add(r);
-                }
-            }
-        }
-        return ref;
-    }
-    public void loopUntil(int[] curr,int[] limits,int depth, Vector<Bucket.Record> accumulated){
 
-        if(depth==limits.length){
-            Vector<BucketInfo> cell =getCell(curr);
-            for(BucketInfo bi :cell){
-                for(Bucket.Record r:bi.bucket.records){
+    public Vector<Bucket.Record> loopUntilExclusive(int[] limits, SQLTerm term) {
+        //nulls should be [9]
+        Vector<Bucket.Record> ref = new Vector<Bucket.Record>();
+        loopUntil(new int[limits.length], limits, 0, ref);
+        Vector<BucketInfo> lastCell = getCell(limits);
+        for (BucketInfo bi : lastCell) {
+            for (Bucket.Record r : bi.bucket.records) {
+                Object recordVal = r.values.get(term._strColumnName);
+                if (Table.GenericCompare(recordVal, term._objValue) < 0) {
+                    ref.add(r);
+                }
+            }
+        }
+        return ref;
+    }
+
+    public Vector<Bucket.Record> loopUntilInclusive(int[] limits, SQLTerm term) {
+        //includes records in last cell satisfying cond
+        Vector<Bucket.Record> ref = new Vector<Bucket.Record>();
+        loopUntil(new int[limits.length], limits, 0, ref);
+        Vector<BucketInfo> lastCell = getCell(limits);
+        for (BucketInfo bi : lastCell) {
+            for (Bucket.Record r : bi.bucket.records) {
+                Object recordVal = r.values.get(term._strColumnName);
+                if (Table.GenericCompare(recordVal, term._objValue) <= 0) {
+                    ref.add(r);
+                }
+            }
+        }
+        return ref;
+    }
+
+    public void loopUntil(int[] curr, int[] limits, int depth, Vector<Bucket.Record> accumulated) {
+
+        if (depth == limits.length) {
+            Vector<BucketInfo> cell = getCell(curr);
+            for (BucketInfo bi : cell) {
+                for (Bucket.Record r : bi.bucket.records) {
                     accumulated.add(r);
                 }
             }
             return;
         }
-        for(int i=0;i<limits[depth];i++){ //excludes el last cell(limits)
-            int[] newCurr =curr.clone();
-            newCurr[depth]=i;
-            loopUntil(newCurr,limits,depth+1,accumulated);
+        for (int i = 0; i < limits[depth]; i++) { //excludes el last cell(limits)
+            int[] newCurr = curr.clone();
+            newCurr[depth] = i;
+            loopUntil(newCurr, limits, depth + 1, accumulated);
         }
     }
 
     public Vector greaterThan(SQLTerm term, boolean clustColQuery) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
+        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable, false);
         //nulls should be 0 3adi
-        Vector res=null;
-        if(!clustColQuery){
+        Vector res = null;
+        if (!clustColQuery) {
             //traverse Index
-            res=loopFromExclusive(FirstCellCoordinates,term);
-        }
-        else{
+            res = loopFromExclusive(FirstCellCoordinates, term);
+        } else {
             //todo traverse table
         }
         return res;
     }
 
-    public Vector<Bucket.Record> loopFromInclusive(int[] start,SQLTerm term){
-        Vector<Bucket.Record> ref=new Vector<Bucket.Record>();
-        Vector <BucketInfo> firstCell = getCell(start);
-        for(BucketInfo bi :firstCell){
-            for(Bucket.Record r:bi.bucket.records){
-                Object recordVal= r.values.get(term._strColumnName);
-                if(Table.GenericCompare(recordVal,term._objValue)>=0){
+    public Vector<Bucket.Record> loopFromInclusive(int[] start, SQLTerm term) {
+        Vector<Bucket.Record> ref = new Vector<Bucket.Record>();
+        Vector<BucketInfo> firstCell = getCell(start);
+        for (BucketInfo bi : firstCell) {
+            for (Bucket.Record r : bi.bucket.records) {
+                Object recordVal = r.values.get(term._strColumnName);
+                if (Table.GenericCompare(recordVal, term._objValue) >= 0) {
                     ref.add(r);
                 }
             }
         }
-        loopUntil(pLusOne(start),pLusOne(this.getEnd()),0,ref);
+        loopUntil(pLusOne(start), pLusOne(this.getEnd()), 0, ref);
         //bazawed ones 3ala kol el array bta3 getEnd 3ashan loop until bet exclude akher cell
         //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2
         return ref;
@@ -485,9 +542,9 @@ public class Index implements Serializable {
 
 
     private int[] pLusOne(int[] arr) {
-        int [] arrnew=arr.clone();
-        for(int i=0;i<arr.length;i++){
-            arrnew[i] = arr[i]+1;
+        int[] arrnew = arr.clone();
+        for (int i = 0; i < arr.length; i++) {
+            arrnew[i] = arr[i] + 1;
         }
         return arrnew;
     }
@@ -495,32 +552,33 @@ public class Index implements Serializable {
     private int[] getEnd() {
         // returns laaaast coordinates in grid [9][9]...?
         int[] end = new int[this.columnNames.size()];
-        Arrays.fill(end,9);
+        Arrays.fill(end, 9);
         return end;
     }
 
-    public Vector<Bucket.Record> loopFromExclusive(int[] start,SQLTerm term){
-        Vector<Bucket.Record> ref=new Vector<Bucket.Record>();
-        Vector <BucketInfo> firstCell = getCell(start);
-        for(BucketInfo bi :firstCell){
-            for(Bucket.Record r:bi.bucket.records){
-                Object recordVal= r.values.get(term._strColumnName);
-                if(Table.GenericCompare(recordVal,term._objValue)>0){
+    public Vector<Bucket.Record> loopFromExclusive(int[] start, SQLTerm term) {
+        Vector<Bucket.Record> ref = new Vector<Bucket.Record>();
+        Vector<BucketInfo> firstCell = getCell(start);
+        for (BucketInfo bi : firstCell) {
+            for (Bucket.Record r : bi.bucket.records) {
+                Object recordVal = r.values.get(term._strColumnName);
+                if (Table.GenericCompare(recordVal, term._objValue) > 0) {
                     ref.add(r);
                 }
             }
         }
-        loopUntil(pLusOne(start),pLusOne(this.getEnd()),0,ref);
+        loopUntil(pLusOne(start), pLusOne(this.getEnd()), 0, ref);
         //bazawed ones 3ala kol el array bta3 getEnd 3ashan loop until bet exclude akher cell
         //bazawed ones 3ala start 3ashan acheck each record individually bet satisfy wala la2
         return ref;
     }
+
     public Vector greaterThanOrEqual(SQLTerm term, boolean clustColQuery) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
+        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable, false);
         //nulls should be 0 3adi
-        return this.loopFromInclusive(FirstCellCoordinates,term);
+        return this.loopFromInclusive(FirstCellCoordinates, term);
     }
 
     class BucketInfo implements Serializable {
@@ -533,7 +591,7 @@ public class Index implements Serializable {
         public BucketInfo() {
             this.size = 0;
             this.id = ++serialID;
-            this.bucket = new Bucket(id, clusteringCol,columnNames.get(0));
+            this.bucket = new Bucket(id, clusteringCol, columnNames.get(0));
             this.max = null;
             this.min = null;
         }
