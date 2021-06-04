@@ -341,14 +341,17 @@ public class Index implements Serializable {
         if (ptr == coordinates.size() - 1) {
             if (coordinates.get(ptr) == -1)
                 for (int i = 0; i < 10; i++)
-                    cells.add((Vector<BucketInfo>) ((Object[]) grid)[i]);
+                    if(((Vector<BucketInfo>) ((Object[]) grid)[i]).size()!=0)
+                         cells.add((Vector<BucketInfo>) ((Object[]) grid)[i]);
+
             else
-                 cells.add((Vector<BucketInfo>) ((Object[]) grid)[coordinates.get(ptr)]);
+                if(((Vector<BucketInfo>) ((Object[]) grid)[i]).size()!=0)
+                     cells.add((Vector<BucketInfo>) ((Object[]) grid)[coordinates.get(ptr)]);
 
         } else {
             Object[] cell = ((Object[]) grid);
             int x = coordinates.get(ptr);
-            if (coordinates.get(x) == -1) {
+            if (x == -1) {
                 for (int i = 0; i < cell.length; i++) {
                     Object y = ((Object[]) cell)[i];
                     grid =  y;
