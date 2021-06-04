@@ -432,16 +432,19 @@ public class Table implements Serializable {
     public Vector resolveOneStatement(SQLTerm term) throws DBAppException {
         Vector terms = new Vector<SQLTerm>(); terms.add(term);
         Index index = useIndexSelect(terms);
+        boolean clustered = this.clusteringCol.equals(term._strColumnName);
         if (null == index) {
-             return resolveWithoutIndex(term);
+            if (!clustered) {
+                return LinearScan(term);
+            } else { //clustered todo binary search
+
+            }
         }
         else
-         {
-            boolean traverseTable = this.clusteringCol.equals(term._strColumnName);
-            //clustering or non-clustering to decide I'll traverse table or index
+         { //clustering or non-clustering to decide I'll traverse table or index
             switch (term._strOperator) {
-                case ("<"): case ("<="): return index.lessThan(term, traverseTable);
-                case (">"): case (">="): return index.greaterThan(term, traverseTable);
+                case ("<"): case ("<="): return index.lessThan(term, clustered);
+                case (">"): case (">="): return index.greaterThan(term, clustered);
                 case ("="):  return null;
 //                   todo
                 case ("!="):  return null;
@@ -451,8 +454,8 @@ public class Table implements Serializable {
         return new Vector();
     }
 
-    private Vector resolveWithoutIndex(SQLTerm term) throws DBAppException {
-        Vector res = new Vector();
+    private Vector LinearScan(SQLTerm term) throws DBAppException {
+        Vector res = new Vector();//loop on entire table.. every single record and check
             for(tuple4 tuple:table) {
                Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
                 for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
@@ -464,29 +467,36 @@ public class Table implements Serializable {
             return res;
     }
 
-    public Vector loopUntil(double lastPageID, SQLTerm term) throws DBAppException {
+    public Vector loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
         Vector res = new Vector();
-        for(tuple4 tuple: table){
+        for(int pIdx=0;pIdx<=pageIdx;pIdx++){
             //todo deserialize page
-            Page currPage = tuple.page;
-            if(currPage.id==lastPageID) {
-                filterPage(currPage,term,res);
-                break;
+            Page currPage = table.get(pIdx).page;
+
+            for(int rIdx=0;rIdx<table.get(pIdx).page.records.size();rIdx++){
+                Page.Pair record =currPage.records.get(rIdx);
+                res.add(record);
+                if(pIdx==pageIdx){
+                    if(rIdx==recordIdx){
+                        break;
+                    }
+                }
             }
-            res.addAll(currPage.records);
         }
         return res;
     }
 
-    public Vector loopFrom(double firstPageID, SQLTerm term) throws DBAppException {
+    public Vector loopFrom(int pageIdx, int recordIdx, SQLTerm term) throws DBAppException {
         Vector res = new Vector();
-        int index = PageIDtoIdx(firstPageID); //sure it works?
-        //todo deserialize
-        filterPage(table.get(index).page,term,res);
-        for(int i = index+1;i<table.size();i++){
+        //todo deserialize table
+
+        for(int pIdx=pageIdx;pIdx<=table.size();pIdx++){
             //todo deserialize page
-            Page currPage = table.get(i).page;
-            res.addAll(currPage.records);
+            Page currPage = table.get(pIdx).page;
+            for(int rIdx=(pageIdx==pIdx?recordIdx:0);rIdx<table.get(pIdx).page.records.size();rIdx++){
+                Page.Pair record =currPage.records.get(rIdx);
+                res.add(record);
+            }
         }
         return res;
     }

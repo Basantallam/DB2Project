@@ -398,10 +398,13 @@ public class Index implements Serializable {
             res = loopUntil(LastCellCoordinates, term);
         else // traverse sorted table
         {
-            Vector<BucketInfo> cell = getCell(LastCellCoordinates);
-            double lastPageID = pageFromCell(cell,term);
             Table t = (Table) DBApp.deserialize(term._strTableName);
-            res = t.loopUntil(lastPageID,term);
+            int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
+            Page page=t.table.get(pageIdx).page;
+            //todo deserialize page
+            int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
+            //check inclusive or exclusive fel binary search
+            res = t.loopUntil(pageIdx,recordIdx,term);
         }
         return res;
     }
@@ -481,12 +484,13 @@ public class Index implements Serializable {
             res = loopFrom(FirstCellCoordinates, term);
         } else {
             // traverse table
-            Vector<BucketInfo> cell = getCell(FirstCellCoordinates);
-            double firstPageID = pageFromCell(cell,term);
-
             Table t = (Table) DBApp.deserialize(term._strTableName);
-            res = t.loopFrom(firstPageID,term);
-
+            int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
+            Page page=t.table.get(pageIdx).page;
+            //todo deserialize page
+            int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
+            //check inclusive or exclusive fl binary search
+            res = t.loopFrom(pageIdx,recordIdx,term);
         }
         return res;
     }
