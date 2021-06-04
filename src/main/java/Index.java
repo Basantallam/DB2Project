@@ -180,10 +180,10 @@ public class Index implements Serializable {
         Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
-        Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+        Bucket b = (Bucket) DBApp.deserialize(tableName + "_"+columnNames+"_" + bi.id);
         Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
         b.updateAddress(oldId, newId, arrangedHash);
-        DBApp.serialize(tableName + "_b_" + bi.id, b);
+        DBApp.serialize(tableName + "_"+columnNames+"_" + bi.id, b);
     }
     public int BinarySearchCell(Vector<BucketInfo> cell, Object searchKey, int hi, int lo) {
         //binary search within one cell
@@ -209,7 +209,7 @@ public class Index implements Serializable {
         }else {
             bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
             foundBI = cell.get(bucketInfoIdx);
-            b = (Bucket) DBApp.deserialize(tableName + "_b_" + foundBI.id);
+            b = (Bucket) DBApp.deserialize(tableName + "_"+columnNames+"_" + foundBI.id);
         }
         Hashtable<String, Object> arrangedHash = arrangeHashtable(colNameValue);
         Bucket.Record returned = b.insert(arrangedHash, id);
@@ -218,20 +218,20 @@ public class Index implements Serializable {
             foundBI.max = b.records.lastElement().values.get(columnNames.get(0));
             foundBI.min = b.records.firstElement().values.get(columnNames.get(0));
         }
-        DBApp.serialize(tableName + "_b_" + foundBI.id, b);
+        DBApp.serialize(tableName +"_"+columnNames+"_" + foundBI.id, b);
         foundBI.size++;
         if (returned != null) {
             foundBI.size--;
             boolean create = true;
             if (cell.size() - 1 > bucketInfoIdx) {
                 int nxtIdx = bucketInfoIdx + 1;
-                Bucket nxtBucket = (Bucket) DBApp.deserialize(tableName + "_b_" + cell.get(nxtIdx).id);
+                Bucket nxtBucket = (Bucket) DBApp.deserialize(tableName +"_"+columnNames+"_" + cell.get(nxtIdx).id);
                 if (!nxtBucket.isFull()) {
                     create = false;
                     nxtBucket.insert(returned.values, id);
                 }
                 cell.get(nxtIdx).min = returned.values.get(columnNames.get(0));
-                DBApp.serialize(tableName + "_b_" + cell.get(nxtIdx).id, nxtBucket);
+                DBApp.serialize(tableName +"_"+columnNames+"_" + cell.get(nxtIdx).id, nxtBucket);
             }
 
             if (create) {
@@ -240,15 +240,15 @@ public class Index implements Serializable {
                 newBI.bucket.insert(returned.values, id);
                 newBI.size++;
                 cell.insertElementAt(newBI, bucketInfoIdx + 1);
-                DBApp.serialize(tableName + "_b_" + newBI.id, newBI.bucket);
+                DBApp.serialize(tableName +"_"+columnNames+"_" + newBI.id, newBI.bucket);
             }
         }
     }
     public Vector<BucketInfo> getCell(int[]  cellIdx) {
 
-        Object cell = grid[(Integer) cellIdx[0]];
+        Object cell = grid[cellIdx[0]];
         for (int i = 1; i < cellIdx.length; i++) {
-            int x = (Integer) cellIdx[i];
+            int x = cellIdx[i];
             Object y = ((Object[]) cell)[x];
             cell = y;
         }
@@ -284,19 +284,19 @@ public class Index implements Serializable {
         Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
-        Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+        Bucket b = (Bucket) DBApp.deserialize(tableName +"_"+columnNames+"_" + bi.id);
         Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
         b.delete(arrangedHash,pageId);
-        DBApp.serialize(tableName + "_b_" + bi.id, b);
+        DBApp.serialize(tableName +"_"+columnNames+"_" + bi.id, b);
     }
     public Vector<Double> narrowPageRange(Hashtable<String, Object> colNameValue) {
         int[] cellIdx = getCellCoordinates(colNameValue);
         Vector<BucketInfo> cell = getCell(cellIdx);
         int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
         BucketInfo foundBI = cell.get(bucketInfoIdx);
-        Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + foundBI.id);
+        Bucket b = (Bucket) DBApp.deserialize(tableName +"_"+columnNames+"_" + foundBI.id);
         Vector res = b.getInsertCoordinates(colNameValue);
-        DBApp.serialize(tableName + "_b_" + foundBI.id,b);
+        DBApp.serialize(tableName +"_"+columnNames+"_" + foundBI.id,b);
         return res;
     }
     public int getSize() {
@@ -317,30 +317,30 @@ public class Index implements Serializable {
         Vector<Vector<BucketInfo>> cells=new Vector<>();
         if (coordinates.get(0) == -1) {
             for (int i=0;i<grid.length;i++) {
-                cells.add(helper(coordinates,1, (Object[]) grid[i]));
+                cells.add(helper(coordinates,1, grid[i]));
             }
         }else{
-            cells.add(helper(coordinates,1, (Object[]) grid[coordinates.get(0)]));
+            cells.add(helper(coordinates,1, grid[coordinates.get(0)]));
         }
         for (Vector<BucketInfo> cell:cells) {
             Hashtable<String, Object> arrangedHash = arrangeHashtable(columnNameValue);
-            if(columnNameValue.keySet().contains(clusteringCol)){
+            if(columnNameValue.containsKey(clusteringCol)){
                 Object searchKey = columnNameValue.get(clusteringCol);
                 BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
-                Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+                Bucket b = (Bucket) DBApp.deserialize(tableName +"_"+columnNames+"_" + bi.id);
                 Vector<Double>p=b.deleteI(arrangedHash);
                 for (double x:p) {
                     pages.add(x);
                 }
-                DBApp.serialize(tableName + "_b_" + bi.id, b);
+                DBApp.serialize(tableName +"_"+columnNames+"_" + bi.id, b);
             }else {
                 for (BucketInfo bi : cell) {
-                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_b_" + bi.id);
+                    Bucket b = (Bucket) DBApp.deserialize(tableName +"_"+columnNames+"_" + bi.id);
                     Vector<Double>p=b.deleteI(arrangedHash);
                     for (double x:p) {
                         pages.add(x);
                     }
-                    DBApp.serialize(tableName + "_b_" + bi.id, b);
+                    DBApp.serialize(tableName +"_"+columnNames+"_" + bi.id, b);
                 }
             }
         }return pages;
