@@ -586,10 +586,7 @@ public class Table implements Serializable {
         }
         return res;
     }
-
-
-
-
+    
     public void createCSV() throws IOException {
         String path = "src\\main\\resources\\Basant\\" + this.tableName + "_Table.csv";
         FileWriter fw = new FileWriter(path);

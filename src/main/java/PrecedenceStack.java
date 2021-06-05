@@ -41,7 +41,7 @@ public class PrecedenceStack {
     }
     public  Vector<Hashtable> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
-            case ("AND"): return ANDing(curr, next);
+            case ("AND"): return parentAND(curr, next);
             case ("OR"):
                 if (curr instanceof SQLTerm) curr = table.resolveOneStatement((SQLTerm) curr);
                 if (next instanceof SQLTerm) next = table.resolveOneStatement((SQLTerm) next);
@@ -54,30 +54,27 @@ public class PrecedenceStack {
                 throw new DBAppException("Star operator must be one of AND, OR, XOR!");
         }
     }
-    private Vector<Hashtable> ANDing(Object curr, Object next) throws DBAppException {
-        //parent AND
+    private Vector<Hashtable> parentAND(Object curr, Object next) throws DBAppException {
+        //parent AND has 3 ANDing children "overloading"
         if (curr instanceof SQLTerm && next instanceof SQLTerm)
-            return ANDingI((SQLTerm)curr, (SQLTerm)next); //1st and child
+            return ANDing((SQLTerm)curr, (SQLTerm)next); //1st and child
         else {
-            SQLTerm sqlTerm;
-            Vector v;
+            SQLTerm sqlTerm; Vector v;
             if (curr instanceof SQLTerm && next instanceof Vector){
                 sqlTerm =(SQLTerm) curr; v=(Vector) next;
+                return ANDing(sqlTerm,v);
                 //2nd and child
-                return null;
             }
             else if(next instanceof SQLTerm && curr instanceof Vector){
                 sqlTerm =(SQLTerm) next; v=(Vector) curr;
+                return ANDing(sqlTerm,v);
                 //2nd and child
-                return null;
                 // theoretically 3omr ma da hayehsal bas just in case
-            }
-            else
+            } else
+                return ANDing((Vector<Hashtable>) curr, (Vector) next);
                 // theoretically 3omr ma da hayehsal bardo !
                 // bas just in case
-            return ANDing((Vector<Hashtable>) curr, (Vector) next);
                 // 3rd and child
-
         }
     }
     public Vector<Hashtable> ANDing(SQLTerm term, Vector<Hashtable> v) throws DBAppException {
@@ -117,7 +114,7 @@ public class PrecedenceStack {
             default:throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
         }
     }
-    Vector<Hashtable> ANDingI(SQLTerm term1, SQLTerm term2) throws DBAppException {
+    Vector<Hashtable> ANDing(SQLTerm term1, SQLTerm term2) throws DBAppException {
         //2nd AND child
         Vector result = new Vector();
         Vector <String> terms=new Vector<String>();
