@@ -110,8 +110,8 @@ public class Table implements Serializable {
         if (useIndex) {
             Index chosenIndex = chooseIndexPK();
             Vector<Double> narrowedDown = chosenIndex.narrowPageRange(colNameValue);
-            if (narrowedDown.firstElement() == -1) lo = PageIDtoIdx(narrowedDown.firstElement());
-            if (narrowedDown.lastElement() == -1) hi = PageIDtoIdx(narrowedDown.lastElement());
+            if (narrowedDown.firstElement() != -1) lo = PageIDtoIdx(narrowedDown.firstElement());
+            if (narrowedDown.lastElement() != -1) hi = PageIDtoIdx(narrowedDown.lastElement());
         }
         foundIdx = BinarySearch(insertedPkValue, hi, lo);
         double foundPageId = table.get(foundIdx).id;
@@ -261,8 +261,8 @@ public class Table implements Serializable {
             clustering.put(clusteringCol,clusteringKeyValue);
             Index chosenIndex = chooseIndexPK();
             Vector<Double> narrowedDown = chosenIndex.narrowPageRange(clustering);
-            if (narrowedDown.firstElement() == -1) lo = PageIDtoIdx(narrowedDown.firstElement());
-            if (narrowedDown.lastElement() == -1) hi = PageIDtoIdx(narrowedDown.lastElement());
+            if (narrowedDown.firstElement() != -1) lo = PageIDtoIdx(narrowedDown.firstElement());
+            if (narrowedDown.lastElement() != -1) hi = PageIDtoIdx(narrowedDown.lastElement());
         }
         idx = BinarySearch(pk, hi, lo);
         double pageId = table.get(idx).id;
@@ -310,8 +310,8 @@ public class Table implements Serializable {
                     return;
                 }
                 Vector<Double> narrowedDown = chosenIndex.narrowPageRange(columnNameValue);
-                if (narrowedDown.firstElement() == -1) lo = PageIDtoIdx(narrowedDown.firstElement());
-                if (narrowedDown.lastElement() == -1) hi = PageIDtoIdx(narrowedDown.lastElement());
+                if (narrowedDown.firstElement() != -1) lo = PageIDtoIdx(narrowedDown.firstElement());
+                if (narrowedDown.lastElement() != -1) hi = PageIDtoIdx(narrowedDown.lastElement());
                 deleteWithPK(columnNameValue,pk,hi,lo);
             }
             else{
@@ -442,9 +442,9 @@ public class Table implements Serializable {
     }
     private Vector<Hashtable> indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
-            case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term,null);
-            case (">"): case (">="): return getTableRecords(index.greaterThan(term),term,null);
-            case ("="):  return getTableRecords(index.equalSelect(term),term,null);
+            case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term);
+            case (">"): case (">="): return getTableRecords(index.greaterThan(term),term);
+            case ("="):  return getTableRecords(index.equalSelect(term),term);
             case ("!="): return notEqual(term);//doesn't use index
             default: throw new DBAppException("invalid operation");
         }
@@ -452,17 +452,12 @@ public class Table implements Serializable {
 
     private Vector<Hashtable> notEqual(SQLTerm term) throws DBAppException {
         Vector<Hashtable> result = new Vector<Hashtable>();
-        Table table = (Table) DBApp.deserialize(term._strTableName);
         Page currPage;
-        for(tuple4 tuple :table.table){
+        for(tuple4 tuple :table){
             currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
-            for (Page.Pair currRec : currPage.records) {
-                if (!(checkCond(currRec.row, term)))
-                    result.add(currRec.row);
-            }
+            result.addAll(currPage.select(term));
             DBApp.serialize(tableName + "_" + tuple.id, currPage);
         }
-        DBApp.serialize(tableName,table);
         return result;
     }
     private Vector<Hashtable> getTableRecords(HashSet<Double> pageID,SQLTerm term1 ,SQLTerm term2) throws DBAppException {
@@ -471,6 +466,16 @@ public class Table implements Serializable {
         for(Double id :pageID){
             Page p = (Page) DBApp.deserialize(tableName + "_" + id);
             result.addAll(p.select(term1,term2));
+            DBApp.serialize(tableName + "_" + id,p);
+        }
+        return result;
+    }
+    private Vector<Hashtable> getTableRecords(HashSet<Double> pageID,SQLTerm term) throws DBAppException {
+        Vector<Hashtable> result = new Vector<>();
+
+        for(Double id :pageID){
+            Page p = (Page) DBApp.deserialize(tableName + "_" + id);
+            result.addAll(p.select(term));
             DBApp.serialize(tableName + "_" + id,p);
         }
         return result;
@@ -540,11 +545,7 @@ public class Table implements Serializable {
         Vector res = new Vector();//loop on entire table.. every single record and check
             for(tuple4 tuple:table) {
                Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
-
-                for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
-                    if (checkCond(currRec.row, term))
-                        res.add(currRec.row);
-                }
+                res.addAll(currPage.select(term));
                 DBApp.serialize(tableName + "_" + tuple.id, currPage);
             }
             return res;
@@ -590,22 +591,13 @@ public class Table implements Serializable {
         DBApp.serialize(term._strTableName,table);
         return res;
     }
-
 //ma haza?
     private Vector<Hashtable> andSQLwithoutIndex(SQLTerm term1, SQLTerm term2, boolean clustering1, boolean clustering2) throws DBAppException {
         Vector result = new Vector();
-        if(clustering1){
-            Vector<Hashtable> res1 = tableTraversal(term1);//todo inc exc
-            for(Hashtable record:res1){
+        if(clustering1 || clustering2){
+            Vector<Hashtable> res =clustering1? tableTraversal(term1): tableTraversal(term2);//todo inc exc
+            for(Hashtable record:res){
                 if(checkCond(record, term2)){
-                    result.add(record);
-                }
-            }
-        }
-        else if(clustering2){
-            Vector<Hashtable> res2 = tableTraversal(term2);
-            for(Hashtable record:res2){
-                if(checkCond(record, term1)){
                     result.add(record);
                 }
             }
@@ -620,22 +612,14 @@ public class Table implements Serializable {
         Vector<Hashtable> res = new Vector<Hashtable>();//loop on entire table.. every single record and check
         for(tuple4 tuple:table) {
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
-            for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
-                if (checkCond(currRec.row, term1)&&checkCond(currRec.row,term2))
-                    res.add(currRec.row);
-            }
+            res.addAll(currPage.select(term1,term2));
             DBApp.serialize(tableName + "_" + tuple.id, currPage);
         }
         return res;
     }
 
 
-//    private Index useIndexSelect(Vector<SQLTerm> term1) {
-//        //vector can have 1 or 2 terms
-//        //momken nkhalee col names bas badal sql term kolo
-//        //todo
-//        return null;
-//    }
+
     public static boolean checkCond(Hashtable rec, SQLTerm term) throws DBAppException {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
         Object recVal = rec.get(col);

@@ -164,7 +164,6 @@ public class Page implements Serializable {
 
 
 	public static boolean checkCond(Pair rec, SQLTerm term) throws DBAppException {
-		if(term==null)return true;
 		String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
 		Object recVal = rec.row.get(col);
 		switch (operator) {
@@ -188,6 +187,14 @@ public class Page implements Serializable {
 		Vector<Hashtable> res= new Vector<>();
 		for (Pair currRec :records) { // adding records that match the select statement
 			if (checkCond(currRec, term1)&&checkCond(currRec,term2))
+				res.add(currRec.row);
+		}
+		return res;
+	}
+	public Vector<Hashtable> select(SQLTerm term1) throws DBAppException {
+		Vector<Hashtable> res= new Vector<>();
+		for (Pair currRec :records) { // adding records that match the select statement
+			if (checkCond(currRec, term1))
 				res.add(currRec.row);
 		}
 		return res;
