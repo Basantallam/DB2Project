@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -118,6 +119,16 @@ public class Bucket implements Serializable {
 
     public boolean isEmpty() {
         return records.isEmpty();
+    }
+
+    public HashSet<Double> equalSelect(Hashtable<String, Object> hashtable) {
+        HashSet<Double> res= new HashSet<>();
+        for (Record r:records){
+            for (String column:hashtable.keySet())
+                if(Table.GenericCompare(hashtable.get(column),r.values.get(column))==0)
+                    res.add(r.pageid);
+        }
+        return  res;
     }
 
     class Record implements Serializable{
