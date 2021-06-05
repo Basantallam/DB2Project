@@ -91,8 +91,8 @@ public class Table implements Serializable {
 //        return res;
 //    }
     public static Vector<Hashtable> ORing(Vector<Hashtable> i1, Vector<Hashtable> i2) { //Union Set Operation
-        TreeSet<Hashtable> s1 = new TreeSet(i1);
-        TreeSet<Hashtable> s2 = new TreeSet(i2);
+        Set<Hashtable> s1 = new HashSet(i1);
+        Set<Hashtable> s2 = new HashSet(i2);
         s1.addAll(s2);
         Vector res = new Vector(s1);
         return res;
@@ -471,8 +471,7 @@ public class Table implements Serializable {
         switch (term._strOperator) {
             case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term,null);//todo TableRcords eltania b7ees t search 3ala el pages bas
             case (">"): case (">="): return getTableRecords(index.greaterThan(term),term,null);
-            case ("="):getTableRecords(index.equalSelect(term),term,null);
-
+            case ("="):  return getTableRecords(index.equalSelect(term),term,null);
             case ("!="): return notEqual(term);
 //  won't use index kda kda
             default: throw new DBAppException("invalid operation");
