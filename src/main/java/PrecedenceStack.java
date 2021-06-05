@@ -69,7 +69,6 @@ public class PrecedenceStack {
                 return ANDing((Vector<Hashtable>) curr, (Vector) next); // 3rd and child
                 // theoretically 3omr ma da hayehsal bardo !
                 // bas just in case
-
         }
     }
     public Vector<Hashtable> ANDing(SQLTerm term, Vector<Hashtable> v) throws DBAppException {

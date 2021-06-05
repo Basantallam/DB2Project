@@ -475,6 +475,7 @@ public class Table implements Serializable {
         return result;
     }
     Vector<Hashtable> tableTraversal(SQLTerm term) throws DBAppException {
+        //only used when table is sorted on queried column
         switch (term._strOperator) {
             case ("<"): case ("<="):return this.lessThan(term);
             case (">"): case (">="): return this.greaterThan(term);
@@ -489,9 +490,9 @@ public class Table implements Serializable {
         Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pageIdx).id);
 
         int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
-        DBApp.serialize(tableName + "_" + table.get(pageIdx),page);
+        DBApp.serialize(tableName + "_" + table.get(pageIdx).id,page);
         DBApp.serialize(term._strTableName,t); //check inclusive or exclusive fel binary search
-        return t.loopUntil(pageIdx,recordIdx,term);
+        return loopUntil(pageIdx,recordIdx,term);
     }
     public Vector<Hashtable> greaterThan(SQLTerm term) throws DBAppException {
         // traverse table
@@ -515,39 +516,37 @@ public class Table implements Serializable {
     }
     public Vector<Hashtable> loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
         //todo inclusive wala exclusive
+        Table table = (Table) DBApp.deserialize(term._strTableName);
         Vector<Hashtable> res = new Vector<Hashtable>();
         for(int pIdx=0;pIdx<=pageIdx;pIdx++){
             //todo deserialize page - i think done
-            Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
-
-            for(int rIdx=0;rIdx<table.get(pIdx).page.records.size();rIdx++){
+            Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.table.get(pIdx).id);
+            for(int rIdx=0;rIdx<table.table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
-                res.add(record.row);
-                if(pIdx==pageIdx){
-                    if(rIdx==recordIdx){
+                if(pIdx==pageIdx && rIdx==recordIdx)
                         break;
-                    }
-                }
+                res.add(record.row);
             }
-            DBApp.serialize(tableName + "_" + table.get(pIdx),currPage);
+            DBApp.serialize(tableName + "_" + table.table.get(pIdx),currPage);
 
         }
+        DBApp.serialize(term._strTableName,table);
         return res;
     }
 
     public Vector<Hashtable> loopFrom(int pageIdx, int recordIdx, SQLTerm term) throws DBAppException {
-        Vector<Hashtable> res = new Vector<Hashtable>();
         //todo deserialize table - i think done
         Table table = (Table) DBApp.deserialize(term._strTableName);
+        Vector<Hashtable> res=new Vector<Hashtable>();
+        int rIdx=recordIdx;
 
         for(int pIdx=pageIdx;pIdx<=table.table.size();pIdx++){
-            //todo deserialize page - i think done
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.table.get(pIdx));
-
-            for(int rIdx=(pageIdx==pIdx?recordIdx:0);rIdx<table.table.get(pIdx).page.records.size();rIdx++){
+            for(;rIdx<table.table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
                 res.add(record.row);
             }
+            rIdx=0;
             DBApp.serialize(tableName + "_" + table.table.get(pIdx),currPage);
         }
         DBApp.serialize(term._strTableName,table);
@@ -603,7 +602,7 @@ public class Table implements Serializable {
         }
         fw.close();
     }
-    
+
     public static class tuple4 implements Serializable {
         Double id;
         transient Page page;

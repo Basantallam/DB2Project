@@ -163,9 +163,9 @@ public class Page implements Serializable {
 	}
 
 
-	public static boolean checkCond(Pair rec, SQLTerm term) throws DBAppException {
+	public static boolean checkCond(Hashtable rec, SQLTerm term) throws DBAppException {
 		String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
-		Object recVal = rec.row.get(col);
+		Object recVal = rec.get(col);
 		switch (operator) {
 			case (">"): return (Table.GenericCompare(recVal, value) > 0);
 			case (">="):return (Table.GenericCompare(recVal, value) >= 0);
@@ -186,7 +186,7 @@ public class Page implements Serializable {
 	public Vector<Hashtable> select(SQLTerm term1, SQLTerm term2) throws DBAppException {
 		Vector<Hashtable> res= new Vector<>();
 		for (Pair currRec :records) { // adding records that match the select statement
-			if (checkCond(currRec, term1)&&checkCond(currRec,term2))
+			if (checkCond(currRec.row, term1)&&checkCond(currRec.row,term2))
 				res.add(currRec.row);
 		}
 		return res;
@@ -194,12 +194,18 @@ public class Page implements Serializable {
 	public Vector<Hashtable> select(SQLTerm term1) throws DBAppException {
 		Vector<Hashtable> res= new Vector<>();
 		for (Pair currRec :records) { // adding records that match the select statement
-			if (checkCond(currRec, term1))
+			if (checkCond(currRec.row, term1))
 				res.add(currRec.row);
 		}
 		return res;
 	}
-
+	public Vector<Hashtable> filterPage(SQLTerm term) throws DBAppException {
+		Vector<Hashtable> res=new Vector<Hashtable>();
+		for(Pair record:records)
+			if(checkCond(record.row,term))
+				res.add(record.row);
+		return res;
+	}
 	public static class Pair implements Serializable, Comparable<Pair> {
 		Object pk;
 		Hashtable<String, Object> row;
