@@ -481,17 +481,12 @@ public class Table implements Serializable {
 
     private Vector<Hashtable> notEqual(SQLTerm term) throws DBAppException {
         Vector<Hashtable> result = new Vector<Hashtable>();
-        Table table = (Table) DBApp.deserialize(term._strTableName);
         Page currPage;
-        for(tuple4 tuple :table.table){
+        for(tuple4 tuple :table){
             currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
-            for (Page.Pair currRec : currPage.records) {
-                if (!(checkCond(currRec.row, term)))
-                    result.add(currRec.row);
-            }
+            result.addAll(currPage.select(term));
             DBApp.serialize(tableName + "_" + tuple.id, currPage);
         }
-        DBApp.serialize(tableName,table);
         return result;
     }
     private Vector<Hashtable> getTableRecords(HashSet<Double> pageID,SQLTerm term1 ,SQLTerm term2) throws DBAppException {
@@ -569,11 +564,7 @@ public class Table implements Serializable {
         Vector res = new Vector();//loop on entire table.. every single record and check
             for(tuple4 tuple:table) {
                Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
-
-                for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
-                    if (checkCond(currRec.row, term))
-                        res.add(currRec.row);
-                }
+                res.addAll(currPage.select(term));
                 DBApp.serialize(tableName + "_" + tuple.id, currPage);
             }
             return res;
@@ -724,10 +715,7 @@ public class Table implements Serializable {
         Vector<Hashtable> res = new Vector<Hashtable>();//loop on entire table.. every single record and check
         for(tuple4 tuple:table) {
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
-            for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
-                if (checkCond(currRec.row, term1)&&checkCond(currRec.row,term2))
-                    res.add(currRec.row);
-            }
+            res.addAll(currPage.select(term1,term2));
             DBApp.serialize(tableName + "_" + tuple.id, currPage);
         }
         return res;
