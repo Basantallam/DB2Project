@@ -487,14 +487,33 @@ public class Index implements Serializable {
         return end;
     }
 
-    public HashSet<Double> equal(SQLTerm term) {
+    public HashSet<Double> equalSelect(SQLTerm term) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
+        HashSet<Double> pages = new HashSet<>();
         Vector<Integer> coordinates = getCellsCoordinates(hashtable);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells );
         for (Vector<BucketInfo> cell : cells) {
+            if (hashtable.containsKey(columnNames.get(0))) {
+                Object searchKey = hashtable.get(columnNames.get(0));
+                int idx=BinarySearchCell(cell, searchKey, cell.size() - 1, 0);
+                for (int i = idx; i < cell.size(); i++) {
+                    BucketInfo bi = cell.get(idx);
+                    if(Table.GenericCompare(bi.min, searchKey) > 0)break;
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    pages.addAll(b.equalSelect(term));
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
 
+                }
+
+            } else {
+                for (BucketInfo bi : cell) {
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    pages.addAll(b.equalSelect(term));
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+                }
+            }
         }
         return null;
     }

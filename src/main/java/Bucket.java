@@ -121,11 +121,10 @@ public class Bucket implements Serializable {
         return records.isEmpty();
     }
 
-    public HashSet<Double> equalSelect(Hashtable<String, Object> hashtable) {
+    public HashSet<Double> equalSelect(SQLTerm term) {
         HashSet<Double> res= new HashSet<>();
         for (Record r:records){
-            for (String column:hashtable.keySet())
-                if(Table.GenericCompare(hashtable.get(column),r.values.get(column))==0)
+            if (checkCond(r,term))
                     res.add(r.pageid);
         }
         return  res;
