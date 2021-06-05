@@ -687,10 +687,12 @@ public class Table implements Serializable {
         Vector <String> terms=new Vector<String>();
         terms.add(term1._strColumnName);
         terms.add(term2._strColumnName);
-        boolean clustering1=(term1._strColumnName==clusteringCol);//todo indxPK else linear
-        boolean clustering2=(term2._strColumnName==clusteringCol);
+        boolean clustering1=(term1._strColumnName.equals(clusteringCol));//todo indxPK else linear
+        boolean clustering2=(term2._strColumnName.equals(clusteringCol));
         Index index = chooseIndexAnd(terms); //todo wa7da tania 3shan n7ot priorities law not equal ma7otoosh equal a3la priority
         if (index != null) {
+            if(term1._strOperator.equals("!=")&& term2._strOperator.equals("!="))
+                return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
             return getTableRecords(index.andSelect(term1,term2),term1,term2);
             //todo mesh 3arfaaaaa
         } else {
