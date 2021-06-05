@@ -688,10 +688,9 @@ public class Table implements Serializable {
         boolean clustering2=(term2._strColumnName.equals(clusteringCol));
         Index index = chooseIndexAnd(terms); //todo wa7da tania 3shan n7ot priorities law not equal ma7otoosh equal a3la priority
         if (index != null) {
-            if(term1._strOperator.equals("!=")&& term2._strOperator.equals("!="))
+            if((term1._strOperator.equals("!=")&& term2._strOperator.equals("!="))|| clustering1 || clustering2)
                 return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
             return getTableRecords(index.andSelect(term1,term2),term1,term2);
-            //todo mesh 3arfaaaaa
         } else {
             return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
         }
