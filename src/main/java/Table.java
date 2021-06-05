@@ -595,17 +595,17 @@ public class Table implements Serializable {
     private Vector<Hashtable> andSQLwithoutIndex(SQLTerm term1, SQLTerm term2, boolean clustering1, boolean clustering2) throws DBAppException {
         Vector result = new Vector();
         if(clustering1 || clustering2){
-            Vector<Hashtable> res =clustering1? tableTraversal(term1): tableTraversal(term2);//todo inc exc
+            Vector<Hashtable> res =clustering1? tableTraversal(term1): tableTraversal(term2);
             for(Hashtable record:res){
-                if(checkCond(record, term2)){
+                if(checkCond(record, clustering1?term2:term1)){
                     result.add(record);
                 }
             }
+            return result;
         }
         else{
             return this.LinearScan(term1, term2);
         }
-        return result;
     }
 
     private Vector<Hashtable> LinearScan(SQLTerm term1, SQLTerm term2) throws DBAppException {
