@@ -169,7 +169,7 @@ public class Page implements Serializable {
 		switch (operator) {
 			case (">"): return (Table.GenericCompare(recVal, value) > 0);
 			case (">="):return (Table.GenericCompare(recVal, value) >= 0);
-			case ("<"): return (Table.GenericCompare(recVal, value) <0);
+			case ("<"): return (Table.GenericCompare(recVal, value) < 0);
 			case ("<="):return (Table.GenericCompare(recVal, value) <= 0);
 			case ("="): return (Table.GenericCompare(recVal, value) == 0);
 			case ("!="):return (Table.GenericCompare(recVal, value) != 0);
@@ -192,7 +192,7 @@ public class Page implements Serializable {
 		return res;
 	}
 	public Vector<Hashtable> select(SQLTerm term1) throws DBAppException {
-		Vector<Hashtable> res= new Vector<>();
+		Vector<Hashtable> res= new Vector<Hashtable>();
 		for (Pair currRec :records) { // adding records that match the select statement
 			if (checkCond(currRec.row, term1))
 				res.add(currRec.row);

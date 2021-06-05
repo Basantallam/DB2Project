@@ -129,13 +129,15 @@ public class PrecedenceStack {
         return result;
     }
     public static Vector<Hashtable> ORing(Vector<Hashtable> i1, Vector<Hashtable> i2) { //Union Set Operation
-        Set<Hashtable> s1 = new HashSet(i1);
-        Set<Hashtable> s2 = new HashSet(i2);
+        Set<Hashtable> s1 = new HashSet();
+        s1.addAll(i1);
+        Set<Hashtable> s2 = new HashSet();
+        s2.addAll(i2);
         s1.addAll(s2); //set guarantees uniqueness
 
         Vector<Hashtable> res = new Vector<Hashtable>();
         res.addAll(s1);
-        return i1; //mmkn nkhali kolo y return iterator bas hanghayar 7abba fel code
+        return res; //mmkn nkhali kolo y return iterator bas hanghayar 7abba fel code
     }
     public Vector<Hashtable> XORing(Vector<Hashtable> i1, Vector<Hashtable> i2) { //Set Operation
         Vector v1 = ORing(i1, i2); //UNION

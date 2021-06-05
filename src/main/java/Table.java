@@ -57,34 +57,6 @@ public class Table implements Serializable {
             return 0;
     }
 
-
-//    public  Vector ANDing(Vector i1, Vector i2) { //Intersect Set Operation
-//        if(i1.size()==0|| i2.size()==0)return new Vector();
-//        //1st child AND
-//
-//        Collections.sort(i1);
-//        Collections.sort(i2);
-//        Vector res = new Vector();
-//        Iterator it1 = i1.iterator();
-//        Iterator it2 = i2.iterator();
-//        Object o1 = it1.next();
-//        Object o2 = it2.next();
-//
-//        while (it1.hasNext() && it2.hasNext()) {
-//            if (GenericCompare(o1, o2) == 0) {
-//                res.add(o1);
-//                o1 = it1.next();
-//                o2 = it2.next();
-//            } else if (GenericCompare(o1, o2) < 0) {
-//                o1 = it1.next();
-//            } else if (GenericCompare(o1, o2) > 0) {
-//                o2 = it2.next();
-//            }
-//        }
-//        return res;
-//    }
-
-
     public void insert(String pk, Hashtable<String, Object> colNameValue, boolean useIndex) {
         Object insertedPkValue = colNameValue.get(pk);
         int foundIdx = 0;
@@ -177,7 +149,7 @@ public class Table implements Serializable {
         Vector <String> v=new Vector();
         v.add(col);
         Index i= chooseIndexAnd(v);
-        if(i.columnNames.size()>1)
+        if(i==null||i.columnNames.size()>1)
             return null;
         else
             return i;
@@ -465,7 +437,7 @@ public class Table implements Serializable {
     public Vector<Hashtable> Equal(SQLTerm term){
         int pIdx=this.BinarySearch(term._objValue,table.size()-1,0);
         //todo deserialize - i think done
-        Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
+        Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx).id);
         int rIdx = page.BinarySearch(term._objValue,page.records.size()-1,0);
         Vector result = new Vector();
         result.add(page.records.get(rIdx));
@@ -517,7 +489,7 @@ public class Table implements Serializable {
         for(int pIdx=0;pIdx<=pageIdx;pIdx++){
             //todo deserialize page - i think done
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx).id);
-            for(int rIdx=0;rIdx<table.get(pIdx).page.records.size();rIdx++){
+            for(int rIdx=0;rIdx<currPage.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
                 if(pIdx==pageIdx && rIdx==recordIdx)
                         break;
