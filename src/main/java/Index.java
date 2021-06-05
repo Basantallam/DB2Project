@@ -135,7 +135,7 @@ public class Index implements Serializable {
         Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(values));
         Vector<Integer> coordinates = new Vector<Integer>();
 
-        Set<String> set = values.keySet();
+        Set<String> set = colValues.keySet();
         int IndexDimension = columnNames.size();
 
         for (int ptr = 0; ptr < IndexDimension; ptr++) {
@@ -521,8 +521,34 @@ public class Index implements Serializable {
             columnNameValue.put(term2._strColumnName,term2._objValue);
             columnOperators.put(term2._strColumnName,term2._strOperator);
         }
+        Vector<Integer> coordinates = getCellsCoordinatesGlobal(columnNameValue,columnOperators);
+
 
         return null;
+    }
+
+    private Vector<Integer> getCellsCoordinatesGlobal(Hashtable<String, Object> columnNameValue, Hashtable<String, Object> columnOperators) {
+        Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(columnNameValue));
+        Vector<Integer> coordinates = new Vector<Integer>();
+
+        Set<String> set = colValues.keySet();
+        int IndexDimension = columnNames.size();
+
+        for (int ptr = 0; ptr < IndexDimension; ptr++) {
+            String col = columnNames.get(ptr);
+            if (set.contains(col)) {
+                String colName = columnNames.get(ptr);
+                Object min = ranges.get(colName).min;
+                Object max = ranges.get(colName).max;
+                Object value = colValues.get(colName);
+                int idx = (value instanceof Long || value instanceof Date) ? (getIdxLong(min, max, value))
+                        : getIdxDouble((double) min, (double) max, (double) value);
+                coordinates.add(idx);
+            } else {
+                coordinates.add(-1);
+            }
+        }
+        return coordinates;
     }
 
     class BucketInfo implements Serializable {
