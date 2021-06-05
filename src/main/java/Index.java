@@ -445,19 +445,19 @@ public class Index implements Serializable {
             getRecordsBetween(newCurr, limits, depth + 1, term,result,filterIdx,filterVal);
         }
     }
-    public Vector<Bucket.Record> greaterThan(SQLTerm term) throws DBAppException {
+    public HashSet<Double> greaterThan(SQLTerm term) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
         //nulls should be 0 3adi
-        Vector res = null;
+        HashSet<Double> res = null;
             //traverse Index
             res = loopFrom(FirstCellCoordinates, term);
 
         return res;
     }
-    public Vector<Bucket.Record> loopFrom(int[] start, SQLTerm term) {
-        Vector<Bucket.Record> result = new Vector<Bucket.Record>();
+    public HashSet<Double> loopFrom(int[] start, SQLTerm term) {
+        HashSet<Double> result = new HashSet<>();
 
         int val=0;
         int idx=columnNames.indexOf(term._strColumnName);
