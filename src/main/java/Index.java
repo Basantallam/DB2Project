@@ -452,7 +452,7 @@ public class Index implements Serializable {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         HashSet<Double> pages = new HashSet<>();
-        Vector<Integer> coordinates = getCellsCoordinates(hashtable);
+        Vector<StartEnd> coordinates = getCellsCoordinates(hashtable,null);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells );
         for (Vector<BucketInfo> cell : cells) {
