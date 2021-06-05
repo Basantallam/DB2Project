@@ -459,7 +459,7 @@ public class Table implements Serializable {
     }
     private Vector<Hashtable> indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
-            case ("<"): case ("<="): return getTableRecords(index.lessThan(term));//todo TableRcords eltania b7ees t search 3ala el pages bas
+            case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term,null);//todo TableRcords eltania b7ees t search 3ala el pages bas
             case (">"): case (">="): return getTableRecords(index.greaterThan(term));
             case ("="):getTableRecords(index.equalSelect(term),term,null);
 
