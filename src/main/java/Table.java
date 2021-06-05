@@ -459,7 +459,7 @@ public class Table implements Serializable {
     }
     private Vector<Hashtable> indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
-            case ("<"): case ("<="): return getTableRecords(index.lessThan(term));
+            case ("<"): case ("<="): return getTableRecords(index.lessThan(term));//todo
             case (">"): case (">="): return getTableRecords(index.greaterThan(term));
             case ("="):
 //                return getTableRecords(null);
@@ -484,6 +484,16 @@ public class Table implements Serializable {
             DBApp.serialize(tableName + "_" + tuple.id, currPage);
         }
         DBApp.serialize(tableName,table);
+        return result;
+    }
+    private Vector<Hashtable> getTableRecords(HashSet<Double> pageID,SQLTerm term1 ,SQLTerm term2) throws DBAppException {
+        Vector<Hashtable> result = new Vector<>();
+
+        for(Double id :pageID){
+            Page p = (Page) DBApp.deserialize(tableName + "_" + id);
+           result.addAll( p.select(term1,term2));
+            DBApp.serialize(tableName + "_" + id,p);
+        }
         return result;
     }
 
@@ -555,6 +565,7 @@ public class Table implements Serializable {
         Vector res = new Vector();//loop on entire table.. every single record and check
             for(tuple4 tuple:table) {
                Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
+
                 for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
                     if (checkCond(currRec.row, term))
                         res.add(currRec);
