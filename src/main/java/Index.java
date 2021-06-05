@@ -181,7 +181,7 @@ public class Index implements Serializable {
             cell.add(foundBI);
             b = foundBI.bucket;
         } else {
-            bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
+            bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)),  cell.size() - 1,0);
             foundBI = cell.get(bucketInfoIdx);
             b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + foundBI.id);
         }
@@ -273,7 +273,7 @@ public class Index implements Serializable {
     public Vector<Double> narrowPageRange(Hashtable<String, Object> colNameValue) {
         int[] cellIdx = getCellCoordinates(colNameValue, false);
         Vector<BucketInfo> cell = getCell(cellIdx);
-        int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), 0, cell.size() - 1);
+        int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), cell.size() - 1,0);
         BucketInfo foundBI = cell.get(bucketInfoIdx);
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + foundBI.id);
         Vector res = b.getInsertCoordinates(colNameValue);
