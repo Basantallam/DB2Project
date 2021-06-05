@@ -337,7 +337,7 @@ public class DBApp implements DBAppInterface {
 		if (!(DB.contains(sqlTerms[0]._strTableName)))
 			throw new DBAppException("Table does not exist in Database");
 		Table table = (Table) deserialize(sqlTerms[0]._strTableName);
-		Vector<Hashtable> res=new Vector<Hashtable>();
+		Iterator res;
 		if(sqlTerms.length<=2) {
 			if (!(colInTable(sqlTerms[0]._strTableName, sqlTerms[0]._strColumnName, sqlTerms[0]._objValue)))
 				throw new DBAppException("Invalid input, check column name and the value's data type");
@@ -349,11 +349,12 @@ public class DBApp implements DBAppInterface {
 				Vector<Hashtable> next = table.resolveOneStatement(sqlTerms[i + 1]);
 				curr = table.applyOp(curr, next, arrayOperators[i]);
 			}
+			res=curr.iterator();
 		}
 		else{
-			res=table.Stack(sqlTerms,arrayOperators);
+			res=table.Stack(sqlTerms,arrayOperators).iterator();
 		}
-		return res.iterator();
+		return res;
 	}
 
 
