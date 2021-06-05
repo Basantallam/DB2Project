@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.parallel.Resources;
 
+import java.util.Iterator;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -83,14 +84,26 @@ public class Operation {
 //        System.out.println(stack);
 //        System.out.println(stackO);
 //        System.out.println(stack.pop());
-        int[] curr= {0,0,0};
-        int[] lim= {2,1,0};
+//        int[] curr= {0,0,0};
+//        int[] lim= {2,1,0};
+//
+//        Vector<Integer> v = new Vector<>();
+//        loop(curr,lim,0,v);
+//        System.out.println(v.size());
+//        System.out.println(v);
+        Iterator it=returnsIt();
+        while(it.hasNext())
+            System.out.println(it.next());
+    }
 
-        Vector<Integer> v = new Vector<>();
-        loop(curr,lim,0,v);
-        System.out.println(v.size());
-        System.out.println(v);
-
+    public static Iterator returnsIt(){
+        Vector v =new Vector<Integer>();
+        v.add(1);
+        v.add(2);
+        v.add(3);
+        v.add(4);
+        v.add(5);
+        return v.iterator();
     }
     public static void loop(int[] curr,int[] limits,int depth, Vector<Integer> accumulated){
         if(depth==limits.length){

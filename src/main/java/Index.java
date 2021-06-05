@@ -457,7 +457,8 @@ public class Index implements Serializable {
     public HashSet<Double> equalSelect(SQLTerm term) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        HashSet<Double> pages = new HashSet<>();
+
+        HashSet<Double> pages = new HashSet<Double>();
         Vector<StartEnd> coordinates = getCellsCoordinates(hashtable,null);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells );
