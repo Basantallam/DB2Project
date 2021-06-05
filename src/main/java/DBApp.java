@@ -338,21 +338,14 @@ public class DBApp implements DBAppInterface {
 			throw new DBAppException("Table does not exist in Database");
 		Table table = (Table) deserialize(sqlTerms[0]._strTableName);
 		Iterator res;
-		if(sqlTerms.length<=2) {
+		if(sqlTerms.length==1) {
 			if (!(colInTable(sqlTerms[0]._strTableName, sqlTerms[0]._strColumnName, sqlTerms[0]._objValue)))
 				throw new DBAppException("Invalid input, check column name and the value's data type");
-			Vector<Hashtable> curr = table.resolveOneStatement(sqlTerms[0]);
-
-			for (int i = 0; i < sqlTerms.length - 1; i++) {
-				if (!(colInTable(sqlTerms[i + 1]._strTableName, sqlTerms[i + 1]._strColumnName, sqlTerms[i + 1]._objValue)))
-					throw new DBAppException("Invalid input, check column name and the value's data type");
-				Vector<Hashtable> next = table.resolveOneStatement(sqlTerms[i + 1]);
-				curr = table.applyOp(curr, next, arrayOperators[i]);
-			}
-			res=curr.iterator();
+			res=table.resolveOneStatement(sqlTerms[0]).iterator();
 		}
 		else{
-			res=table.Stack(sqlTerms,arrayOperators).iterator();
+			PrecedenceStack stack = new PrecedenceStack(table);
+			res=stack.resolve(sqlTerms,arrayOperators).iterator(); //todo iterator
 		}
 		return res;
 	}
