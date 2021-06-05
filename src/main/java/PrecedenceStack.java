@@ -73,28 +73,19 @@ public class PrecedenceStack {
         }
     }
     public Vector<Hashtable> ANDing(SQLTerm term, Vector<Hashtable> v) throws DBAppException {
-        for(Hashtable record:v){
-            if(checkCond(record,term)){
+        for(Hashtable record:v)
+            if(checkCond(record,term))
                 v.add(record);
-            }
-        }
         return v;
     }
 
     private Vector<Hashtable> andSQLwithoutIndex(SQLTerm term1, SQLTerm term2, boolean clustering1, boolean clustering2) throws DBAppException {
-        Vector result = new Vector();
         if(clustering1 || clustering2){
             Vector<Hashtable> res =clustering1? table.tableTraversal(term1): table.tableTraversal(term2);
-            for(Hashtable record:res){
-                if(checkCond(record, clustering1?term2:term1)){
-                    result.add(record);
-                }
-            }
-            return result;
+            SQLTerm term = clustering1? term2 : term1;
+            return ANDing(term,res);
         }
-        else{
-            return table.LinearScan(term1, term2);
-        }
+        else return table.LinearScan(term1, term2);
     }
     public static boolean checkCond(Hashtable rec, SQLTerm term) throws DBAppException {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
@@ -134,7 +125,7 @@ public class PrecedenceStack {
         HashSet<Hashtable> set2=new HashSet<Hashtable>(i2);
 
         for(Hashtable ht: set2)
-            if(set1.contains(ht)) //set1.contains = O(1)
+            if(set1.contains(ht)) //set.contains = O(1)!!
                 result.add(ht);
         return result;
     }
@@ -148,9 +139,8 @@ public class PrecedenceStack {
         return i1; //mmkn nkhali kolo y return iterator bas hanghayar 7abba fel code
     }
     public Vector<Hashtable> XORing(Vector<Hashtable> i1, Vector<Hashtable> i2) { //Set Operation
-        Vector v1 = ORing(i1, i2);
-        Vector v2 = ANDing(i1, i2);
-        Vector<Hashtable> res = new Vector<Hashtable>();
+        Vector v1 = ORing(i1, i2); //UNION
+        Vector v2 = ANDing(i1, i2); //INTERSECTION
         v1.removeAll(v2);
         return v1;
     }
@@ -160,12 +150,11 @@ public class PrecedenceStack {
         int priority;
 
         public Operation(String o) throws DBAppException {
-            op = o; int p=0;
-            if(o =="XOR") p=1;
-            else if (o =="OR") p=2;
-            else if(o=="AND")p=3;
+            op = o;
+            if(o =="XOR") priority=1;
+            else if (o =="OR") priority=2;
+            else if(o=="AND")priority=3;
             else throw new DBAppException("invalid Operation");
-            priority = p;
         }
 
         public String toString() {
