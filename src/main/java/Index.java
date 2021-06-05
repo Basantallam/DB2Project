@@ -518,6 +518,10 @@ public class Index implements Serializable {
         return null;
     }
 
+    public HashSet<Double> andSelect(SQLTerm term1, SQLTerm term2) {
+        return null;
+    }
+
     class BucketInfo implements Serializable {
         long id;
         int size;

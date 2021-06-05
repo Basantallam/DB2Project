@@ -692,10 +692,7 @@ public class Table implements Serializable {
         boolean clustering2=(term2._strColumnName==clusteringCol);
         Index index = chooseIndexAnd(terms); //todo wa7da tania 3shan n7ot priorities law not equal ma7otoosh equal a3la priority
         if (index != null) {
-//            Hashtable ht=new Hashtable();
-//            ht.put(term1._strColumnName,term1._objValue);
-//            ht.put(term2._strColumnName,term2._objValue);
-//            Vector<Index.BucketInfo> v=index.getCell(index.getCellCoordinates(ht,false));
+            return getTableRecords(index.andSelect(term1,term2),term1,term2);
             //todo mesh 3arfaaaaa
         } else {
             if(clustering1){
