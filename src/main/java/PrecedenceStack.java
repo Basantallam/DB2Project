@@ -2,43 +2,40 @@ import java.util.*;
 
 public class PrecedenceStack {
     Stack<Object> stack ;
-    Stack<DBApp.Operation> stackO ;
+    Stack<Operation> stackO ; //Stack for Operations
     Table table;
     public PrecedenceStack(Table table){
         stack = new Stack<Object>();
-        stackO = new Stack<DBApp.Operation>();
+        stackO = new Stack<Operation>();
         this.table = table;
     }
     public Vector<Hashtable> resolve(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
 
         stack.push(sqlTerms[0]);
         stack.push(sqlTerms[1]);
-        stackO.push(new DBApp.Operation(arrayOperators[0]));
+        stackO.push(new Operation(arrayOperators[0]));
         for (int i = 2; i < arrayOperators.length; i++) {
             SQLTerm n = sqlTerms[i];
-            DBApp.Operation op = new DBApp.Operation(arrayOperators[i - 1]);
-            DBApp.Operation top = stackO.peek();
+            Operation op = new Operation(arrayOperators[i - 1]);
+            Operation top = stackO.peek();
             if (op.priority <= top.priority) { //top a7san
                 stackO.pop();
-                Object topn = stack.pop();
-                Object topn2 = stack.pop();
-                stack.push(applyOp(topn, topn2, top.op));
-                stack.push(n);
-                stackO.push(op);
-            } else {
-                stack.push(n);
-                stackO.push(op);
+                Object top1 = stack.pop();
+                Object top2 = stack.pop();
+                stack.push(applyOp(top1, top2, top.op));
             }
+            stack.push(n);
+            stackO.push(op);
         }
         while (stack.size() > 1) {
-            Object a = stack.pop();
-            Object b = stack.pop();
-            DBApp.Operation o = stackO.pop();
+            Object a = stack.pop(); Object b = stack.pop();
+            Operation o = stackO.pop();
             Vector<Hashtable> res = applyOp(a, b, o.op);
             stack.push(res);
         }
-        return (Vector<Hashtable>) stack.pop();
+        return (Vector<Hashtable>) stack.pop(); //final result
     }
+
     public  Vector<Hashtable> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
             case ("AND"): return parentAND(curr, next);
@@ -131,54 +128,31 @@ public class PrecedenceStack {
         }
     }
     public Vector<Hashtable> ANDing(Vector<Hashtable> i1, Vector<Hashtable> i2){
+        //hadkhol hena mn el XOR call bas
         Vector<Hashtable> result = new Vector<Hashtable>();
-        for(Hashtable ht1: i1){
-            if(i2.contains(ht1)){
-                result.add(ht1);
-            }
-        }
+        HashSet<Hashtable> set1=new HashSet<Hashtable>(i1);
+        HashSet<Hashtable> set2=new HashSet<Hashtable>(i2);
+
+        for(Hashtable ht: set2)
+            if(set1.contains(ht)) //set1.contains = O(1)
+                result.add(ht);
         return result;
     }
     public static Vector<Hashtable> ORing(Vector<Hashtable> i1, Vector<Hashtable> i2) { //Union Set Operation
-//        Set<Hashtable> s1 = new HashSet();
-//        Set<Hashtable> s2 = new HashSet(i2);
-//        s1.addAll(s2);
-        i1.addAll(i2);
-//        Vector<Hashtable> res = new Vector<Hashtable>();
-//        res.addAll(s1);
-        return i1;
+        Set<Hashtable> s1 = new HashSet(i1);
+        Set<Hashtable> s2 = new HashSet(i2);
+        s1.addAll(s2); //set guarantees uniqueness
+
+        Vector<Hashtable> res = new Vector<Hashtable>();
+        res.addAll(s1);
+        return i1; //mmkn nkhali kolo y return iterator bas hanghayar 7abba fel code
     }
     public Vector<Hashtable> XORing(Vector<Hashtable> i1, Vector<Hashtable> i2) { //Set Operation
-        Vector v2 = ANDing(i1, i2);
         Vector v1 = ORing(i1, i2);
+        Vector v2 = ANDing(i1, i2);
         Vector<Hashtable> res = new Vector<Hashtable>();
-        Collections.sort(v1);
-        Collections.sort(v2);
-        Iterator it1 = v1.iterator();
-        Iterator it2 = v2.iterator();
-        Object o1 = it1.next();
-        Object o2 = it2.next();
-        while (it1.hasNext()) {
-            if (Table.GenericCompare(o1, o2) == 0) {
-                o1 = it1.next();
-                if (it2.hasNext())
-                    o2 = it2.next();
-            } else if (Table.GenericCompare(o1, o2) < 0) {
-                res.add((Hashtable) o1);
-                o1 = it1.next();
-            } else if (Table.GenericCompare(((Hashtable)o1).get(table.clusteringCol), ((Hashtable)o2).get(table.clusteringCol)) > 0) {
-                if (it2.hasNext())
-                    o2 = it2.next();
-                else
-                    break;
-            }
-        }
-        while (it1.hasNext()) {
-            res.add((Hashtable) o1);
-            o1 = it1.next();
-        }
-        res.add((Hashtable)o1);
-        return res;
+        v1.removeAll(v2);
+        return v1;
     }
 
     static class Operation {

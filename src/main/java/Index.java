@@ -219,7 +219,6 @@ public class Index implements Serializable {
         }
     }
     public Vector<BucketInfo> getCell(int[] cellIdx) {
-
         Object cell = grid[cellIdx[0]];
         for (int i = 1; i < cellIdx.length; i++) {
             int x = cellIdx[i];
@@ -289,14 +288,7 @@ public class Index implements Serializable {
     public int getSize() {
         return columnNames.size();
     }
-    public static void main(String[] args) {
-//		String[] stringarr = { "boo", "bar", "foo", "lol" }; // n=4
-//		Index idx = new Index("tablename",stringarr, new Hashtable<>(), this.table);
-//		System.out.println((Arrays.deepToString(idx.grid)));// 4d
-//		System.out.println(Arrays.deepToString((Object[]) idx.grid[0]));// 3d
-//		System.out.println(Arrays.deepToString((Object[]) (((Object[]) idx.grid[0])[0]))); // 2d
-//		System.out.println(Arrays.deepToString(((Object[]) (((Object[]) idx.grid[0])[0])))); // 1d
-    }
+
     public HashSet<Double> delete(Hashtable<String, Object> columnNameValue) {
         HashSet<Double> pages = new HashSet<>();
         Vector<StartEnd> coordinates = getCellsCoordinates(columnNameValue,null);
@@ -313,9 +305,7 @@ public class Index implements Serializable {
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
                     pages.addAll(b.deleteI(arrangedHash));
                     DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
-
                 }
-
             } else {
                 for (BucketInfo bi : cell) {
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
@@ -376,7 +366,6 @@ public class Index implements Serializable {
             }
         }
         getRecordsBetween(start, limits, 0,term, result,idx,val); // [start,limits[
-
         Vector<BucketInfo> lastCell = getCell(limits);
 
         //loops on cell record by record adds records that match condition
@@ -388,7 +377,6 @@ public class Index implements Serializable {
             Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
            b.filterBucket(term,result);
             DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id,b);
-
         }
     }
     public void getRecordsBetween(int[] curr, int[] limits, int depth, SQLTerm term, HashSet<Double> result
@@ -405,7 +393,6 @@ public class Index implements Serializable {
                     result.addAll(b.getPageIds());
                     DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id,b);
                 }
-
             }
             return;
         }
