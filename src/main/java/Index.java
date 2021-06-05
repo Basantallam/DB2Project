@@ -368,17 +368,13 @@ public class Index implements Serializable {
         }
     }
     public HashSet<Double> lessThan(SQLTerm term) throws DBAppException {
-        Hashtable<String, Object> hashtable = new Hashtable<>();
+        Hashtable<String, Object> hashtable = new Hashtable<String,Object>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
-        HashSet<Double> res = new HashSet<Double>();
+        HashSet<Double> res = loopUntil(LastCellCoordinates, term);
        // traverse Index
-        res = loopUntil(LastCellCoordinates, term);
-
         return (res);
     }
-
-
 
     private double pageFromCell(Vector<BucketInfo> cell,SQLTerm term) throws DBAppException {
         double maxPageID=0;
@@ -450,15 +446,12 @@ public class Index implements Serializable {
         hashtable.put(term._strColumnName, term._objValue);
         int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
         //nulls should be 0 3adi
-        HashSet<Double> res = null;
+        HashSet<Double> res = loopFrom(FirstCellCoordinates, term);
             //traverse Index
-            res = loopFrom(FirstCellCoordinates, term);
-
         return res;
     }
     public HashSet<Double> loopFrom(int[] start, SQLTerm term) {
-        HashSet<Double> result = new HashSet<>();
-
+        HashSet<Double> result = new HashSet<Double>();
         int val=0;
         int idx=columnNames.indexOf(term._strColumnName);
 
@@ -515,7 +508,7 @@ public class Index implements Serializable {
                 }
             }
         }
-        return null;
+        return new HashSet<Double>();
     }
 
     public HashSet<Double> andSelect(SQLTerm term1, SQLTerm term2) {

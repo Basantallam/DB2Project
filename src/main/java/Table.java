@@ -472,8 +472,7 @@ public class Table implements Serializable {
             case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term,null);
             case (">"): case (">="): return getTableRecords(index.greaterThan(term),term,null);
             case ("="):  return getTableRecords(index.equalSelect(term),term,null);
-            case ("!="): return notEqual(term);
-//  won't use index kda kda
+            case ("!="): return notEqual(term);//doesn't use index
             default: throw new DBAppException("invalid operation");
         }
     }
@@ -499,7 +498,7 @@ public class Table implements Serializable {
 
         for(Double id :pageID){
             Page p = (Page) DBApp.deserialize(tableName + "_" + id);
-           result.addAll( p.select(term1,term2));
+            result.addAll( p.select(term1,term2));
             DBApp.serialize(tableName + "_" + id,p);
         }
         return result;
