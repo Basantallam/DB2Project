@@ -471,9 +471,9 @@ public class Table implements Serializable {
     }
     private Vector<Hashtable> indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
-            case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term,null);
-            case (">"): case (">="): return getTableRecords(index.greaterThan(term),term,null);
-            case ("="):  return getTableRecords(index.equalSelect(term),term,null);
+            case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term);
+            case (">"): case (">="): return getTableRecords(index.greaterThan(term),term);
+            case ("="):  return getTableRecords(index.equalSelect(term),term);
             case ("!="): return notEqual(term);//doesn't use index
             default: throw new DBAppException("invalid operation");
         }
@@ -495,6 +495,16 @@ public class Table implements Serializable {
         for(Double id :pageID){
             Page p = (Page) DBApp.deserialize(tableName + "_" + id);
             result.addAll(p.select(term1,term2));
+            DBApp.serialize(tableName + "_" + id,p);
+        }
+        return result;
+    }
+    private Vector<Hashtable> getTableRecords(HashSet<Double> pageID,SQLTerm term) throws DBAppException {
+        Vector<Hashtable> result = new Vector<>();
+
+        for(Double id :pageID){
+            Page p = (Page) DBApp.deserialize(tableName + "_" + id);
+            result.addAll(p.select(term));
             DBApp.serialize(tableName + "_" + id,p);
         }
         return result;
@@ -722,12 +732,7 @@ public class Table implements Serializable {
     }
 
 
-//    private Index useIndexSelect(Vector<SQLTerm> term1) {
-//        //vector can have 1 or 2 terms
-//        //momken nkhalee col names bas badal sql term kolo
-//        //todo
-//        return null;
-//    }
+
     public static boolean checkCond(Hashtable rec, SQLTerm term) throws DBAppException {
         String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
         Object recVal = rec.get(col);
