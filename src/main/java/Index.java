@@ -512,6 +512,16 @@ public class Index implements Serializable {
     }
 
     public HashSet<Double> andSelect(SQLTerm term1, SQLTerm term2) {
+        Hashtable<String, Object> columnNameValue= new Hashtable<>();
+        Hashtable<String, Object> columnOperators= new Hashtable<>();
+        if(!term1._strOperator.equals("!=")){
+            columnNameValue.put(term1._strColumnName,term1._objValue);
+            columnOperators.put(term1._strColumnName,term1._strOperator);
+        } if(!term2._strOperator.equals("!=")){
+            columnNameValue.put(term2._strColumnName,term2._objValue);
+            columnOperators.put(term2._strColumnName,term2._strOperator);
+        }
+
         return null;
     }
 
