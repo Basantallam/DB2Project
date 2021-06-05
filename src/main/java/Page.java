@@ -161,12 +161,38 @@ public class Page implements Serializable {
 		}
 		return deletedRows;
 	}
+
+
+	public static boolean checkCond(Pair rec, SQLTerm term) throws DBAppException {
+		if(term==null)return true;
+		String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
+		Object recVal = rec.row.get(col);
+		switch (operator) {
+			case (">"): return (Table.GenericCompare(recVal, value) > 0);
+			case (">="):return (Table.GenericCompare(recVal, value) >= 0);
+			case ("<"): return (Table.GenericCompare(recVal, value) <0);
+			case ("<="):return (Table.GenericCompare(recVal, value) <= 0);
+			case ("="): return (Table.GenericCompare(recVal, value) == 0);
+			case ("!="):return (Table.GenericCompare(recVal, value) != 0);
+			default:throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
+		}
+	}
 	public boolean isEmpty() {
 		return records.isEmpty();
 	}
 	public boolean isFull() {
 		return records.size() == DBApp.capacity;
 	}
+
+	public Vector<Hashtable> select(SQLTerm term1, SQLTerm term2) throws DBAppException {
+		Vector<Hashtable> res= new Vector<>();
+		for (Pair currRec :records) { // adding records that match the select statement
+			if (checkCond(currRec, term1)&&checkCond(currRec,term2))
+				res.add(currRec.row);
+		}
+		return res;
+	}
+
 	public static class Pair implements Serializable, Comparable<Pair> {
 		Object pk;
 		Hashtable<String, Object> row;
