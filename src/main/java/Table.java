@@ -445,7 +445,6 @@ public class Table implements Serializable {
     }
     Vector<Hashtable> getTableRecords(HashSet<Double> pageID, SQLTerm term1, SQLTerm term2) throws DBAppException {
         Vector<Hashtable> result = new Vector<>();
-
         for(Double id :pageID){
             Page p = (Page) DBApp.deserialize(tableName + "_" + id);
             result.addAll(p.select(term1,term2));
@@ -464,22 +463,6 @@ public class Table implements Serializable {
         return result;
     }
 
-//    private Vector<Hashtable> getTableRecords(Vector<Bucket.Record> indexRecords) {
-//        Vector<Hashtable> result = new Vector<>();
-//        Table table = (Table) DBApp.deserialize(tableName);
-//        for(Bucket.Record indexRec :indexRecords){
-//            Page p = (Page) DBApp.deserialize(tableName + "_" + (indexRec.pageid));
-//
-//            for(Page.Pair tableRecord:p.records){
-//                if(tableRecord.isEqual(indexRec)){
-//                    result.add(tableRecord.row);
-//                }
-//            }
-//            DBApp.serialize(tableName + "_" + (indexRec.pageid),p);
-//        }
-//        DBApp.serialize(tableName,table);
-//        return result;
-//    }
     public Vector<Hashtable> Equal(SQLTerm term){
         int pIdx=this.BinarySearch(term._objValue,table.size()-1,0);
         //todo deserialize - i think done
@@ -496,8 +479,7 @@ public class Table implements Serializable {
             case ("<"): case ("<="):return this.lessThan(term);
             case (">"): case (">="): return this.greaterThan(term);
             case ("="): return this.Equal(term);
-            case ("!="): return notEqual(term);
-//  won't use index kda kda
+            case ("!="): return notEqual(term); //  won't use index kda kda
             default:throw new DBAppException("invalid operation");
         }
     }
@@ -508,8 +490,7 @@ public class Table implements Serializable {
 
         int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
         DBApp.serialize(tableName + "_" + table.get(pageIdx),page);
-        DBApp.serialize(term._strTableName,t);
-        //check inclusive or exclusive fel binary search
+        DBApp.serialize(term._strTableName,t); //check inclusive or exclusive fel binary search
         return t.loopUntil(pageIdx,recordIdx,term);
     }
     public Vector<Hashtable> greaterThan(SQLTerm term) throws DBAppException {
@@ -520,8 +501,7 @@ public class Table implements Serializable {
 
         int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
         DBApp.serialize(tableName + "_" + t.table.get(pageIdx).id,page);
-        DBApp.serialize(term._strTableName,t);
-        //check inclusive or exclusive fl binary search
+        DBApp.serialize(term._strTableName,t); //check inclusive or exclusive fl binary search
         return loopFrom(pageIdx,recordIdx,term);
     }
     private Vector<Hashtable> LinearScan(SQLTerm term) throws DBAppException {
@@ -539,7 +519,6 @@ public class Table implements Serializable {
         for(int pIdx=0;pIdx<=pageIdx;pIdx++){
             //todo deserialize page - i think done
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
-//            Page currPage = table.get(pIdx).page;
 
             for(int rIdx=0;rIdx<table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
@@ -564,7 +543,7 @@ public class Table implements Serializable {
         for(int pIdx=pageIdx;pIdx<=table.table.size();pIdx++){
             //todo deserialize page - i think done
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.table.get(pIdx));
-//            Page currPage = table.get(pIdx).page;
+
             for(int rIdx=(pageIdx==pIdx?recordIdx:0);rIdx<table.table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
                 res.add(record.row);
@@ -574,8 +553,6 @@ public class Table implements Serializable {
         DBApp.serialize(term._strTableName,table);
         return res;
     }
-//ma haza?
-
 
     Vector<Hashtable> LinearScan(SQLTerm term1, SQLTerm term2) throws DBAppException {
         Vector<Hashtable> res = new Vector<Hashtable>();//loop on entire table.. every single record and check
@@ -586,7 +563,7 @@ public class Table implements Serializable {
         }
         return res;
     }
-    
+
     public void createCSV() throws IOException {
         String path = "src\\main\\resources\\Basant\\" + this.tableName + "_Table.csv";
         FileWriter fw = new FileWriter(path);
@@ -626,6 +603,7 @@ public class Table implements Serializable {
         }
         fw.close();
     }
+    
     public static class tuple4 implements Serializable {
         Double id;
         transient Page page;

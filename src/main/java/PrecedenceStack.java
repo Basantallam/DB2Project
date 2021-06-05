@@ -42,11 +42,11 @@ public class PrecedenceStack {
     public  Vector<Hashtable> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
             case ("AND"): return parentAND(curr, next);
-            case ("OR"):
+            case ("OR"): //dayman "intersection" on sets
                 if (curr instanceof SQLTerm) curr = table.resolveOneStatement((SQLTerm) curr);
                 if (next instanceof SQLTerm) next = table.resolveOneStatement((SQLTerm) next);
                 return ORing((Vector<Hashtable>) curr, (Vector<Hashtable>) next);
-            case ("XOR"):
+            case ("XOR"): //dayman operation on sets
                 if (curr instanceof SQLTerm) curr = table.resolveOneStatement((SQLTerm) curr);
                 if (next instanceof SQLTerm) next = table.resolveOneStatement((SQLTerm) next);
                 return XORing((Vector<Hashtable>) curr, (Vector<Hashtable>) next);
@@ -62,19 +62,17 @@ public class PrecedenceStack {
             SQLTerm sqlTerm; Vector v;
             if (curr instanceof SQLTerm && next instanceof Vector){
                 sqlTerm =(SQLTerm) curr; v=(Vector) next;
-                return ANDing(sqlTerm,v);
-                //2nd and child
+                return ANDing(sqlTerm,v);//2nd and child
             }
             else if(next instanceof SQLTerm && curr instanceof Vector){
                 sqlTerm =(SQLTerm) next; v=(Vector) curr;
-                return ANDing(sqlTerm,v);
-                //2nd and child
+                return ANDing(sqlTerm,v);//2nd and child
                 // theoretically 3omr ma da hayehsal bas just in case
             } else
-                return ANDing((Vector<Hashtable>) curr, (Vector) next);
+                return ANDing((Vector<Hashtable>) curr, (Vector) next); // 3rd and child
                 // theoretically 3omr ma da hayehsal bardo !
                 // bas just in case
-                // 3rd and child
+
         }
     }
     public Vector<Hashtable> ANDing(SQLTerm term, Vector<Hashtable> v) throws DBAppException {
