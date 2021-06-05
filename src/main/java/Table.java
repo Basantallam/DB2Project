@@ -694,25 +694,30 @@ public class Table implements Serializable {
             return getTableRecords(index.andSelect(term1,term2),term1,term2);
             //todo mesh 3arfaaaaa
         } else {
-            if(clustering1){
-                Vector<Hashtable> res1 = tableTraversal(term1);//todo inc exc
-                for(Hashtable record:res1){
-                    if(checkCond(record,term2)){
-                        result.add(record);
-                    }
+            return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
+        }
+    }
+
+    private Vector<Hashtable> andSQLwithoutIndex(SQLTerm term1, SQLTerm term2, boolean clustering1, boolean clustering2) throws DBAppException {
+        Vector result = new Vector();
+        if(clustering1){
+            Vector<Hashtable> res1 = tableTraversal(term1);//todo inc exc
+            for(Hashtable record:res1){
+                if(checkCond(record, term2)){
+                    result.add(record);
                 }
             }
-            else if(clustering2){
-                Vector<Hashtable> res2 = tableTraversal(term2);
-                for(Hashtable record:res2){
-                    if(checkCond(record,term1)){
-                        result.add(record);
-                    }
+        }
+        else if(clustering2){
+            Vector<Hashtable> res2 = tableTraversal(term2);
+            for(Hashtable record:res2){
+                if(checkCond(record, term1)){
+                    result.add(record);
                 }
             }
-            else{
-                return this.LinearScan(term1,term2);
-            }
+        }
+        else{
+            return this.LinearScan(term1, term2);
         }
         return result;
     }
