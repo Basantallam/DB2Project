@@ -337,7 +337,7 @@ public class DBApp implements DBAppInterface {
 		if (!(DB.contains(sqlTerms[0]._strTableName)))
 			throw new DBAppException("Table does not exist in Database");
 		Table table = (Table) deserialize(sqlTerms[0]._strTableName);
-		Vector<Page.Pair> res=new Vector<Page.Pair>();
+		Vector<Hashtable> res=new Vector<Hashtable>();
 		if(sqlTerms.length<2) {
 			if (!(colInTable(sqlTerms[0]._strTableName, sqlTerms[0]._strColumnName, sqlTerms[0]._objValue)))
 				throw new DBAppException("Invalid input, check column name and the value's data type");
