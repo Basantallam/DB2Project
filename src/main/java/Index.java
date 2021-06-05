@@ -131,29 +131,6 @@ public class Index implements Serializable {
 //        }
         return idx;
     }
-    public Vector<Integer> getCellsCoordinates(Hashtable<String, Object> values) {
-        Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(values));
-        Vector<Integer> coordinates = new Vector<Integer>();
-
-        Set<String> set = colValues.keySet();
-        int IndexDimension = columnNames.size();
-
-        for (int ptr = 0; ptr < IndexDimension; ptr++) {
-            String col = columnNames.get(ptr);
-            if (set.contains(col)) {
-                String colName = columnNames.get(ptr);
-                Object min = ranges.get(colName).min;
-                Object max = ranges.get(colName).max;
-                Object value = colValues.get(colName);
-                int idx = (value instanceof Long || value instanceof Date) ? (getIdxLong(min, max, value))
-                        : getIdxDouble((double) min, (double) max, (double) value);
-                coordinates.add(idx);
-            } else {
-                coordinates.add(-1);
-            }
-        }
-        return coordinates;
-    }
     public Hashtable<String, Object> arrangeHashtable(Hashtable<String, Object> values) {
         //takhod kol el record teraga3 el values eli fel Index columns bass
 
@@ -316,7 +293,7 @@ public class Index implements Serializable {
     }
     public HashSet<Double> delete(Hashtable<String, Object> columnNameValue) {
         HashSet<Double> pages = new HashSet<>();
-        Vector<Integer> coordinates = getCellsCoordinates(columnNameValue);
+        Vector<StartEnd> coordinates = getCellsCoordinates(columnNameValue,null);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells );
         for (Vector<BucketInfo> cell : cells) {
@@ -512,7 +489,7 @@ public class Index implements Serializable {
             columnNameValue.put(term2._strColumnName,term2._objValue);
             columnOperators.put(term2._strColumnName,term2._strOperator);
         }
-        Vector<StartEnd> coordinates = getCellsCoordinatesGlobal(columnNameValue,columnOperators);
+        Vector<StartEnd> coordinates = getCellsCoordinates(columnNameValue,columnOperators);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells );
 
@@ -520,7 +497,7 @@ public class Index implements Serializable {
         return null;
     }
 
-    private Vector<StartEnd> getCellsCoordinatesGlobal(Hashtable<String, Object> columnNameValue, Hashtable<String, String> columnOperators) {
+    private Vector<StartEnd> getCellsCoordinates(Hashtable<String, Object> columnNameValue, Hashtable<String, String> columnOperators) {
         Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(columnNameValue));
         Vector<StartEnd> coordinates = new Vector<>();
         Set<String> set = colValues.keySet();
@@ -530,12 +507,13 @@ public class Index implements Serializable {
             String col = columnNames.get(ptr);
             if (set.contains(col)) {
                 String colName = columnNames.get(ptr);
+                String op =columnOperators==null?"=":columnOperators.get(colName);
                 Object min = ranges.get(colName).min;
                 Object max = ranges.get(colName).max;
                 Object value = colValues.get(colName);
                 int idx = (value instanceof Long || value instanceof Date) ? (getIdxLong(min, max, value))
                         : getIdxDouble((double) min, (double) max, (double) value);
-                coordinates.add(getOperation(idx,columnOperators.get(colName)));
+                coordinates.add(getOperation(idx,op));
             } else {
                 coordinates.add(new StartEnd(0,10));
             }
