@@ -480,7 +480,7 @@ public class Table implements Serializable {
     }
 
     private Vector<Hashtable> notEqual(SQLTerm term) throws DBAppException {
-        Vector<Hashtable> result = new Vector<>();
+        Vector<Hashtable> result = new Vector<Hashtable>();
         Table table = (Table) DBApp.deserialize(term._strTableName);
         Page currPage;
         for(tuple4 tuple :table.table){
@@ -572,7 +572,7 @@ public class Table implements Serializable {
 
                 for (Page.Pair currRec : currPage.records) { // adding records that match the select statement
                     if (checkCond(currRec.row, term))
-                        res.add(currRec);
+                        res.add(currRec.row);
                 }
                 DBApp.serialize(tableName + "_" + tuple.id, currPage);
             }
@@ -671,9 +671,9 @@ public class Table implements Serializable {
             return ANDingI((SQLTerm)curr, (SQLTerm)next);
          else {
             if (curr instanceof SQLTerm)
-                curr = (Vector<Hashtable>) resolveOneStatement((SQLTerm) curr);
+                curr = resolveOneStatement((SQLTerm) curr);
              else if (next instanceof SQLTerm)
-                next = (Vector<Hashtable>) resolveOneStatement((SQLTerm) next);
+                next = resolveOneStatement((SQLTerm) next);
             return ANDing((Vector<Hashtable>) curr, (Vector) next);
         }
     }
