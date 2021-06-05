@@ -459,7 +459,7 @@ public class Table implements Serializable {
     }
     private Vector<Hashtable> indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
-            case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term,null);//todo TableRcords eltania b7ees t search 3ala el pages bas
+            case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term,null);
             case (">"): case (">="): return getTableRecords(index.greaterThan(term),term,null);
             case ("="):getTableRecords(index.equalSelect(term),term,null);
 
@@ -679,9 +679,9 @@ public class Table implements Serializable {
         Vector <String> terms=new Vector<String>();
         terms.add(term1._strColumnName);
         terms.add(term2._strColumnName);
-        boolean clustering1=(term1._strColumnName==clusteringCol);
+        boolean clustering1=(term1._strColumnName==clusteringCol);//todo indxPK else linear
         boolean clustering2=(term2._strColumnName==clusteringCol);
-        Index index = chooseIndexAnd(terms);
+        Index index = chooseIndexAnd(terms); //todo wa7da tania 3shan n7ot priorities law not equal ma7otoosh equal a3la priority
         if (index != null) {
 //            Hashtable ht=new Hashtable();
 //            ht.put(term1._strColumnName,term1._objValue);
