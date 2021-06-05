@@ -371,9 +371,9 @@ public class Index implements Serializable {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
-        HashSet<Double> res = null;
+        HashSet<Double> res = new HashSet<Double>();
        // traverse Index
-            res = loopUntil(LastCellCoordinates, term);
+        res = loopUntil(LastCellCoordinates, term);
 
         return (res);
     }
@@ -394,7 +394,7 @@ public class Index implements Serializable {
     }
     public HashSet<Double> loopUntil(int[] limits, SQLTerm term)  {
         //nulls should be [9]
-        HashSet<Double> result = new HashSet<>();
+        HashSet<Double> result = new HashSet<Double>();
         int[] start=new int[limits.length];
         int val=9;
         int idx=columnNames.indexOf(term._strColumnName);

@@ -56,33 +56,43 @@ public class Table implements Serializable {
         else
             return 0;
     }
-    public static Vector ANDing(Vector i1, Vector i2) { //Intersect Set Operation
-        if(i1.size()==0|| i2.size()==0)return new Vector();
-        //1st child AND
-        Collections.sort(i1);
-        Collections.sort(i2);
-        Vector res = new Vector();
-        Iterator it1 = i1.iterator();
-        Iterator it2 = i2.iterator();
-        Object o1 = it1.next();
-        Object o2 = it2.next();
-
-        while (it1.hasNext() && it2.hasNext()) {
-            if (GenericCompare(o1, o2) == 0) {
-                res.add(o1);
-                o1 = it1.next();
-                o2 = it2.next();
-            } else if (GenericCompare(o1, o2) < 0) {
-                o1 = it1.next();
-            } else if (GenericCompare(o1, o2) > 0) {
-                o2 = it2.next();
+    public static Vector ANDing(Vector<Hashtable> i1, Vector<Hashtable> i2){
+       Vector<Hashtable> result = new Vector<Hashtable>();
+        for(Hashtable ht1: i1){
+            if(i2.contains(ht1)){
+                result.add(ht1);
             }
         }
-        return res;
+        return result;
     }
-    public static Vector<Hashtable> ORing(Vector i1, Vector i2) { //Union Set Operation
-        TreeSet s1 = new TreeSet(i1);
-        TreeSet s2 = new TreeSet(i2);
+//    public  Vector ANDing(Vector i1, Vector i2) { //Intersect Set Operation
+//        if(i1.size()==0|| i2.size()==0)return new Vector();
+//        //1st child AND
+//
+//        Collections.sort(i1);
+//        Collections.sort(i2);
+//        Vector res = new Vector();
+//        Iterator it1 = i1.iterator();
+//        Iterator it2 = i2.iterator();
+//        Object o1 = it1.next();
+//        Object o2 = it2.next();
+//
+//        while (it1.hasNext() && it2.hasNext()) {
+//            if (GenericCompare(o1, o2) == 0) {
+//                res.add(o1);
+//                o1 = it1.next();
+//                o2 = it2.next();
+//            } else if (GenericCompare(o1, o2) < 0) {
+//                o1 = it1.next();
+//            } else if (GenericCompare(o1, o2) > 0) {
+//                o2 = it2.next();
+//            }
+//        }
+//        return res;
+//    }
+    public static Vector<Hashtable> ORing(Vector<Hashtable> i1, Vector<Hashtable> i2) { //Union Set Operation
+        Set<Hashtable> s1 = new HashSet(i1);
+        Set<Hashtable> s2 = new HashSet(i2);
         s1.addAll(s2);
         Vector res = new Vector(s1);
         return res;
@@ -461,8 +471,7 @@ public class Table implements Serializable {
         switch (term._strOperator) {
             case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term,null);
             case (">"): case (">="): return getTableRecords(index.greaterThan(term),term,null);
-            case ("="):getTableRecords(index.equalSelect(term),term,null);
-
+            case ("="):  return getTableRecords(index.equalSelect(term),term,null);
             case ("!="): return notEqual(term);
 //  won't use index kda kda
             default: throw new DBAppException("invalid operation");
@@ -751,7 +760,7 @@ public class Table implements Serializable {
 
         for (int idx = 0; idx < table.size(); idx++) {
             tuple4 t = table.get(idx);
-            Page p = (Page) DBApp.deserialize(tableName + "_" + t.id + "");
+            Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
 
             for (Page.Pair pair : p.records) {
                 String str = "";
@@ -764,21 +773,20 @@ public class Table implements Serializable {
 
                 fw.write(str);
             }
-            DBApp.serialize(tableName + "_" + t.id + "", p);
+            DBApp.serialize(tableName + "_" + t.id, p);
         }
         fw.close();
     }
 
-    public static void createCSVSelect(Iterator it) throws IOException {
+    public static void createCSVSelect(Iterator<Hashtable> it) throws IOException {
         String path = "src\\main\\resources\\Basant\\" + "Selection.csv";
         FileWriter fw = new FileWriter(path);
         while(it.hasNext()){
-            Hashtable rec=(Hashtable) it.next();
+            Hashtable rec= (Hashtable) it.next();
             String str = "";
-            Hashtable<String, Object> h = rec;
-            Set<String> s = h.keySet();
+            Set<String> s = rec.keySet();
             for (String o : s) {
-                str += h.get(o).toString() + ", ";
+                str += rec.get(o).toString() + ", ";
             }
             str += "\n";
 
