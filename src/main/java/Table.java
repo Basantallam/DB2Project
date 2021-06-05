@@ -699,18 +699,10 @@ public class Table implements Serializable {
 
     private Vector<Hashtable> andSQLwithoutIndex(SQLTerm term1, SQLTerm term2, boolean clustering1, boolean clustering2) throws DBAppException {
         Vector result = new Vector();
-        if(clustering1){
-            Vector<Hashtable> res1 = tableTraversal(term1);//todo inc exc
-            for(Hashtable record:res1){
+        if(clustering1 || clustering2){
+            Vector<Hashtable> res =clustering1? tableTraversal(term1): tableTraversal(term2);//todo inc exc
+            for(Hashtable record:res){
                 if(checkCond(record, term2)){
-                    result.add(record);
-                }
-            }
-        }
-        else if(clustering2){
-            Vector<Hashtable> res2 = tableTraversal(term2);
-            for(Hashtable record:res2){
-                if(checkCond(record, term1)){
                     result.add(record);
                 }
             }
