@@ -343,28 +343,19 @@ public class Index implements Serializable {
         }
         return pages;
     }
-    private void getAllCells(Vector<Integer> coordinates, int ptr, Object grid, Vector<Vector<BucketInfo>> cells) {
+    private void getAllCells(Vector<StartEnd> coordinates, int ptr, Object grid, Vector<Vector<BucketInfo>> cells) {
+        int i = coordinates.get(ptr).start; int end = coordinates.get(ptr).end;
         if (ptr == coordinates.size() - 1) {
-            if (coordinates.get(ptr) == -1)
-                for (int i = 0; i < 10; i++)
-                    if(((Vector<BucketInfo>) ((Object[]) grid)[i]).size()!=0)
-                         cells.add((Vector<BucketInfo>) ((Object[]) grid)[i]);
-
-            else
+            for (; i < end; i++)
                 if(((Vector<BucketInfo>) ((Object[]) grid)[i]).size()!=0)
-                     cells.add((Vector<BucketInfo>) ((Object[]) grid)[coordinates.get(ptr)]);
-
+                    cells.add((Vector<BucketInfo>) ((Object[]) grid)[i]);
         } else {
             Object[] cell = ((Object[]) grid);
-            int x = coordinates.get(ptr);
-            if (x == -1) {
-                for (int i = 0; i < cell.length; i++) {
-                    Object y = ((Object[]) cell)[i];
-                    grid =  y;
-                    getAllCells(coordinates, ptr + 1, grid,cells );
-                }
-            } else
-                getAllCells(coordinates, ptr + 1, cell[x],cells );
+            for (; i < end; i++) {
+                Object y = ((Object[]) cell)[i];
+                grid =  y;
+                getAllCells(coordinates, ptr + 1, grid,cells );
+            }
         }
     }
     public HashSet<Double> lessThan(SQLTerm term) throws DBAppException {
@@ -513,7 +504,7 @@ public class Index implements Serializable {
 
     public HashSet<Double> andSelect(SQLTerm term1, SQLTerm term2) {
         Hashtable<String, Object> columnNameValue= new Hashtable<>();
-        Hashtable<String, Object> columnOperators= new Hashtable<>();
+        Hashtable<String, String> columnOperators= new Hashtable<>();
         if(!term1._strOperator.equals("!=")){
             columnNameValue.put(term1._strColumnName,term1._objValue);
             columnOperators.put(term1._strColumnName,term1._strOperator);
@@ -521,16 +512,17 @@ public class Index implements Serializable {
             columnNameValue.put(term2._strColumnName,term2._objValue);
             columnOperators.put(term2._strColumnName,term2._strOperator);
         }
-        Vector<Integer> coordinates = getCellsCoordinatesGlobal(columnNameValue,columnOperators);
+        Vector<StartEnd> coordinates = getCellsCoordinatesGlobal(columnNameValue,columnOperators);
+        Vector<Vector<BucketInfo>> cells = new Vector<>();
+        getAllCells(coordinates,0, grid,cells );
 
 
         return null;
     }
 
-    private Vector<Integer> getCellsCoordinatesGlobal(Hashtable<String, Object> columnNameValue, Hashtable<String, Object> columnOperators) {
+    private Vector<StartEnd> getCellsCoordinatesGlobal(Hashtable<String, Object> columnNameValue, Hashtable<String, String> columnOperators) {
         Hashtable<String, Object> colValues = checkformatall(arrangeHashtable(columnNameValue));
-        Vector<Integer> coordinates = new Vector<Integer>();
-
+        Vector<StartEnd> coordinates = new Vector<>();
         Set<String> set = colValues.keySet();
         int IndexDimension = columnNames.size();
 
@@ -543,12 +535,20 @@ public class Index implements Serializable {
                 Object value = colValues.get(colName);
                 int idx = (value instanceof Long || value instanceof Date) ? (getIdxLong(min, max, value))
                         : getIdxDouble((double) min, (double) max, (double) value);
-                coordinates.add(idx);
+                coordinates.add(getOperation(idx,columnOperators.get(colName)));
             } else {
-                coordinates.add(-1);
+                coordinates.add(new StartEnd(0,10));
             }
         }
         return coordinates;
+    }
+
+    private StartEnd getOperation(int idx, String operator) {
+        switch (operator) {
+            case (">"): case (">="):return new StartEnd(idx,10);
+            case ("<"): case ("<="):return new StartEnd(0,idx+1);
+            default: return new StartEnd(idx,idx+1);
+        }
     }
 
     class BucketInfo implements Serializable {
@@ -567,6 +567,15 @@ public class Index implements Serializable {
         }
         public String toString(){
             return "id:"+id+"size "+size+" bucket "+bucket;
+        }
+    }
+    class StartEnd{
+        int start;
+        int end;
+
+        public StartEnd(int start, int end) {
+            this.start = start;
+            this.end = end;
         }
     }
 }
