@@ -414,14 +414,13 @@ public class Table implements Serializable {
         Vector<String> terms = new Vector<String>(); terms.add(term._strColumnName);
         Index index = chooseIndexRes(term._strColumnName);
         boolean clustered = this.clusteringCol.equals(term._strColumnName);
-        if (null == index) {
-            if (!clustered) return LinearScan(term);
-             else return tableTraversal(term);
-        }
-        else { //clustering or non-clustering to decide I'll traverse table or index
-             if(clustered) return tableTraversal(term);
-             else return indexTraversal(term, index);
-        }
+        if(clustered)
+            return tableTraversal(term);
+        //!clustered:
+        if (null == index)
+            return LinearScan(term);
+        return indexTraversal(term, index); //index!=null
+
     }
     private Vector<Hashtable> indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
@@ -467,7 +466,6 @@ public class Table implements Serializable {
         int pIdx=this.BinarySearch(term._objValue,table.size()-1,0);
         //todo deserialize - i think done
         Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
-//        Page page =table.get(pIdx).page;
         int rIdx = page.BinarySearch(term._objValue,page.records.size()-1,0);
         Vector result = new Vector();
         result.add(page.records.get(rIdx));
@@ -485,27 +483,26 @@ public class Table implements Serializable {
         }
     }
     public Vector<Hashtable> lessThan(SQLTerm term) throws DBAppException {
-        Table t = (Table) DBApp.deserialize(term._strTableName);
-        int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
+        // traverse table used queried col is clustering column
+        int pageIdx = BinarySearch(term._objValue,table.size()-1,0);
         Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pageIdx).id);
 
         int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
         DBApp.serialize(tableName + "_" + table.get(pageIdx).id,page);
-        DBApp.serialize(term._strTableName,t); //check inclusive or exclusive fel binary search
         return loopUntil(pageIdx,recordIdx,term);
     }
     public Vector<Hashtable> greaterThan(SQLTerm term) throws DBAppException {
-        // traverse table
-        Table t = (Table) DBApp.deserialize(term._strTableName);
-        int pageIdx = t.BinarySearch(term._objValue,t.table.size()-1,0);
-        Page page = (Page) DBApp.deserialize(tableName + "_" + t.table.get(pageIdx).id);
+        // traverse table used queried col is clustering column
+        int pageIdx = BinarySearch(term._objValue,table.size()-1,0);
+        Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pageIdx).id);
 
         int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
-        DBApp.serialize(tableName + "_" + t.table.get(pageIdx).id,page);
-        DBApp.serialize(term._strTableName,t); //check inclusive or exclusive fl binary search
+        DBApp.serialize(tableName + "_" + table.get(pageIdx).id,page);
+        //check inclusive or exclusive fl binary search
         return loopFrom(pageIdx,recordIdx,term);
     }
     private Vector<Hashtable> LinearScan(SQLTerm term) throws DBAppException {
+        //used when queried col is not clustering col + mafeesh index
         Vector res = new Vector();//loop on entire table.. every single record and check
             for(tuple4 tuple:table) {
                Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
@@ -516,40 +513,35 @@ public class Table implements Serializable {
     }
     public Vector<Hashtable> loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
         //todo inclusive wala exclusive
-        Table table = (Table) DBApp.deserialize(term._strTableName);
         Vector<Hashtable> res = new Vector<Hashtable>();
         for(int pIdx=0;pIdx<=pageIdx;pIdx++){
             //todo deserialize page - i think done
-            Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.table.get(pIdx).id);
-            for(int rIdx=0;rIdx<table.table.get(pIdx).page.records.size();rIdx++){
+            Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx).id);
+            for(int rIdx=0;rIdx<table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
                 if(pIdx==pageIdx && rIdx==recordIdx)
                         break;
                 res.add(record.row);
             }
-            DBApp.serialize(tableName + "_" + table.table.get(pIdx),currPage);
-
+            DBApp.serialize(tableName + "_" + table.get(pIdx),currPage);
         }
-        DBApp.serialize(term._strTableName,table);
         return res;
     }
 
     public Vector<Hashtable> loopFrom(int pageIdx, int recordIdx, SQLTerm term) throws DBAppException {
         //todo deserialize table - i think done
-        Table table = (Table) DBApp.deserialize(term._strTableName);
         Vector<Hashtable> res=new Vector<Hashtable>();
         int rIdx=recordIdx;
 
-        for(int pIdx=pageIdx;pIdx<=table.table.size();pIdx++){
-            Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.table.get(pIdx));
-            for(;rIdx<table.table.get(pIdx).page.records.size();rIdx++){
+        for(int pIdx=pageIdx;pIdx<=table.size();pIdx++){
+            Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
+            for(;rIdx<table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
                 res.add(record.row);
             }
             rIdx=0;
-            DBApp.serialize(tableName + "_" + table.table.get(pIdx),currPage);
+            DBApp.serialize(tableName + "_" + table.get(pIdx),currPage);
         }
-        DBApp.serialize(term._strTableName,table);
         return res;
     }
 

@@ -199,13 +199,7 @@ public class Page implements Serializable {
 		}
 		return res;
 	}
-	public Vector<Hashtable> filterPage(SQLTerm term) throws DBAppException {
-		Vector<Hashtable> res=new Vector<Hashtable>();
-		for(Pair record:records)
-			if(checkCond(record.row,term))
-				res.add(record.row);
-		return res;
-	}
+
 	public static class Pair implements Serializable, Comparable<Pair> {
 		Object pk;
 		Hashtable<String, Object> row;
