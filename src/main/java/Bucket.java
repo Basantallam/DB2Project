@@ -136,6 +136,15 @@ public class Bucket implements Serializable {
         return res;
     }
 
+    public Collection<Double> condSelect(SQLTerm term1, SQLTerm term2) {
+        HashSet<Double> res= new HashSet<>();
+        for (Record r:records){
+            if (checkCond(r,term1)&& checkCond(r,term2))
+                res.add(r.pageid);
+        }
+        return  res;
+    }
+
     class Record implements Serializable{
         Hashtable<String, Object> values;
         double pageid;

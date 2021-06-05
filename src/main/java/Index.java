@@ -492,9 +492,30 @@ public class Index implements Serializable {
         Vector<StartEnd> coordinates = getCellsCoordinates(columnNameValue,columnOperators);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells );
+        HashSet<Double> pages = new HashSet<>();
+        for (Vector<BucketInfo> cell : cells) {
+            if (columnNameValue.containsKey(columnNames.get(0))) {
+                Object searchKey = columnNameValue.get(columnNames.get(0));
+                int idx=BinarySearchCell(cell, searchKey, cell.size() - 1, 0);
+                for (int i = idx; i < cell.size(); i++) {
+                    BucketInfo bi = cell.get(idx);
+                    if(Table.GenericCompare(bi.min, searchKey) > 0)break;
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    pages.addAll(b.condSelect(term1,term2));
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
 
+                }
 
-        return null;
+            } else {
+                for (BucketInfo bi : cell) {
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    pages.addAll(b.condSelect(term1,term2));
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+                }
+            }
+        }
+        return pages;
+
     }
 
     private Vector<StartEnd> getCellsCoordinates(Hashtable<String, Object> columnNameValue, Hashtable<String, String> columnOperators) {
