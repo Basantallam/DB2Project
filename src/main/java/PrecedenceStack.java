@@ -57,17 +57,84 @@ public class PrecedenceStack {
     private Vector<Hashtable> ANDing(Object curr, Object next) throws DBAppException {
         //parent AND
         if (curr instanceof SQLTerm && next instanceof SQLTerm)
-            return table.ANDingI((SQLTerm)curr, (SQLTerm)next);
+            return ANDingI((SQLTerm)curr, (SQLTerm)next); //1st and child
         else {
-            if (curr instanceof SQLTerm)
-                curr = table.resolveOneStatement((SQLTerm) curr);
-            else if (next instanceof SQLTerm)
-                next = table.resolveOneStatement((SQLTerm) next);
+            SQLTerm sqlTerm;
+            Vector v;
+            if (curr instanceof SQLTerm && next instanceof Vector){
+                sqlTerm =(SQLTerm) curr; v=(Vector) next;
+                //2nd and child
+                return null;
+            }
+            else if(next instanceof SQLTerm && curr instanceof Vector){
+                sqlTerm =(SQLTerm) next; v=(Vector) curr;
+                //2nd and child
+                return null;
+                // theoretically 3omr ma da hayehsal bas just in case
+            }
+            else
+                // theoretically 3omr ma da hayehsal bardo !
+                // bas just in case
             return ANDing((Vector<Hashtable>) curr, (Vector) next);
+                // 3rd and child
+
         }
     }
+    public Vector<Hashtable> ANDing(SQLTerm term, Vector<Hashtable> v) throws DBAppException {
+        for(Hashtable record:v){
+            if(checkCond(record,term)){
+                v.add(record);
+            }
+        }
+        return v;
+    }
 
-
+    private Vector<Hashtable> andSQLwithoutIndex(SQLTerm term1, SQLTerm term2, boolean clustering1, boolean clustering2) throws DBAppException {
+        Vector result = new Vector();
+        if(clustering1 || clustering2){
+            Vector<Hashtable> res =clustering1? table.tableTraversal(term1): table.tableTraversal(term2);
+            for(Hashtable record:res){
+                if(checkCond(record, clustering1?term2:term1)){
+                    result.add(record);
+                }
+            }
+            return result;
+        }
+        else{
+            return table.LinearScan(term1, term2);
+        }
+    }
+    public static boolean checkCond(Hashtable rec, SQLTerm term) throws DBAppException {
+        String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
+        Object recVal = rec.get(col);
+        switch (operator) {
+            case (">"): return (Table.GenericCompare(recVal, value) > 0);
+            case (">="):return (Table.GenericCompare(recVal, value) >= 0);
+            case ("<"): return (Table.GenericCompare(recVal, value) <0);
+            case ("<="):return (Table.GenericCompare(recVal, value) <= 0);
+            case ("="): return (Table.GenericCompare(recVal, value) == 0);
+            case ("!="):return (Table.GenericCompare(recVal, value) != 0);
+            default:throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
+        }
+    }
+    Vector<Hashtable> ANDingI(SQLTerm term1, SQLTerm term2) throws DBAppException {
+        //2nd AND child
+        Vector result = new Vector();
+        Vector <String> terms=new Vector<String>();
+        terms.add(term1._strColumnName);
+        terms.add(term2._strColumnName);
+        boolean clustering1=(term1._strColumnName.equals(table.clusteringCol));//todo indxPK else linear
+        boolean clustering2=(term2._strColumnName.equals(table.clusteringCol));
+        Index index = table.chooseIndexAnd(terms); //todo wa7da tania 3shan n7ot priorities law not equal ma7otoosh equal a3la priority
+        if (index != null) {
+            if(term1._strOperator.equals("!=")&& term2._strOperator.equals("!="))
+                return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
+            return table.getTableRecords(index.andSelect(term1,term2),term1,term2);
+            //todo mesh 3arfaaaaa
+        } else {
+            return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
+        }
+    }
     public Vector<Hashtable> ANDing(Vector<Hashtable> i1, Vector<Hashtable> i2){
         Vector<Hashtable> result = new Vector<Hashtable>();
         for(Hashtable ht1: i1){

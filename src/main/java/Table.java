@@ -56,24 +56,7 @@ public class Table implements Serializable {
         else
             return 0;
     }
-    Vector<Hashtable> ANDingI(SQLTerm term1, SQLTerm term2) throws DBAppException {
-        //2nd AND child
-        Vector result = new Vector();
-        Vector <String> terms=new Vector<String>();
-        terms.add(term1._strColumnName);
-        terms.add(term2._strColumnName);
-        boolean clustering1=(term1._strColumnName.equals(clusteringCol));//todo indxPK else linear
-        boolean clustering2=(term2._strColumnName.equals(clusteringCol));
-        Index index = chooseIndexAnd(terms); //todo wa7da tania 3shan n7ot priorities law not equal ma7otoosh equal a3la priority
-        if (index != null) {
-            if(term1._strOperator.equals("!=")&& term2._strOperator.equals("!="))
-                return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
-            return getTableRecords(index.andSelect(term1,term2),term1,term2);
-            //todo mesh 3arfaaaaa
-        } else {
-            return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
-        }
-    }
+
 
 //    public  Vector ANDing(Vector i1, Vector i2) { //Intersect Set Operation
 //        if(i1.size()==0|| i2.size()==0)return new Vector();
@@ -460,7 +443,7 @@ public class Table implements Serializable {
         }
         return result;
     }
-    private Vector<Hashtable> getTableRecords(HashSet<Double> pageID,SQLTerm term1 ,SQLTerm term2) throws DBAppException {
+    Vector<Hashtable> getTableRecords(HashSet<Double> pageID, SQLTerm term1, SQLTerm term2) throws DBAppException {
         Vector<Hashtable> result = new Vector<>();
 
         for(Double id :pageID){
@@ -508,7 +491,7 @@ public class Table implements Serializable {
         DBApp.serialize(tableName + "_" + table.get(pIdx),page);
         return result;
     }
-    private Vector<Hashtable> tableTraversal(SQLTerm term) throws DBAppException {
+    Vector<Hashtable> tableTraversal(SQLTerm term) throws DBAppException {
         switch (term._strOperator) {
             case ("<"): case ("<="):return this.lessThan(term);
             case (">"): case (">="): return this.greaterThan(term);
@@ -592,23 +575,9 @@ public class Table implements Serializable {
         return res;
     }
 //ma haza?
-    private Vector<Hashtable> andSQLwithoutIndex(SQLTerm term1, SQLTerm term2, boolean clustering1, boolean clustering2) throws DBAppException {
-        Vector result = new Vector();
-        if(clustering1 || clustering2){
-            Vector<Hashtable> res =clustering1? tableTraversal(term1): tableTraversal(term2);
-            for(Hashtable record:res){
-                if(checkCond(record, clustering1?term2:term1)){
-                    result.add(record);
-                }
-            }
-            return result;
-        }
-        else{
-            return this.LinearScan(term1, term2);
-        }
-    }
 
-    private Vector<Hashtable> LinearScan(SQLTerm term1, SQLTerm term2) throws DBAppException {
+
+    Vector<Hashtable> LinearScan(SQLTerm term1, SQLTerm term2) throws DBAppException {
         Vector<Hashtable> res = new Vector<Hashtable>();//loop on entire table.. every single record and check
         for(tuple4 tuple:table) {
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + (tuple.id));
@@ -620,19 +589,7 @@ public class Table implements Serializable {
 
 
 
-    public static boolean checkCond(Hashtable rec, SQLTerm term) throws DBAppException {
-        String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
-        Object recVal = rec.get(col);
-        switch (operator) {
-            case (">"): return (GenericCompare(recVal, value) > 0);
-            case (">="):return (GenericCompare(recVal, value) >= 0);
-            case ("<"): return (GenericCompare(recVal, value) <0);
-            case ("<="):return (GenericCompare(recVal, value) <= 0);
-            case ("="): return (GenericCompare(recVal, value) == 0);
-            case ("!="):return (GenericCompare(recVal, value) != 0);
-            default:throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
-        }
-    }
+
     public void createCSV() throws IOException {
         String path = "src\\main\\resources\\Basant\\" + this.tableName + "_Table.csv";
         FileWriter fw = new FileWriter(path);
