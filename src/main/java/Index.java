@@ -323,10 +323,16 @@ public class Index implements Serializable {
             Hashtable<String, Object> arrangedHash = arrangeHashtable(columnNameValue);
             if (columnNameValue.containsKey(columnNames.get(0))) {
                 Object searchKey = columnNameValue.get(columnNames.get(0));
-                BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
-                Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                pages.addAll(b.deleteI(arrangedHash));
-                DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+                int idx=BinarySearchCell(cell, searchKey, cell.size() - 1, 0);
+                for (int i = idx; i < cell.size(); i++) {
+                    BucketInfo bi = cell.get(idx);
+                    if(Table.GenericCompare(bi.min, searchKey) > 0)break;
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    pages.addAll(b.deleteI(arrangedHash));
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+
+                }
+
             } else {
                 for (BucketInfo bi : cell) {
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
@@ -361,11 +367,11 @@ public class Index implements Serializable {
                 getAllCells(coordinates, ptr + 1, cell[x],cells );
         }
     }
-    public Vector lessThan(SQLTerm term) throws DBAppException {
+    public HashSet<Double> lessThan(SQLTerm term) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
-        Vector res = null;
+        HashSet<Double> res = null;
        // traverse Index
             res = loopUntil(LastCellCoordinates, term);
 
@@ -386,9 +392,9 @@ public class Index implements Serializable {
         return maxPageID;
 
     }
-    public Vector<Bucket.Record> loopUntil(int[] limits, SQLTerm term)  {
+    public HashSet<Double> loopUntil(int[] limits, SQLTerm term)  {
         //nulls should be [9]
-        Vector<Bucket.Record> result = new Vector<Bucket.Record>();
+        HashSet<Double> result = new HashSet<>();
         int[] start=new int[limits.length];
         int val=9;
         int idx=columnNames.indexOf(term._strColumnName);
@@ -406,7 +412,7 @@ public class Index implements Serializable {
         //loops on cell record by record adds records that match condition
         return result;
     }
-    private void filterCell(Vector<BucketInfo> cell, SQLTerm term,Vector result) {
+    private void filterCell(Vector<BucketInfo> cell, SQLTerm term, HashSet<Double> result) {
         // loops on cell record by record adds records that match condition
         for (BucketInfo bi : cell) {
             Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
@@ -415,7 +421,7 @@ public class Index implements Serializable {
 
         }
     }
-    public void getRecordsBetween(int[] curr, int[] limits, int depth, SQLTerm term, Vector<Bucket.Record> result
+    public void getRecordsBetween(int[] curr, int[] limits, int depth, SQLTerm term, HashSet<Double> result
             , int filterIdx, int filterVal) {
         //recursive 10^n complexity gets all combinations of coordinates between [start,limits[
         if (depth == limits.length) { // weselna besalama lel n dimensions bta3et cell
@@ -426,7 +432,7 @@ public class Index implements Serializable {
             else{
                 for (BucketInfo bi : cell){
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                    result.addAll(b.records);
+                    result.addAll(b.getPageIds());
                     DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id,b);
                 }
 
@@ -439,19 +445,19 @@ public class Index implements Serializable {
             getRecordsBetween(newCurr, limits, depth + 1, term,result,filterIdx,filterVal);
         }
     }
-    public Vector<Bucket.Record> greaterThan(SQLTerm term) throws DBAppException {
+    public HashSet<Double> greaterThan(SQLTerm term) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
         int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
         //nulls should be 0 3adi
-        Vector res = null;
+        HashSet<Double> res = null;
             //traverse Index
             res = loopFrom(FirstCellCoordinates, term);
 
         return res;
     }
-    public Vector<Bucket.Record> loopFrom(int[] start, SQLTerm term) {
-        Vector<Bucket.Record> result = new Vector<Bucket.Record>();
+    public HashSet<Double> loopFrom(int[] start, SQLTerm term) {
+        HashSet<Double> result = new HashSet<>();
 
         int val=0;
         int idx=columnNames.indexOf(term._strColumnName);
@@ -480,6 +486,38 @@ public class Index implements Serializable {
         Arrays.fill(end, 9);
         return end;
     }
+
+    public HashSet<Double> equalSelect(SQLTerm term) {
+        Hashtable<String, Object> hashtable = new Hashtable<>();
+        hashtable.put(term._strColumnName, term._objValue);
+        HashSet<Double> pages = new HashSet<>();
+        Vector<Integer> coordinates = getCellsCoordinates(hashtable);
+        Vector<Vector<BucketInfo>> cells = new Vector<>();
+        getAllCells(coordinates,0, grid,cells );
+        for (Vector<BucketInfo> cell : cells) {
+            if (hashtable.containsKey(columnNames.get(0))) {
+                Object searchKey = hashtable.get(columnNames.get(0));
+                int idx=BinarySearchCell(cell, searchKey, cell.size() - 1, 0);
+                for (int i = idx; i < cell.size(); i++) {
+                    BucketInfo bi = cell.get(idx);
+                    if(Table.GenericCompare(bi.min, searchKey) > 0)break;
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    pages.addAll(b.equalSelect(term));
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+
+                }
+
+            } else {
+                for (BucketInfo bi : cell) {
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    pages.addAll(b.equalSelect(term));
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+                }
+            }
+        }
+        return null;
+    }
+
     class BucketInfo implements Serializable {
         long id;
         int size;

@@ -469,11 +469,10 @@ public class Table implements Serializable {
     }
     private Vector<Hashtable> indexTraversal(SQLTerm term, Index index) throws DBAppException {
         switch (term._strOperator) {
-            case ("<"): case ("<="): return getTableRecords(index.lessThan(term));//todo
-            case (">"): case (">="): return getTableRecords(index.greaterThan(term));
-            case ("="):
-//                return getTableRecords(null);
-//                   todo exact
+            case ("<"): case ("<="): return getTableRecords(index.lessThan(term),term,null);//todo TableRcords eltania b7ees t search 3ala el pages bas
+            case (">"): case (">="): return getTableRecords(index.greaterThan(term),term,null);
+            case ("="):getTableRecords(index.equalSelect(term),term,null);
+
             case ("!="): return notEqual(term);
 //  won't use index kda kda
             default: throw new DBAppException("invalid operation");

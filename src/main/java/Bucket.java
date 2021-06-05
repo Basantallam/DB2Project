@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -92,10 +93,10 @@ public class Bucket implements Serializable {
             }
         }return pages;
     }
-    public void filterBucket(SQLTerm term, Vector result) {
+    public void filterBucket(SQLTerm term, HashSet<Double> result) {
         for (Bucket.Record r : records) {
             if (checkCond(r,term))
-                result.add(r);
+                result.add(r.pageid);
         }
     }
     static boolean checkCond(Bucket.Record record, SQLTerm term) {
@@ -118,6 +119,21 @@ public class Bucket implements Serializable {
 
     public boolean isEmpty() {
         return records.isEmpty();
+    }
+
+    public HashSet<Double> equalSelect(SQLTerm term) {
+        HashSet<Double> res= new HashSet<>();
+        for (Record r:records){
+            if (checkCond(r,term))
+                    res.add(r.pageid);
+        }
+        return  res;
+    }
+
+    public HashSet<Double> getPageIds() {
+        HashSet<Double> res= new HashSet<>();
+        for (Record r:records)res.add(r.pageid);
+        return res;
     }
 
     class Record implements Serializable{
