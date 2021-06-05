@@ -137,8 +137,8 @@ public class Table implements Serializable {
         if (useIndex) {
             Index chosenIndex = chooseIndexPK();
             Vector<Double> narrowedDown = chosenIndex.narrowPageRange(colNameValue);
-            if (narrowedDown.firstElement() == -1) lo = PageIDtoIdx(narrowedDown.firstElement());
-            if (narrowedDown.lastElement() == -1) hi = PageIDtoIdx(narrowedDown.lastElement());
+            if (narrowedDown.firstElement() != -1) lo = PageIDtoIdx(narrowedDown.firstElement());
+            if (narrowedDown.lastElement() != -1) hi = PageIDtoIdx(narrowedDown.lastElement());
         }
         foundIdx = BinarySearch(insertedPkValue, hi, lo);
         double foundPageId = table.get(foundIdx).id;
@@ -288,8 +288,8 @@ public class Table implements Serializable {
             clustering.put(clusteringCol,clusteringKeyValue);
             Index chosenIndex = chooseIndexPK();
             Vector<Double> narrowedDown = chosenIndex.narrowPageRange(clustering);
-            if (narrowedDown.firstElement() == -1) lo = PageIDtoIdx(narrowedDown.firstElement());
-            if (narrowedDown.lastElement() == -1) hi = PageIDtoIdx(narrowedDown.lastElement());
+            if (narrowedDown.firstElement() != -1) lo = PageIDtoIdx(narrowedDown.firstElement());
+            if (narrowedDown.lastElement() != -1) hi = PageIDtoIdx(narrowedDown.lastElement());
         }
         idx = BinarySearch(pk, hi, lo);
         double pageId = table.get(idx).id;
@@ -337,8 +337,8 @@ public class Table implements Serializable {
                     return;
                 }
                 Vector<Double> narrowedDown = chosenIndex.narrowPageRange(columnNameValue);
-                if (narrowedDown.firstElement() == -1) lo = PageIDtoIdx(narrowedDown.firstElement());
-                if (narrowedDown.lastElement() == -1) hi = PageIDtoIdx(narrowedDown.lastElement());
+                if (narrowedDown.firstElement() != -1) lo = PageIDtoIdx(narrowedDown.firstElement());
+                if (narrowedDown.lastElement() != -1) hi = PageIDtoIdx(narrowedDown.lastElement());
                 deleteWithPK(columnNameValue,pk,hi,lo);
             }
             else{

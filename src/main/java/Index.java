@@ -273,6 +273,12 @@ public class Index implements Serializable {
     public Vector<Double> narrowPageRange(Hashtable<String, Object> colNameValue) {
         int[] cellIdx = getCellCoordinates(colNameValue, false);
         Vector<BucketInfo> cell = getCell(cellIdx);
+        if(cell.size()==0){
+            Vector r =new Vector<>();
+            double x=-1;
+             r.add(x); r.add(x);
+             return r;
+        }
         int bucketInfoIdx = BinarySearchCell(cell, colNameValue.get(columnNames.get(0)), cell.size() - 1,0);
         BucketInfo foundBI = cell.get(bucketInfoIdx);
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + foundBI.id);
