@@ -91,11 +91,13 @@ public class Table implements Serializable {
 //        return res;
 //    }
     public static Vector<Hashtable> ORing(Vector<Hashtable> i1, Vector<Hashtable> i2) { //Union Set Operation
-        Set<Hashtable> s1 = new HashSet(i1);
-        Set<Hashtable> s2 = new HashSet(i2);
-        s1.addAll(s2);
-        Vector res = new Vector(s1);
-        return res;
+//        Set<Hashtable> s1 = new HashSet();
+//        Set<Hashtable> s2 = new HashSet(i2);
+//        s1.addAll(s2);
+        i1.addAll(i2);
+        Vector<Hashtable> res = new Vector<Hashtable>();
+//        res.addAll(s1);
+        return i1;
     }
     public static Vector<Hashtable> XORing(Vector i1, Vector i2) { //Set Operation
         Vector v2 = ANDing(i1, i2);
@@ -456,7 +458,7 @@ public class Table implements Serializable {
     }
     public Vector<Hashtable> resolveOneStatement(SQLTerm term) throws DBAppException {
         Vector<String> terms = new Vector<String>(); terms.add(term._strColumnName);
-        Index index = chooseIndexAnd(terms);
+        Index index = chooseIndexRes(term._strColumnName);
         boolean clustered = this.clusteringCol.equals(term._strColumnName);
         if (null == index) {
             if (!clustered) return LinearScan(term);

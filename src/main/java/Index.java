@@ -483,7 +483,7 @@ public class Index implements Serializable {
     public HashSet<Double> equalSelect(SQLTerm term) {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        HashSet<Double> pages = new HashSet<>();
+        HashSet<Double> pages = new HashSet<Double>();
         Vector<Integer> coordinates = getCellsCoordinates(hashtable);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells );
