@@ -41,7 +41,7 @@ public class PrecedenceStack {
     }
     public  Vector<Hashtable> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
-            case ("AND"): return ANDing((Vector<Hashtable>) curr, (Vector<Hashtable>) next);
+            case ("AND"): return ANDing(curr, next);
             case ("OR"):
                 if (curr instanceof SQLTerm) curr = table.resolveOneStatement((SQLTerm) curr);
                 if (next instanceof SQLTerm) next = table.resolveOneStatement((SQLTerm) next);
