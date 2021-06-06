@@ -9,7 +9,7 @@ public class PrecedenceStack {
         stackO = new Stack<Operation>();
         this.table = table;
     }
-    public synchronized Vector<Hashtable> resolve(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
+    public Vector<Hashtable> resolve(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
 
         stack.push(sqlTerms[0]);
         stack.push(sqlTerms[1]);
@@ -77,7 +77,7 @@ public class PrecedenceStack {
         for(Hashtable record:v)
             if(checkCond(record,term))
                 res.add(record);
-            
+
         return res;
     }
 
