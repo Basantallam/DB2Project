@@ -9,7 +9,7 @@ public class PrecedenceStack {
         stackO = new Stack<Operation>();
         this.table = table;
     }
-    public Vector<Hashtable> resolve(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
+    public synchronized Vector<Hashtable> resolve(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
 
         stack.push(sqlTerms[0]);
         stack.push(sqlTerms[1]);
@@ -28,7 +28,8 @@ public class PrecedenceStack {
             stackO.push(op);
         }
         while (stack.size() > 1) {
-            Object a = stack.pop(); Object b = stack.pop();
+            Object a = stack.pop();
+            Object b = stack.pop();
             Operation o = stackO.pop();
             Vector<Hashtable> res = applyOp(a, b, o.op);
             stack.push(res);
@@ -72,10 +73,12 @@ public class PrecedenceStack {
         }
     }
     public Vector<Hashtable> ANDing(SQLTerm term, Vector<Hashtable> v) throws DBAppException {
+        Vector res=new Vector();
         for(Hashtable record:v)
             if(checkCond(record,term))
-                v.add(record);
-        return v;
+                res.add(record);
+            
+        return res;
     }
 
     private Vector<Hashtable> andSQLwithoutIndex(SQLTerm term1, SQLTerm term2, boolean clustering1, boolean clustering2) throws DBAppException {
