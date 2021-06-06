@@ -459,19 +459,16 @@ public class Table implements Serializable {
         int pageIdx = BinarySearch(term._objValue,table.size()-1,0);
         Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pageIdx).id);
 
-        int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
         DBApp.serialize(tableName + "_" + table.get(pageIdx).id,page);
-        return loopUntil(pageIdx,recordIdx,term);
+        return loopUntil(pageIdx,term);
     }
     public Vector<Hashtable> greaterThan(SQLTerm term) throws DBAppException {
         // traverse table used queried col is clustering column
         int pageIdx = BinarySearch(term._objValue,table.size()-1,0);
         Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pageIdx).id);
 
-        int recordIdx=page.BinarySearch(term._objValue,page.records.size()-1,0);
         DBApp.serialize(tableName + "_" + table.get(pageIdx).id,page);
-        //check inclusive or exclusive fl binary search
-        return loopFrom(pageIdx,recordIdx,term);
+        return loopFrom(pageIdx,term);
     }
     private Vector<Hashtable> LinearScan(SQLTerm term) throws DBAppException {
         //used when queried col is not clustering col + mafeesh index
@@ -483,15 +480,14 @@ public class Table implements Serializable {
             }
             return res;
     }
-    public Vector<Hashtable> loopUntil(int pageIdx, double recordIdx, SQLTerm term) throws DBAppException {
-        //todo inclusive wala exclusive
+    public Vector<Hashtable> loopUntil(int pageIdx, SQLTerm term) throws DBAppException {
+
         Vector<Hashtable> res = new Vector<Hashtable>();
         for(int pIdx=0;pIdx<=pageIdx;pIdx++){
-            //todo deserialize page - i think done
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx).id);
             for(int rIdx=0;rIdx<currPage.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
-                if(pIdx==pageIdx && rIdx==recordIdx)
+                if(pIdx==pageIdx && !checkCond(record.row,term))
                         break;
                 res.add(record.row);
             }
@@ -500,18 +496,16 @@ public class Table implements Serializable {
         return res;
     }
 
-    public Vector<Hashtable> loopFrom(int pageIdx, int recordIdx, SQLTerm term) throws DBAppException {
-        //todo deserialize table - i think done
+    public Vector<Hashtable> loopFrom(int pageIdx,SQLTerm term) throws DBAppException {
         Vector<Hashtable> res=new Vector<Hashtable>();
-        int rIdx=recordIdx;
 
         for(int pIdx=pageIdx;pIdx<=table.size();pIdx++){
-            Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx));
-            for(;rIdx<table.get(pIdx).page.records.size();rIdx++){
+            Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx).id);
+            for(int rIdx=0;rIdx<table.get(pIdx).page.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
-                res.add(record.row);
+                if((pageIdx==pIdx&&checkCond(record.row,term))||pIdx!=pageIdx)
+                    res.add(record.row);
             }
-            rIdx=0;
             DBApp.serialize(tableName + "_" + table.get(pIdx),currPage);
         }
         return res;
@@ -526,7 +520,19 @@ public class Table implements Serializable {
         }
         return res;
     }
-
+    public static boolean checkCond(Hashtable rec, SQLTerm term) throws DBAppException {
+        String col= term._strColumnName; Object value=term._objValue; String operator=term._strOperator;
+        Object recVal = rec.get(col);
+        switch (operator) {
+            case (">"): return (Table.GenericCompare(recVal, value) > 0);
+            case (">="):return (Table.GenericCompare(recVal, value) >= 0);
+            case ("<"): return (Table.GenericCompare(recVal, value) <0);
+            case ("<="):return (Table.GenericCompare(recVal, value) <= 0);
+            case ("="): return (Table.GenericCompare(recVal, value) == 0);
+            case ("!="):return (Table.GenericCompare(recVal, value) != 0);
+            default:throw new DBAppException("Invalid Operator. Must be one of:   <,>,<=,>=,=,!=  ");
+        }
+    }
     public void createCSV() throws IOException {
         String path = "src\\main\\resources\\Basant\\" + this.tableName + "_Table.csv";
         FileWriter fw = new FileWriter(path);
