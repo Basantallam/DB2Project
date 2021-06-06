@@ -112,6 +112,7 @@ public class PrecedenceStack {
             if(term1._strOperator.equals("!=") && term2._strOperator.equals("!="))
                 return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
             return table.getTableRecords(index.andSelect(term1,term2),term1,term2);
+            // ^ hena fee redundant checks shwaya 3ashan kda kda term1 aw term2 aw both were already checked gowa andSelect
         } else {
             return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
         }

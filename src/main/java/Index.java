@@ -250,7 +250,7 @@ public class Index implements Serializable {
         insert(newRow, pageId);
     }
     public void delete(Hashtable<String, Object> row, double pageId) {
-        int[] cellIdx = getCellCoordinates(row, false);//false sah? A: sa7
+        int[] cellIdx = getCellCoordinates(row, false);
         Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
         BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
@@ -435,10 +435,16 @@ public class Index implements Serializable {
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells);
         HashSet<Double> pages = new HashSet<>();
+        boolean col1IsInIndex=columnNames.contains(term1._strColumnName);
+        boolean col2IsInIndex=columnNames.contains(term2._strColumnName);
         for (Vector<BucketInfo> cell : cells) {
             for (BucketInfo bi : cell) {
                 Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                pages.addAll(b.condSelect(term1,term2)); //translating buckets to pages
+
+                if(col1IsInIndex&&col2IsInIndex) pages.addAll(b.condSelect(term1,term2)); //translating buckets to page IDs
+                else if(col1IsInIndex) pages.addAll(b.condSelect(term1));
+                else if(col2IsInIndex) pages.addAll(b.condSelect(term2));
+
                 DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
             }
         }
