@@ -345,7 +345,7 @@ public class DBApp implements DBAppInterface {
 		}
 		else{
 			PrecedenceStack stack = new PrecedenceStack(table);
-			res=stack.resolve(sqlTerms,arrayOperators).iterator(); //todo iterator
+			res=stack.resolve(sqlTerms,arrayOperators).iterator();
 		}
 		return res;
 	}

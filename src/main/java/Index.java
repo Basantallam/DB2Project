@@ -418,7 +418,7 @@ public class Index implements Serializable {
                 }
             }
         }
-        return new HashSet<Double>();
+        return pages;
     }
 
     public HashSet<Double> andSelect(SQLTerm term1, SQLTerm term2) {

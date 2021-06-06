@@ -39,7 +39,7 @@ public class PrecedenceStack {
     public  Vector<Hashtable> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
             case ("AND"): return parentAND(curr, next);
-            case ("OR"): //dayman "intersection" on sets
+            case ("OR"): //dayman "union" on sets
                 if (curr instanceof SQLTerm) curr = table.resolveOneStatement((SQLTerm) curr);
                 if (next instanceof SQLTerm) next = table.resolveOneStatement((SQLTerm) next);
                 return ORing((Vector<Hashtable>) curr, (Vector<Hashtable>) next);
