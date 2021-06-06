@@ -14,9 +14,9 @@ public class PrecedenceStack {
         stack.push(sqlTerms[0]);
         stack.push(sqlTerms[1]);
         stackO.push(new Operation(arrayOperators[0]));
-        for (int i = 2; i < arrayOperators.length; i++) {
-            SQLTerm n = sqlTerms[i];
-            Operation op = new Operation(arrayOperators[i - 1]);
+        for (int i = 1; i < arrayOperators.length; i++) {
+            SQLTerm n = sqlTerms[i+1];
+            Operation op = new Operation(arrayOperators[i]);
             Operation top = stackO.peek();
             if (op.priority <= top.priority) { //top a7san
                 stackO.pop();
@@ -101,7 +101,7 @@ public class PrecedenceStack {
     }
     Vector<Hashtable> ANDing(SQLTerm term1, SQLTerm term2) throws DBAppException {
         //2nd AND child
-        Vector result = new Vector();
+
         Vector <String> terms=new Vector<String>();
         terms.add(term1._strColumnName);
         terms.add(term2._strColumnName);
