@@ -93,12 +93,7 @@ public class Bucket implements Serializable {
             }
         }return pages;
     }
-    public void filterBucket(SQLTerm term, HashSet<Double> result) {
-        for (Bucket.Record r : records) {
-            if (checkCond(r,term))
-                result.add(r.pageid);
-        }
-    }
+
     static boolean checkCond(Bucket.Record record, SQLTerm term) {
         switch (term._strOperator){
             case("<"):
@@ -121,7 +116,7 @@ public class Bucket implements Serializable {
         return records.isEmpty();
     }
 
-    public HashSet<Double> equalSelect(SQLTerm term) {
+    public HashSet<Double> filterBucket(SQLTerm term) {
         HashSet<Double> res= new HashSet<>();
         for (Record r:records){
             if (checkCond(r,term))
@@ -130,13 +125,14 @@ public class Bucket implements Serializable {
         return  res;
     }
 
+
     public HashSet<Double> getPageIds() {
         HashSet<Double> res= new HashSet<>();
         for (Record r:records)res.add(r.pageid);
         return res;
     }
 
-    public Collection<Double> condSelect(SQLTerm term1, SQLTerm term2) {
+    public Collection<Double> condSelect(SQLTerm term1, SQLTerm term2) {//add or w xor?
         HashSet<Double> res= new HashSet<>();
         for (Record r:records){
             if (checkCond(r,term1)&& checkCond(r,term2))

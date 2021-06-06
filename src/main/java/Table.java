@@ -145,17 +145,9 @@ public class Table implements Serializable {
         }
         return indexSoFar;
     }
-    public Index chooseIndexRes(String col){
-        Vector <String> v=new Vector();
-        v.add(col);
-        Index i= chooseIndexAnd(v);
-        if(i==null||i.columnNames.size()>1)
-            return null;
-        else
-            return i;
-    }
 
-    public Index chooseIndexAnd(Vector<String> columnNames) {
+
+    public Index chooseIndex(Vector<String> columnNames) {
         Index indexSoFar = null;
         int size = Integer.MAX_VALUE;
         int max = 0;
@@ -270,7 +262,7 @@ public class Table implements Serializable {
                 deleteWithPK(columnNameValue,pk,hi,lo);
             }
             else{
-                HashSet<Double> ids=chooseIndexAnd(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
+                HashSet<Double> ids=chooseIndex(new Vector<>( columnNameValue.keySet())).delete(columnNameValue);
                 for (double id:ids) {
                     Page p = (Page) DBApp.deserialize(tableName + "_" + id);
                     Vector<Hashtable<String, Object>> deletedrows = p.delete(null, columnNameValue);
@@ -384,11 +376,12 @@ public class Table implements Serializable {
     }
     public Vector<Hashtable> resolveOneStatement(SQLTerm term) throws DBAppException {
         Vector<String> terms = new Vector<String>(); terms.add(term._strColumnName);
-        Index index = chooseIndexRes(term._strColumnName);
         boolean clustered = this.clusteringCol.equals(term._strColumnName);
         if(clustered)
             return tableTraversal(term);
         //!clustered:
+        Vector<String> v = new Vector(); v.add(term._strColumnName);
+        Index index = chooseIndex(v);
         if (null == index)
             return LinearScan(term);
         return indexTraversal(term, index); //index!=null

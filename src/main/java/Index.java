@@ -331,114 +331,64 @@ public class Index implements Serializable {
             }
         }
     }
-    public HashSet<Double> lessThan(SQLTerm term) throws DBAppException {
-        Hashtable<String, Object> hashtable = new Hashtable<String,Object>();
+    public HashSet<Double> lessThan(SQLTerm term) { //index traversal
+        Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] LastCellCoordinates = this.getCellCoordinates(hashtable, true);
-        HashSet<Double> res = loopUntil(LastCellCoordinates, term);
-       // traverse Index
+        Hashtable<String, String> operator = new Hashtable<>();
+        operator.put(term._strColumnName, term._strOperator);
+
+        Vector<Vector<BucketInfo>> cells = new Vector<>();
+        getAllCells(getCellsCoordinates(hashtable,operator),0, grid,cells );
+        String indexClustCol = columnNames.get(0);
+        HashSet<Double> res= new HashSet<>();
+        for (Vector<BucketInfo> cell : cells) {
+            if (hashtable.containsKey(indexClustCol)) //checks if within el cells is sorted on queried col
+                for (BucketInfo bi : cell) {
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    for (Bucket.Record r:b.records)
+                        if (b.checkCond(r,term)) res.add(r.pageid);
+                        else break;
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+                }
+            else //linear search within cell
+                for (BucketInfo bi : cell) {
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    res.addAll(b.filterBucket(term));
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+                }
+        }
         return (res);
     }
 
-    private double pageFromCell(Vector<BucketInfo> cell,SQLTerm term) throws DBAppException {
-        double maxPageID=0;
-        for(BucketInfo bi:cell){ // cannot be binary search 3ashan mesh shart ykon el index sorted 3al col da fa laem linear
-            for(Bucket.Record record:bi.bucket.records){
-                if (Bucket.checkCond(record, term)){
-                    maxPageID=Math.max(maxPageID,record.pageid);
-                }
-            }
-        }
-        return maxPageID;
 
-    }
-    public HashSet<Double> loopUntil(int[] limits, SQLTerm term)  {
-        //nulls should be [9]
-        HashSet<Double> result = new HashSet<Double>();
-        int[] start=new int[limits.length];
-        int val=9;
-        int idx=columnNames.indexOf(term._strColumnName);
 
-        for(int i=0;i<limits.length;i++){
-            if(limits[i]!=9){
-                val=limits[i];
-                break;
-            }
-        }
-        getRecordsBetween(start, limits, 0,term, result,idx,val); // [start,limits[
-        Vector<BucketInfo> lastCell = getCell(limits);
-
-        //loops on cell record by record adds records that match condition
-        return result;
-    }
     private void filterCell(Vector<BucketInfo> cell, SQLTerm term, HashSet<Double> result) {
         // loops on cell record by record adds records that match condition
         for (BucketInfo bi : cell) {
             Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-           b.filterBucket(term,result);
+            result.addAll(b.filterBucket(term));
             DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id,b);
         }
     }
-    public void getRecordsBetween(int[] curr, int[] limits, int depth, SQLTerm term, HashSet<Double> result
-            , int filterIdx, int filterVal) {
-        //recursive 10^n complexity gets all combinations of coordinates between [start,limits[
-        if (depth == limits.length) { // weselna besalama lel n dimensions bta3et cell
-            Vector<BucketInfo> cell = getCell(curr);
-            if(curr[filterIdx]==filterVal){
-                filterCell(cell,term,result);
-            }
-            else{
-                for (BucketInfo bi : cell){
-                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                    result.addAll(b.getPageIds());
-                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id,b);
-                }
-            }
-            return;
-        }
-        for (int i = 0; i < limits[depth]; i++) { //excludes el last cell
-            int[] newCurr = curr.clone();
-            newCurr[depth] = i;
-            getRecordsBetween(newCurr, limits, depth + 1, term,result,filterIdx,filterVal);
-        }
-    }
+
     public HashSet<Double> greaterThan(SQLTerm term) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
-        int[] FirstCellCoordinates = this.getCellCoordinates(hashtable,false);
-        //nulls should be 0 3adi
-        HashSet<Double> res = loopFrom(FirstCellCoordinates, term);
-            //traverse Index
-        return res;
-    }
-    public HashSet<Double> loopFrom(int[] start, SQLTerm term) {
-        HashSet<Double> result = new HashSet<Double>();
-        int val=0;
-        int idx=columnNames.indexOf(term._strColumnName);
+        Hashtable<String, String> operator = new Hashtable<>();
+        operator.put(term._strColumnName, term._strOperator);
 
-        for(int i=0;i<start.length;i++){
-            if(start[i]!=0){
-                val=start[i];
-                break;
-            }
+        Vector<Vector<BucketInfo>> cells = new Vector<>();
+        getAllCells(getCellsCoordinates(hashtable,operator),0, grid,cells );
+        HashSet<Double> res= new HashSet<>();
+        for (Vector<BucketInfo> cell : cells) {
+           //linear search within cell could've done binary search if clustering col bass risky seeka
+                for (BucketInfo bi : cell) {
+                    Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
+                    res.addAll(b.filterBucket(term));
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
+                }
         }
-        getRecordsBetween(start, pLusOne(this.getEnd()), 0,term, result,idx,val); // [start,limits[
-       //todo validate start and end
-
-        return result;
-    }
-    private int[] pLusOne(int[] arr) {
-        int[] arrnew = arr.clone();
-        for (int i = 0; i < arr.length; i++) {
-            arrnew[i] = arr[i] + 1;
-        }
-        return arrnew;
-    }
-    private int[] getEnd() {
-        // returns laaaast coordinates in grid [9][9]...?
-        int[] end = new int[this.columnNames.size()];
-        Arrays.fill(end, 9);
-        return end;
+        return (res);
     }
 
     public HashSet<Double> equalSelect(SQLTerm term) {
@@ -450,22 +400,20 @@ public class Index implements Serializable {
         Vector<Vector<BucketInfo>> cells = new Vector<>();
         getAllCells(coordinates,0, grid,cells );
         for (Vector<BucketInfo> cell : cells) {
-            if (hashtable.containsKey(columnNames.get(0))) {
+            if (hashtable.containsKey(columnNames.get(0))) { //checks if within el cells is sorted on queried col
                 Object searchKey = hashtable.get(columnNames.get(0));
                 int idx=BinarySearchCell(cell, searchKey, cell.size() - 1, 0);
                 for (int i = idx; i < cell.size(); i++) {
                     BucketInfo bi = cell.get(idx);
-                    if(Table.GenericCompare(bi.min, searchKey) > 0)break;
+                    if(Table.GenericCompare(bi.min, searchKey) > 0) break;
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                    pages.addAll(b.equalSelect(term));
+                    pages.addAll(b.filterBucket(term));
                     DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
-
                 }
-
-            } else {
+            } else { //linear search within cell
                 for (BucketInfo bi : cell) {
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                    pages.addAll(b.equalSelect(term));
+                    pages.addAll(b.filterBucket(term));
                     DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
                 }
             }
@@ -485,12 +433,12 @@ public class Index implements Serializable {
         }
         Vector<StartEnd> coordinates = getCellsCoordinates(columnNameValue,columnOperators);
         Vector<Vector<BucketInfo>> cells = new Vector<>();
-        getAllCells(coordinates,0, grid,cells );
+        getAllCells(coordinates,0, grid,cells);
         HashSet<Double> pages = new HashSet<>();
         for (Vector<BucketInfo> cell : cells) {
             for (BucketInfo bi : cell) {
                 Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-                pages.addAll(b.condSelect(term1,term2));
+                pages.addAll(b.condSelect(term1,term2)); //translating buckets to pages
                 DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
             }
         }
@@ -508,7 +456,7 @@ public class Index implements Serializable {
             String col = columnNames.get(ptr);
             if (set.contains(col)) {
                 String colName = columnNames.get(ptr);
-                String op =columnOperators==null?"=":columnOperators.get(colName);
+                String op = columnOperators==null?"=":columnOperators.get(colName);
                 Object min = ranges.get(colName).min;
                 Object max = ranges.get(colName).max;
                 Object value = colValues.get(colName);
