@@ -434,13 +434,13 @@ public class Table implements Serializable {
         return result;
     }
 
-    public Vector<Hashtable> Equal(SQLTerm term){
+    public Vector<Hashtable> Equal(SQLTerm term) throws DBAppException {
         int pIdx=this.BinarySearch(term._objValue,table.size()-1,0);
-        //todo deserialize - i think done
         Page page = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx).id);
         int rIdx = page.BinarySearch(term._objValue,page.records.size()-1,0);
         Vector result = new Vector();
-        result.add(page.records.get(rIdx));
+        if(checkCond(page.records.get(rIdx).row,term))
+            result.add(page.records.get(rIdx).row);
         DBApp.serialize(tableName + "_" + table.get(pIdx),page);
         return result;
     }
