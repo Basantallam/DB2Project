@@ -499,9 +499,9 @@ public class Table implements Serializable {
     public Vector<Hashtable> loopFrom(int pageIdx,SQLTerm term) throws DBAppException {
         Vector<Hashtable> res=new Vector<Hashtable>();
 
-        for(int pIdx=pageIdx;pIdx<=table.size();pIdx++){
+        for(int pIdx=pageIdx;pIdx<table.size();pIdx++){
             Page currPage = (Page) DBApp.deserialize(tableName + "_" + table.get(pIdx).id);
-            for(int rIdx=0;rIdx<table.get(pIdx).page.records.size();rIdx++){
+            for(int rIdx=0;rIdx<currPage.records.size();rIdx++){
                 Page.Pair record =currPage.records.get(rIdx);
                 if((pageIdx==pIdx&&checkCond(record.row,term))||pIdx!=pageIdx)
                     res.add(record.row);
