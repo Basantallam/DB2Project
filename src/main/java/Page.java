@@ -59,41 +59,7 @@ public class Page implements Serializable {
 				break;
 		return i;
 	}
-//	public Pair LinearSearch(Object searchkey) {
-//		Iterator<Pair> it = records.iterator();
-//		while (it.hasNext()) {
-//			Pair p = it.next();
-//			if (Table.GenericCompare(p.pk, searchkey) == 0)
-//				return p;
-//		}
-//		return null;
-//	}
-//TreeSet does internal Binary Search
-//	public int BinarySearch(Object searchkey, int hi, int lo) {
-//		int mid = (hi + lo + 1) / 2;
-//		if (lo + 1 >= hi) {
-//			if (Table.GenericCompare(records.get(lo).pk, searchkey) == 0)
-//				return lo;
-//			else if (Table.GenericCompare(records.get(hi).pk, searchkey) == 0)
-//				return hi;
-//			else {
-//				if (lo + 1 == hi) {
-//					return -1;
-//				}
-//				return BinarySearch(searchkey, lo, hi);
-//
-//			}
-//		}
-//
-//		if (Table.GenericCompare(records.get(mid).pk, searchkey) > 0)
-//			return BinarySearch(searchkey, hi, mid);
-//
-//		else if (Table.GenericCompare(records.get(mid).pk, searchkey) < 0)
-//			return BinarySearch(searchkey, mid, lo);
-//
-//		else
-//			return mid;
-//	}
+
 	public int BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo) / 2;
 
@@ -106,21 +72,7 @@ public class Page implements Serializable {
 			return BinarySearch(searchkey, hi, mid + 1);
 
 	}
-//	public void delete(Hashtable<String, Object> columnNameValue) throws DBAppException {
-//        // delete the record
-//        Iterator itr = records.iterator();
-//        while (itr.hasNext()) {
-//            Pair currRec = (Pair) itr.next();
-//            Boolean toDelete = true;
-//            Set<String> keys = columnNameValue.keySet();
-//            for (String key : keys)
-//                if(!(currRec.row.get(key).equals(columnNameValue.get(key))))
-//                    toDelete=false;
-//            if(!toDelete)
-//                records.remove(currRec);
-//
-//        }
-//
+
 	public Vector<Hashtable<String, Object>> delete(Object pkValue, Hashtable<String, Object> columnNameValue) {
 
 		Vector<Hashtable<String, Object>> deletedRows = new Vector<>();

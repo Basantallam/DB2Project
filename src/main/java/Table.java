@@ -408,7 +408,7 @@ public class Table implements Serializable {
         return result;
     }
     Vector<Hashtable> getTableRecords(HashSet<Double> pageID, SQLTerm term1, SQLTerm term2) throws DBAppException {
-        Vector<Hashtable> result = new Vector<>();
+        Vector<Hashtable> result = new Vector<Hashtable>();
         for(Double id :pageID){
             Page p = (Page) DBApp.deserialize(tableName + "_" + id);
             result.addAll(p.select(term1,term2));
