@@ -1,5 +1,8 @@
 import org.junit.jupiter.api.parallel.Resources;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Stack;
 import java.util.Vector;
@@ -117,27 +120,32 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
             loop(newCurr,limits,depth+1,accumulated);
         }
     }
-    public static void printindex2DI(Index index ){
+    public static void printindex2DI(Index index ) throws IOException {
+
         String tablename = index.tableName;
         Vector columnNames = index.columnNames;
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames;
+        PrintWriter pw = new PrintWriter(new FileWriter(path));
         int size =0;
         for (int i = 0; i< 10 ; i++) {
             for (int j = 0; j < 10; j++) {
-                System.out.println("grid["+i+"]["+j+"]");
+                pw.println("grid["+i+"]["+j+"]");
                 Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)((Object[][])index.grid)[i][j]);
                 for (int l = 0; l <cell.size() ; l++) {
                     Index.BucketInfo bi = cell.get(l);
                     Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
                     System.out.println("Bucket "+b.id);
                     for (int k = 0; k <b.records.size() ; k++) {
-                        System.out.println(b.records.get(k));
+                        pw.println(b.records.get(k));
                     size++;
                     }
                     DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
                 }
             }
         }
-        System.out.println("Size ="+size);
+        pw.println("Size ="+size);
+        pw.flush();
+        pw.close();
     }
     public static void printindex2DJ(Index index ){
         String tablename = index.tableName;
