@@ -120,6 +120,7 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
     public static void printindex2DI(Index index ){
         String tablename = index.tableName;
         Vector columnNames = index.columnNames;
+        int size =0;
         for (int i = 0; i< 10 ; i++) {
             for (int j = 0; j < 10; j++) {
                 System.out.println("grid["+i+"]["+j+"]");
@@ -130,17 +131,18 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
                     System.out.println("Bucket "+b.id);
                     for (int k = 0; k <b.records.size() ; k++) {
                         System.out.println(b.records.get(k));
+                    size++;
                     }
                     DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
                 }
             }
         }
-
+        System.out.println("Size ="+size);
     }
     public static void printindex2DJ(Index index ){
         String tablename = index.tableName;
         Vector columnNames = index.columnNames;
-
+        int size=0;
         for (int j = 0; j < 10; j++) {
             for (int i = 0; i< 10 ; i++) {
                 System.out.println("grid["+i+"]["+j+"]");
@@ -151,12 +153,13 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
                     System.out.println("Bucket "+b.id);
                     for (int k = 0; k <b.records.size() ; k++) {
                         System.out.println(b.records.get(k));
+                    size++;
                     }
                     DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
                 }
             }
         }
-
+        System.out.println("Size ="+size);
     }
 
     private static int getCell(int[] curr) {
