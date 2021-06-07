@@ -169,6 +169,36 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
         pw.flush();
         pw.close();
     }
+    public static void printindex3D(Index index ) throws IOException {
+
+        String tablename = index.tableName;
+        Vector columnNames = index.columnNames;
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames + ".csv";
+        PrintWriter pw = new PrintWriter(new FileWriter(path));
+        int size =0;
+        for (int i = 0; i< 10 ; i++) {
+            for (int j = 0; j < 10; j++) {
+                for (int k = 0; k <10 ; k++) {
+                    pw.println("grid["+i+"]["+j+"]["+k+"]");
+                    Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)(((Vector[])((Object[])((Object[])index.grid)[i])[j])[k]));
+                    for (int l = 0; l <cell.size() ; l++) {
+                        Index.BucketInfo bi = cell.get(l);
+                        Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
+                        pw.println("Bucket "+b.id);
+                        for (int m = 0; m <b.records.size() ; m++) {
+                            pw.println(b.records.get(k));
+                            size++;
+                        }
+                        DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
+                    }
+                }
+
+            }
+        }
+        pw.println("Size ="+size);
+        pw.flush();
+        pw.close();
+    }
     public static void printindex2DJ(Index index ) throws IOException {
         String tablename = index.tableName;
         Vector columnNames = index.columnNames;
