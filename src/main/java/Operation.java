@@ -23,6 +23,7 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
 
 
     public static void main(String args[]){
+
 //        Stack<Object> stack=new Stack<Object>();
 //        Stack<Operation> stackO=new Stack<Operation>();
 //        Vector v=new Vector<Object>();
@@ -168,6 +169,32 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
             }
         }
         System.out.println("Size ="+size);
+    }
+    public void csv1DIndex(Index index) throws IOException {
+        String tablename = index.tableName;
+        Vector columnNames = index.columnNames;
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames;
+        PrintWriter pw = new PrintWriter(new FileWriter(path));
+        int size =0;
+        for (int i = 0; i< 10 ; i++) {
+                pw.println("grid["+i+"]");
+                Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)((Object[])index.grid)[i]);
+                for (int l = 0; l <cell.size() ; l++) {
+                    Index.BucketInfo bi = cell.get(l);
+                    Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
+                    System.out.println("Bucket "+b.id);
+                    for (int k = 0; k <b.records.size() ; k++) {
+                        pw.println(b.records.get(k));
+                        size++;
+                    }
+                    DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
+                }
+        }
+
+        pw.println("Size ="+size);
+        pw.flush();
+        pw.close();
+
     }
 
     private static int getCell(int[] curr) {
