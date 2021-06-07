@@ -129,7 +129,7 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
 
         String tablename = index.tableName;
         Vector columnNames = index.columnNames;
-        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames;
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames + ".csv";
         PrintWriter pw = new PrintWriter(new FileWriter(path));
         int size =0;
         for (int i = 0; i< 10 ; i++) {
@@ -155,7 +155,7 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
     public static void printindex2DJ(Index index ) throws IOException {
         String tablename = index.tableName;
         Vector columnNames = index.columnNames;
-        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames +"_j";
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames +"_j" +".csv";
         PrintWriter pw = new PrintWriter(new FileWriter(path));
         int size =0;
         for (int j = 0; j < 10; j++) {
@@ -180,7 +180,7 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
     public static void csv1DIndex(Index index) throws IOException {
         String tablename = index.tableName;
         Vector columnNames = index.columnNames;
-        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames;
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames +".csv";
         PrintWriter pw = new PrintWriter(new FileWriter(path));
         int size =0;
         for (int i = 0; i< 10 ; i++) {
