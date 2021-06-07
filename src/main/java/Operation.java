@@ -3,9 +3,7 @@ import org.junit.jupiter.api.parallel.Resources;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.Stack;
-import java.util.Vector;
+import java.util.*;
 
 public class Operation { //CLASS FOR TESTING MESH AKTAR
     static int grid[][][]={{{1,2,3,},{5,6,7,},{9,10,11,}},
@@ -22,12 +20,31 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
     }
 
 
-    public static void main(String args[]) throws IOException {
+    public static void main(String args[]) throws IOException, DBAppException {
         DBApp dbApp= new DBApp();
+        dbApp.init();
+        Hashtable<String, Object> row = new Hashtable<>();
+        for (int i = 0; i < 10; i++){
+
+            row.put("id", "43-000"+i);
+            row.put("first_name", "AyaMoh");
+            row.put("last_name", "Egamal");
+
+            Date dob = new Date(2000-1910, 12, 24);
+            row.put("dob", dob);
+
+            row.put("gpa", 0.7);
+
+            dbApp.insertIntoTable("students", row);
+            row.clear();
+
+        }
+
         String table = "students";
         Table t = (Table) DBApp.deserialize(table);
-        Index i = t.index.get(0);
-        printindex2DI(i);
+        t.createCSV();
+//        Index i = t.index.get(0);
+//        printindex2DI(i);
 //        Stack<Object> stack=new Stack<Object>();
 //        Stack<Operation> stackO=new Stack<Operation>();
 //        Vector v=new Vector<Object>();

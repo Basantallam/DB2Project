@@ -22,12 +22,12 @@ public class Page implements Serializable {
 				return newPair;
 			else {
 
-				int i = BinarySearch(pkvalue,records.size()-1,0); // working ???
+				int i = BinarySearch(pkvalue,records.size(),0); // working ???
 				records.insertElementAt(newPair, i); // full capacity+1
 				return records.remove(DBApp.capacity);
 			}
 		} else {
-			int i = BinarySearch(pkvalue,records.size()-1,0);
+			int i = BinarySearch(pkvalue,records.size(),0);
 			records.add(i, newPair);
 			return null;
 		}

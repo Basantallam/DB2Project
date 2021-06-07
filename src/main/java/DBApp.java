@@ -217,9 +217,10 @@ public class DBApp implements DBAppInterface {
 
 						if (metadata[3].equals("True"))
 							pk = metadata[1];
-						if (GenericCompare(colNameValue.get(metadata[1]), metadata[5]) < 0
-								|| GenericCompare(colNameValue.get(metadata[1]), metadata[6]) > 0) {
-							throw new DBAppException("Value is too big or too small ");
+						if (GenericCompare(colNameValue.get(metadata[1]), metadata[5]) < 0)
+							throw new DBAppException("Inserted Value : "+colNameValue.get(metadata[1]) + " is too small , Minimum value is : " +metadata[5]  );
+						if(GenericCompare(colNameValue.get(metadata[1]), metadata[6]) > 0) {
+							throw new DBAppException("Inserted Value : " + colNameValue.get(metadata[1])+" is too big , Maximum value is : "+metadata[6]);
 						}
 						String strColType = metadata[2];
 						boolean ex = false;
