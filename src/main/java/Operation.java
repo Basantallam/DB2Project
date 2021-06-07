@@ -148,27 +148,31 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
         pw.flush();
         pw.close();
     }
-    public static void printindex2DJ(Index index ){
+    public static void printindex2DJ(Index index ) throws IOException {
         String tablename = index.tableName;
         Vector columnNames = index.columnNames;
-        int size=0;
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames +"_j";
+        PrintWriter pw = new PrintWriter(new FileWriter(path));
+        int size =0;
         for (int j = 0; j < 10; j++) {
             for (int i = 0; i< 10 ; i++) {
-                System.out.println("grid["+i+"]["+j+"]");
+                pw.println("grid["+i+"]["+j+"]");
                 Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)((Object[][])index.grid)[i][j]);
                 for (int l = 0; l <cell.size() ; l++) {
                     Index.BucketInfo bi = cell.get(l);
                     Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
                     System.out.println("Bucket "+b.id);
                     for (int k = 0; k <b.records.size() ; k++) {
-                        System.out.println(b.records.get(k));
+                        pw.println(b.records.get(k));
                     size++;
                     }
                     DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
                 }
             }
         }
-        System.out.println("Size ="+size);
+        pw.println("Size ="+size);
+        pw.flush();
+        pw.close();
     }
     public void csv1DIndex(Index index) throws IOException {
         String tablename = index.tableName;
