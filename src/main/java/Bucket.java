@@ -159,5 +159,12 @@ public class Bucket implements Serializable {
             this.pageid = pageid;
         }
 
+        @Override
+        public String toString() {
+            return "Record{" +
+                    "values=" + values +
+                    ", pageid=" + pageid +
+                    '}';
+        }
     }
 }

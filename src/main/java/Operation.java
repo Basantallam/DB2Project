@@ -117,6 +117,47 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
             loop(newCurr,limits,depth+1,accumulated);
         }
     }
+    public static void printindex2DI(Index index ){
+        String tablename = index.tableName;
+        Vector columnNames = index.columnNames;
+        for (int i = 0; i< 10 ; i++) {
+            for (int j = 0; j < 10; j++) {
+                System.out.println("grid["+i+"]["+j+"]");
+                Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)((Object[][])index.grid)[i][j]);
+                for (int l = 0; l <cell.size() ; l++) {
+                    Index.BucketInfo bi = cell.get(l);
+                    Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
+                    System.out.println("Bucket "+b.id);
+                    for (int k = 0; k <b.records.size() ; k++) {
+                        System.out.println(b.records.get(k));
+                    }
+                    DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
+                }
+            }
+        }
+
+    }
+    public static void printindex2DJ(Index index ){
+        String tablename = index.tableName;
+        Vector columnNames = index.columnNames;
+
+        for (int j = 0; j < 10; j++) {
+            for (int i = 0; i< 10 ; i++) {
+                System.out.println("grid["+i+"]["+j+"]");
+                Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)((Object[][])index.grid)[i][j]);
+                for (int l = 0; l <cell.size() ; l++) {
+                    Index.BucketInfo bi = cell.get(l);
+                    Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
+                    System.out.println("Bucket "+b.id);
+                    for (int k = 0; k <b.records.size() ; k++) {
+                        System.out.println(b.records.get(k));
+                    }
+                    DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
+                }
+            }
+        }
+
+    }
 
     private static int getCell(int[] curr) {
         return grid[curr[0]][curr[1]][curr[2]];
