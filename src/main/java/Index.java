@@ -67,13 +67,15 @@ public class Index implements Serializable {
         }
         return arrangedRanges;
     }
-    public Object deepClone(Object[] org) {
-        Object[] clone = new Object[org.length];
+    public static Object deepClone(Object[] org) {
+        Object[] clone=new Object[org.length];
         if (org[0] instanceof Object[]) {
-            for (int i = 0; i < org.length; i++)
+            for (int i = 0; i < org.length; i++){
                 clone[i] = deepClone((Object[]) org[i]);
+            }
         } else
-            clone = org.clone();
+            for (int i = 0; i < org.length; i++)
+                clone[i] = new Vector<>();
 
         return clone;
     }
