@@ -23,28 +23,29 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
     public static void main(String args[]) throws IOException, DBAppException {
         DBApp dbApp= new DBApp();
         dbApp.init();
-        Hashtable<String, Object> row = new Hashtable<>();
-        for (int i = 0; i < 10; i++){
-
-            row.put("id", "43-000"+i);
-            row.put("first_name", "AyaMoh");
-            row.put("last_name", "Egamal");
-
-            Date dob = new Date(2000-1910, 12, 24);
-            row.put("dob", dob);
-
-            row.put("gpa", 0.7);
-
-            dbApp.insertIntoTable("students", row);
-            row.clear();
-
-        }
+//        Hashtable<String, Object> row = new Hashtable<>();
+//        for (int i = 0; i < 10; i++){
+//
+//            row.put("id", "43-000"+i);
+//            row.put("first_name", "AyaMoh");
+//            row.put("last_name", "Egamal");
+//
+//            Date dob = new Date(2000-1910, 12, 24);
+//            row.put("dob", dob);
+//
+//            row.put("gpa", 0.7);
+//
+//            dbApp.insertIntoTable("students", row);
+//            row.clear();
+//
+//        }
 
         String table = "students";
         Table t = (Table) DBApp.deserialize(table);
-        t.createCSV();
-//        Index i = t.index.get(0);
-//        printindex2DI(i);
+//        t.createCSV();
+        Index i = t.index.get(0);
+//        csv1DIndex(i);
+        printindex2DI(i);
 //        Stack<Object> stack=new Stack<Object>();
 //        Stack<Operation> stackO=new Stack<Operation>();
 //        Vector v=new Vector<Object>();
@@ -152,7 +153,7 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
         for (int i = 0; i< 10 ; i++) {
             for (int j = 0; j < 10; j++) {
                 pw.println("grid["+i+"]["+j+"]");
-                Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)((Vector[])((Object[])index.grid)[i])[j]);
+                Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)((Object[])((Object[])index.grid)[i])[j]);
                 for (int l = 0; l <cell.size() ; l++) {
                     Index.BucketInfo bi = cell.get(l);
                     Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
@@ -180,7 +181,7 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
             for (int j = 0; j < 10; j++) {
                 for (int k = 0; k <10 ; k++) {
                     pw.println("grid["+i+"]["+j+"]["+k+"]");
-                    Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)(((Vector[])((Object[])((Object[])index.grid)[i])[j])[k]));
+                    Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)(((Object[])((Object[])((Object[])index.grid)[i])[j])[k]));
                     for (int l = 0; l <cell.size() ; l++) {
                         Index.BucketInfo bi = cell.get(l);
                         Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
@@ -208,7 +209,7 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
         for (int j = 0; j < 10; j++) {
             for (int i = 0; i< 10 ; i++) {
                 pw.println("grid["+i+"]["+j+"]");
-                Vector<Index.BucketInfo> cell = ((Vector<Index.BucketInfo>)((Vector[])((Object[])index.grid)[i])[j]);                for (int l = 0; l <cell.size() ; l++) {
+                Vector<Index.BucketInfo> cell = ((Vector<Index.BucketInfo>)((Object[])((Object[])index.grid)[i])[j]);                for (int l = 0; l <cell.size() ; l++) {
                     Index.BucketInfo bi = cell.get(l);
                     Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
                     pw.println("Bucket "+b.id);
