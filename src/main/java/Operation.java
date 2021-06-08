@@ -1,8 +1,9 @@
 import org.junit.jupiter.api.parallel.Resources;
 
-import java.util.Iterator;
-import java.util.Stack;
-import java.util.Vector;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
 
 public class Operation { //CLASS FOR TESTING MESH AKTAR
     static int grid[][][]={{{1,2,3,},{5,6,7,},{9,10,11,}},
@@ -19,7 +20,31 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
     }
 
 
-    public static void main(String args[]){
+    public static void main(String args[]) throws IOException, DBAppException {
+        DBApp dbApp= new DBApp();
+        dbApp.init();
+        Hashtable<String, Object> row = new Hashtable<>();
+        for (int i = 0; i < 10; i++){
+
+            row.put("id", "43-000"+i);
+            row.put("first_name", "AyaMoh");
+            row.put("last_name", "Egamal");
+
+            Date dob = new Date(2000-1910, 12, 24);
+            row.put("dob", dob);
+
+            row.put("gpa", 0.7);
+
+            dbApp.insertIntoTable("students", row);
+            row.clear();
+
+        }
+
+        String table = "students";
+        Table t = (Table) DBApp.deserialize(table);
+        t.createCSV();
+//        Index i = t.index.get(0);
+//        printindex2DI(i);
 //        Stack<Object> stack=new Stack<Object>();
 //        Stack<Operation> stackO=new Stack<Operation>();
 //        Vector v=new Vector<Object>();
@@ -116,6 +141,114 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
             newCurr[depth]=i;
             loop(newCurr,limits,depth+1,accumulated);
         }
+    }
+    public static void printindex2DI(Index index ) throws IOException {
+
+        String tablename = index.tableName;
+        Vector columnNames = index.columnNames;
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames + ".csv";
+        PrintWriter pw = new PrintWriter(new FileWriter(path));
+        int size =0;
+        for (int i = 0; i< 10 ; i++) {
+            for (int j = 0; j < 10; j++) {
+                pw.println("grid["+i+"]["+j+"]");
+                Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)((Vector[])((Object[])index.grid)[i])[j]);
+                for (int l = 0; l <cell.size() ; l++) {
+                    Index.BucketInfo bi = cell.get(l);
+                    Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
+                    pw.println("Bucket "+b.id);
+                    for (int k = 0; k <b.records.size() ; k++) {
+                        pw.println(b.records.get(k));
+                    size++;
+                    }
+                    DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
+                }
+            }
+        }
+        pw.println("Size ="+size);
+        pw.flush();
+        pw.close();
+    }
+    public static void printindex3D(Index index ) throws IOException {
+
+        String tablename = index.tableName;
+        Vector columnNames = index.columnNames;
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames + ".csv";
+        PrintWriter pw = new PrintWriter(new FileWriter(path));
+        int size =0;
+        for (int i = 0; i< 10 ; i++) {
+            for (int j = 0; j < 10; j++) {
+                for (int k = 0; k <10 ; k++) {
+                    pw.println("grid["+i+"]["+j+"]["+k+"]");
+                    Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)(((Vector[])((Object[])((Object[])index.grid)[i])[j])[k]));
+                    for (int l = 0; l <cell.size() ; l++) {
+                        Index.BucketInfo bi = cell.get(l);
+                        Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
+                        pw.println("Bucket "+b.id);
+                        for (int m = 0; m <b.records.size() ; m++) {
+                            pw.println(b.records.get(k));
+                            size++;
+                        }
+                        DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
+                    }
+                }
+
+            }
+        }
+        pw.println("Size ="+size);
+        pw.flush();
+        pw.close();
+    }
+    public static void printindex2DJ(Index index ) throws IOException {
+        String tablename = index.tableName;
+        Vector columnNames = index.columnNames;
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames +"_j" +".csv";
+        PrintWriter pw = new PrintWriter(new FileWriter(path));
+        int size =0;
+        for (int j = 0; j < 10; j++) {
+            for (int i = 0; i< 10 ; i++) {
+                pw.println("grid["+i+"]["+j+"]");
+                Vector<Index.BucketInfo> cell = ((Vector<Index.BucketInfo>)((Vector[])((Object[])index.grid)[i])[j]);                for (int l = 0; l <cell.size() ; l++) {
+                    Index.BucketInfo bi = cell.get(l);
+                    Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
+                    pw.println("Bucket "+b.id);
+                    for (int k = 0; k <b.records.size() ; k++) {
+                        pw.println(b.records.get(k));
+                    size++;
+                    }
+                    DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
+                }
+            }
+        }
+        pw.println("Size ="+size);
+        pw.flush();
+        pw.close();
+    }
+    public static void csv1DIndex(Index index) throws IOException {
+        String tablename = index.tableName;
+        Vector columnNames = index.columnNames;
+        String path = "src\\main\\resources\\Basant\\" + tablename + "_"+columnNames +".csv";
+        PrintWriter pw = new PrintWriter(new FileWriter(path));
+        int size =0;
+        for (int i = 0; i< 10 ; i++) {
+                pw.println("grid["+i+"]");
+                Vector<Index.BucketInfo> cell =((Vector<Index.BucketInfo>)((Object[])index.grid)[i]);
+                for (int l = 0; l <cell.size() ; l++) {
+                    Index.BucketInfo bi = cell.get(l);
+                    Bucket b = (Bucket) DBApp.deserialize(tablename+"_"+columnNames+"_"+bi.id);
+                    pw.println("Bucket "+b.id);
+                    for (int k = 0; k <b.records.size() ; k++) {
+                        pw.println(b.records.get(k));
+                        size++;
+                    }
+                    DBApp.serialize(tablename+"_"+columnNames+"_"+bi.id,b);
+                }
+        }
+
+        pw.println("Size ="+size);
+        pw.flush();
+        pw.close();
+
     }
 
     private static int getCell(int[] curr) {

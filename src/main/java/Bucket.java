@@ -44,12 +44,12 @@ public class Bucket implements Serializable {
             if (Table.GenericCompare(records.lastElement().values.get(sortedIndex), clusterValue) < 0)
                 return newRecord;
             else {
-                int i = BinarySearch(clusterValue, records.size() - 1, 0); // if it is working
+                int i = BinarySearch(clusterValue, records.size() , 0); // if it is working
                 records.insertElementAt(newRecord, i); // full capacity+1
                 return records.remove(DBApp.indexCapacity);
             }
         } else {
-            int i = BinarySearch(clusterValue, records.size() - 1, 0);
+            int i = BinarySearch(clusterValue, records.size() , 0);
             records.add(i, newRecord);
             return null;
         }
@@ -64,6 +64,7 @@ public class Bucket implements Serializable {
             return BinarySearch(searchkey, mid, lo);
         else
             return BinarySearch(searchkey, hi, mid + 1);
+
     }
     public void updateAddress(double oldAddress, double newAddress, Hashtable<String, Object> values) {
         Object sortingValue = values.get(sortedIndex);
@@ -159,5 +160,12 @@ public class Bucket implements Serializable {
             this.pageid = pageid;
         }
 
+        @Override
+        public String toString() {
+            return "Record{" +
+                    "values=" + values +
+                    ", pageid=" + pageid +
+                    '}';
+        }
     }
 }
