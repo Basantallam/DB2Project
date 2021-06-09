@@ -249,6 +249,7 @@ public class Table implements Serializable {
         return clusteringKeyValue;
     }
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
+        if(table.size()==0)return;
         if (useIndex) {
             if(!pk.equals("")){
                 int lo=0; int hi = table.size()-1;
