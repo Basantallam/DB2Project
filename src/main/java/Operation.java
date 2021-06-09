@@ -42,8 +42,15 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
 
         String table = "students";
         Table t = (Table) DBApp.deserialize(table);
-//        t.createCSV();
         Index i = t.index.get(0);
+        t.createCSV();
+        t = (Table) DBApp.deserialize("courses");
+        t.createCSV();
+        t = (Table) DBApp.deserialize("transcripts");
+        t.createCSV();
+        t = (Table) DBApp.deserialize("pcs");
+        t.createCSV();
+
 //        csv1DIndex(i);
         printindex2DI(i);
 //        Stack<Object> stack=new Stack<Object>();

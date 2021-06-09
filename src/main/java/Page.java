@@ -26,7 +26,8 @@ public class Page implements Serializable {
 			else {
 
 				int i = BinarySearch(pkvalue,records.size(),0); // working ???
-				if(i!= records.size()&& records.get(i).pk.equals(pkvalue)){res.add(false);return res;}
+				if(i!= records.size()&& records.get(i).pk.equals(pkvalue)){
+					res.add(false);return res;}
 				records.insertElementAt(newPair, i);
 				res.add(true); res.add(records.remove(DBApp.capacity));// full capacity+1
 			}
@@ -71,7 +72,7 @@ public class Page implements Serializable {
 		if (lo >= hi)
 			return mid;
 
-		if (Table.GenericCompare(records.get(mid).pk, searchkey) > 0 )
+		if (Table.GenericCompare(records.get(mid).pk, searchkey) >= 0 )
 			return BinarySearch(searchkey, mid, lo);
 		else
 			return BinarySearch(searchkey, hi, mid + 1);

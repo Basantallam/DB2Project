@@ -536,7 +536,6 @@ public class Table implements Serializable {
         for (int idx = 0; idx < table.size(); idx++) {
             tuple4 t = table.get(idx);
             Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-            fw.write("Page "+ t.id +"\n");
             for (Page.Pair pair : p.records) {
                 String str = "";
                 Hashtable<String, Object> h = pair.row;
