@@ -125,7 +125,7 @@ public class Table implements Serializable {
             //add extra condition to check id is correct?
             return mid;
         }
-        if (table.get(mid).id < targetID) {
+        if (table.get(mid).id <= targetID) {
             return BinarySearchPageID(hi, mid, targetID);
         } else {
             return BinarySearchPageID(mid - 1, lo, targetID);

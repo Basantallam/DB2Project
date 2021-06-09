@@ -26,7 +26,7 @@ public class Bucket implements Serializable {
         if(i!=0 && Table.GenericCompare(records.get(i-1).values.get(clusteringTable),pkValue)<=0 ){
             lo = records.get(i-1).pageid;
         }
-        if(Table.GenericCompare(records.get(i).values.get(clusteringTable),pkValue)>0)hi=records.get(i).pageid;
+        if(Table.GenericCompare(records.get(i).values.get(clusteringTable),pkValue)>=0)hi=records.get(i).pageid;
         res.add(lo);res.add(hi);
     return res;
     }
@@ -60,7 +60,7 @@ public class Bucket implements Serializable {
 
         if (lo >= hi)
             return mid;
-        if (Table.GenericCompare(records.get(mid).values.get(sortedIndex), searchkey) > 0)// should be sortedIndex not clusterCol might be there is no clustering col
+        if (Table.GenericCompare(records.get(mid).values.get(sortedIndex), searchkey) >= 0)// should be sortedIndex not clusterCol might be there is no clustering col
             return BinarySearch(searchkey, mid, lo);
         else
             return BinarySearch(searchkey, hi, mid + 1);

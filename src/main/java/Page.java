@@ -15,7 +15,7 @@ public class Page implements Serializable {
 		this.id = id;
 
 	}
-	public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) {
+	public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) {//todo if pk exists
 		Pair newPair = new Pair(pkvalue, colNameValue);
 		if (this.isFull()) {
 			if (Table.GenericCompare(records.lastElement().pk, pkvalue) < 0)
