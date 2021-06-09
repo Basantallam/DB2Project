@@ -101,7 +101,9 @@ public class Index implements Serializable {
             if (value == null) {
                 coordinates[i] = nine ? 9 : 0; //depending on bool ha7ot 0 wala 9
             } else {
+
                 int idx = (value instanceof Long || value instanceof Date) ? (getIdxLong(min, max, value))
+                        :(value instanceof Integer)? getIdxDouble((int) min, (int) max, (int) value)
                         : getIdxDouble((double) min, (double) max, (double) value);
                 coordinates[i] = idx;
             }
@@ -469,6 +471,7 @@ public class Index implements Serializable {
                 Object max = ranges.get(colName).max;
                 Object value = colValues.get(colName);
                 int idx = (value instanceof Long || value instanceof Date) ? (getIdxLong(min, max, value))
+                        :(value instanceof Integer)? getIdxDouble((int) min, (int) max, (int) value)
                         : getIdxDouble((double) min, (double) max, (double) value);
                 coordinates.add(getOperation(idx,op));
             } else {
