@@ -72,8 +72,9 @@ public class Table implements Serializable {
         double foundPageId = table.get(foundIdx).id;
         Page foundpage = (Page) DBApp.deserialize(tableName + "_" + foundPageId);
         tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
-        Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
-
+        Vector flag = foundpage.insert(insertedPkValue, colNameValue);
+        if(!(boolean)flag.get(0))return;
+        Page.Pair returned = (Page.Pair) flag.get(1);
         if (returned == null || returned.pk != insertedPkValue) { //mesh el mafroud !(.equals) badal (!=)
             indicesInsert(colNameValue, foundPageId); //insert fel indices el new record
             foundTuple.min = foundpage.records.firstElement().pk;
