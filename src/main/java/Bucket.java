@@ -23,7 +23,7 @@ public class Bucket implements Serializable {
         double lo=-1; double hi = -1;
         Object pkValue = row.get(clusteringTable);
         int i = BinarySearch(pkValue, records.size() - 1, 0);
-        if(i!=0 && Table.GenericCompare(records.get(i-1).values.get(clusteringTable),pkValue)<0 ){
+        if(i!=0 && Table.GenericCompare(records.get(i-1).values.get(clusteringTable),pkValue)<=0 ){
             lo = records.get(i-1).pageid;
         }
         if(Table.GenericCompare(records.get(i).values.get(clusteringTable),pkValue)>0)hi=records.get(i).pageid;
