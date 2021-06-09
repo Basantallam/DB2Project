@@ -233,8 +233,8 @@ public class Milestone1Tests {
 
         String table = "students";
 
-        row.put("first_name", "foo");
-        row.put("last_name", "bar");
+        row.put("first_name", "fooooo");
+        row.put("last_name", "baaaar");
 
         Date dob = new Date(1992 - 1900, 9 - 1, 8);
         row.put("dob", dob);
@@ -271,7 +271,7 @@ public class Milestone1Tests {
         coursesTable.close();
 
         row.put("course_id", "1100");
-        row.put("course_name", "bar");
+        row.put("course_name", "baaaar");
         row.put("hours", 13);
 
 
@@ -302,7 +302,7 @@ public class Milestone1Tests {
         transcriptsTable.close();
 
         row.put("student_id", "43-9874");
-        row.put("course_name", "bar");
+        row.put("course_name", "baaaar");
 
         Date date_passed = new Date(2011 - 1900, 4 - 1, 1);
         row.put("date_passed", date_passed);
@@ -719,7 +719,7 @@ public class Milestone1Tests {
 
         Hashtable<String, String> minValues = new Hashtable<>();
         minValues.put("date_added", "1901-01-01");
-        minValues.put("course_id", "000");
+        minValues.put("course_id", "0000");
         minValues.put("course_name", "AAAAAA");
         minValues.put("hours", "1");
 
