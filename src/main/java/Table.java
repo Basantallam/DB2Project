@@ -199,6 +199,7 @@ public class Table implements Serializable {
     public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue, boolean useIndex)
             throws Exception
     {
+        if (table.size()==0)return;
         Object pk = parse(clusteringKeyValue);
         int idx = 0;
         int hi = table.size() - 1; // idx
