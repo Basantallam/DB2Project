@@ -352,7 +352,7 @@ public class Table implements Serializable {
     public int BinarySearch(Object searchkey, int hi, int lo) {
         int mid = (hi + lo + 1) / 2;
         if (lo >= hi) return mid;
-        if (GenericCompare(table.get(mid).min, searchkey) < 0)
+        if (GenericCompare(table.get(mid).min, searchkey) <= 0)
             return BinarySearch(searchkey, hi, mid);
         else
             return BinarySearch(searchkey, mid - 1, lo);

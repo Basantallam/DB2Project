@@ -169,7 +169,7 @@ public class Index implements Serializable {
         int mid = (hi + lo + 1) / 2;
         if (lo >= hi)
             return mid;
-        if (Table.GenericCompare(cell.get(mid).min, searchKey) < 0)
+        if (Table.GenericCompare(cell.get(mid).min, searchKey) <= 0)
             return BinarySearchCell(cell, searchKey, hi, mid);
         else
             return BinarySearchCell(cell, searchKey, mid - 1, lo);
