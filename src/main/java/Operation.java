@@ -23,6 +23,20 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
     public static void main(String args[]) throws IOException, DBAppException {
         DBApp dbApp= new DBApp();
         dbApp.init();
+
+        String table = "students";
+        Table t = (Table) DBApp.deserialize(table);
+//        Index i = t.index.get(0);
+//        printindex2DI(i);
+        t.createCSV();
+        t = (Table) DBApp.deserialize("courses");
+        t.createCSV();
+        t = (Table) DBApp.deserialize("transcripts");
+        t.createCSV();
+        t = (Table) DBApp.deserialize("pcs");
+        t.createCSV();
+
+//        csv1DIndex(i);
 //        Hashtable<String, Object> row = new Hashtable<>();
 //        for (int i = 0; i < 10; i++){
 //
@@ -40,19 +54,6 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
 //
 //        }
 
-        String table = "students";
-        Table t = (Table) DBApp.deserialize(table);
-        Index i = t.index.get(0);
-        printindex2DI(i);
-        t.createCSV();
-        t = (Table) DBApp.deserialize("courses");
-        t.createCSV();
-        t = (Table) DBApp.deserialize("transcripts");
-        t.createCSV();
-        t = (Table) DBApp.deserialize("pcs");
-        t.createCSV();
-
-//        csv1DIndex(i);
 
 //        Stack<Object> stack=new Stack<Object>();
 //        Stack<Operation> stackO=new Stack<Operation>();
@@ -125,9 +126,9 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
 //        loop(curr,lim,0,v);
 //        System.out.println(v.size());
 //        System.out.println(v);
-        Iterator it=returnsIt();
-        while(it.hasNext())
-            System.out.println(it.next());
+//        Iterator it=returnsIt();
+//        while(it.hasNext())
+//            System.out.println(it.next());
     }
 
     public static Iterator returnsIt(){
