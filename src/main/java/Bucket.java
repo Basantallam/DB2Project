@@ -83,7 +83,8 @@ public class Bucket implements Serializable {
             }
             break;
         }
-        records.get(i).pageid=newAddress;
+        if(i>=0 && i<records.size())
+            records.get(i).pageid=newAddress;
     }
     public boolean isFull() {
         return this.records.size() == DBApp.indexCapacity;
