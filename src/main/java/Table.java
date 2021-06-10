@@ -532,10 +532,13 @@ public class Table implements Serializable {
     public void createCSV() throws IOException {
         String path = "src\\main\\resources\\Basant\\" + this.tableName + "_Table.csv";
         FileWriter fw = new FileWriter(path);
+        int size =0;
 
         for (int idx = 0; idx < table.size(); idx++) {
+
             tuple4 t = table.get(idx);
             Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
+            size+=p.records.size();
             for (Page.Pair pair : p.records) {
                 String str = "";
                 Hashtable<String, Object> h = pair.row;
@@ -549,6 +552,7 @@ public class Table implements Serializable {
             }
             DBApp.serialize(tableName + "_" + t.id, p);
         }
+        fw.write("Size : "+size );
         fw.close();
     }
 

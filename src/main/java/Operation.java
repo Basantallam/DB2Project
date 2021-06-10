@@ -43,6 +43,7 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
         String table = "students";
         Table t = (Table) DBApp.deserialize(table);
         Index i = t.index.get(0);
+        printindex2DI(i);
         t.createCSV();
         t = (Table) DBApp.deserialize("courses");
         t.createCSV();
@@ -52,7 +53,7 @@ public class Operation { //CLASS FOR TESTING MESH AKTAR
         t.createCSV();
 
 //        csv1DIndex(i);
-        printindex2DI(i);
+
 //        Stack<Object> stack=new Stack<Object>();
 //        Stack<Operation> stackO=new Stack<Operation>();
 //        Vector v=new Vector<Object>();
