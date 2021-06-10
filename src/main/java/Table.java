@@ -90,7 +90,7 @@ public class Table implements Serializable {
                 if (!nxtPage.isFull()) {
                     create = false;
                     nxtPage.insert(returned.pk, returned.row);
-                    if (returned.pk == insertedPkValue)
+                    if (returned.pk.equals( insertedPkValue))
                         indicesInsert(returned.row, nxtPage.id);//insert fel indices el new record
                     else {
                         indicesUpdate(returned.row, foundPageId, nxtPage.id);  //insert fel indices bel shifted record
@@ -104,7 +104,7 @@ public class Table implements Serializable {
                 double newID = CreateID(foundIdx);
                 Page newPage = new Page(newID);
                 newPage.insert(returned.pk, returned.row);
-                if (returned.pk == insertedPkValue) indicesInsert(returned.row, newID);
+                if (returned.pk .equals( insertedPkValue)) indicesInsert(returned.row, newID);
                 else {
                     indicesInsert(returned.row, foundPageId);
                     indicesUpdate(returned.row, foundPageId, newID);
