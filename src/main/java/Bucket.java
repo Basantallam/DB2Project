@@ -69,8 +69,14 @@ public class Bucket implements Serializable {
     public void updateAddress(double oldAddress, double newAddress, Hashtable<String, Object> values) {
         Object sortingValue = values.get(sortedIndex);
         int i = BinarySearch(sortingValue, records.size() - 1, 0);
-        if(records.get(i).pageid==oldAddress)
-            records.get(i).pageid=newAddress;
+        for (; i <records.size() ; i++) {
+            if(records.get(i).pageid!=oldAddress)continue;
+            for (String key:records.get(i).values.keySet()){
+                if(!values.get(key).equals(records.get(i).values.get(key)))continue;
+            }
+            break;
+        }
+        records.get(i).pageid=newAddress;
     }
     public boolean isFull() {
         return this.records.size() == DBApp.indexCapacity;
