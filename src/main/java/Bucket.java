@@ -33,7 +33,14 @@ public class Bucket implements Serializable {
     public void delete(Hashtable<String, Object> row, double pageId) {
         Object clusterValue = row.get(sortedIndex);
         int i = BinarySearch(clusterValue, records.size() - 1, 0);
-        records.get(i).pageid=pageId;
+        for (; i <records.size() ; i++) {
+            if(records.get(i).pageid!=pageId)continue;
+            for (String key:records.get(i).values.keySet()){
+                if(!row.get(key).equals(records.get(i).values.get(key)))continue;
+            }
+            break;
+        }
+        records.remove(i);
     }
     public Record insert(Hashtable<String, Object> colNameValue, Double pageID) {
         Record newRecord = new Record(colNameValue, pageID);
