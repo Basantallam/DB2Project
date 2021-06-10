@@ -42,7 +42,6 @@ public class Page implements Serializable {
 	public Vector<Hashtable<String, Object>> update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) {
 
 		Vector<Hashtable<String, Object>> updatedRows  ;
-//		Pair foundRecord = LinearSearch(clusteringKeyValue);
 		int idx=Collections.binarySearch(records,new Pair(clusteringKeyValue,null));
 		if(idx>-1 && idx < records.size()) {
 			Pair foundRecord = records.get(idx);
@@ -58,13 +57,7 @@ public class Page implements Serializable {
 		}
 		return null;
 	}
-	public int LinearSearch(Object searchkey) {
-		int i = 0;
-		for (i = 0; i < records.size(); i++)
-			if (Table.GenericCompare(records.get(i).pk, searchkey) >= 0)
-				break;
-		return i;
-	}
+
 
 	public int BinarySearch(Object searchkey, int hi, int lo) {
 		int mid = (hi + lo) / 2;

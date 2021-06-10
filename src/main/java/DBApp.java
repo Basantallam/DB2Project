@@ -11,8 +11,7 @@ public class DBApp implements DBAppInterface {
 
 	public void init() {
 		DB = new HashSet<>();
-		// creating the 'data' directory
-		// if you get an error copy el path mn 3ndk cuz ubuntu flips the slashes -iman
+
 		String path = "src/main/resources/data/";
 		File file = new File(path);
 		file.mkdir();
@@ -328,8 +327,7 @@ public class DBApp implements DBAppInterface {
 			String pk = (String) res.get(0);
 			Vector<String> indexed = (Vector<String>) res.get(1);
 			Boolean useIndex = useIndexAnd(columnNameValue, indexed);
-//			if (res.size() > 1) //todo da kan maktoob wana mafhemtsh eih da law 7ad la2a el todo di w tele3 el 3amlah sa7 ymsa7 kol el commented part
-//				useIndex = true;
+
 			Table table = (Table) deserialize(tableName);
 			table.delete(pk, columnNameValue, useIndex);
 			serialize(tableName, table);
@@ -448,25 +446,6 @@ public class DBApp implements DBAppInterface {
 		return obj;
 	}
 
-	public static void main(String[] args) throws Exception {
-		DBApp dbApp = new DBApp();
-		dbApp.init();
-//
-//        String dataDirPath = "src/main/resources/data";
-//        File dataDir = new File(dataDirPath);
-//
-//        if (!dataDir.isDirectory() || !dataDir.exists()) {
-//            throw new Exception("`data` Directory in Resources folder does not exist");
-//        }
-//        try{
-//            for(String tableName : dbApp.DB){
-//                Table table = (Table) DBApp.deserialize(tableName);
-//                table.createCSV();
-//                DBApp.serialize(tableName,table);
-//            }}catch (IOException e){
-//            e.printStackTrace();
-//        }
-	}
 
 	public static class minMax implements Serializable  {
 		Object max;

@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class PrecedenceStack {
+public class PrecedenceStack { //BONUS PART!!
     Stack<Object> stack ;
     Stack<Operation> stackO ; //Stack for Operations
     Table table;
@@ -40,11 +40,11 @@ public class PrecedenceStack {
     public  Vector<Hashtable> applyOp(Object curr, Object next, String arrayOperator) throws DBAppException {
         switch (arrayOperator) {
             case ("AND"): return parentAND(curr, next);
-            case ("OR"): //dayman "union" on sets
+            case ("OR"): // "union" on sets
                 if (curr instanceof SQLTerm) curr = table.resolveOneStatement((SQLTerm) curr);
                 if (next instanceof SQLTerm) next = table.resolveOneStatement((SQLTerm) next);
                 return ORing((Vector<Hashtable>) curr, (Vector<Hashtable>) next);
-            case ("XOR"): //dayman operation on sets
+            case ("XOR"): // operation on sets
                 if (curr instanceof SQLTerm) curr = table.resolveOneStatement((SQLTerm) curr);
                 if (next instanceof SQLTerm) next = table.resolveOneStatement((SQLTerm) next);
                 return XORing((Vector<Hashtable>) curr, (Vector<Hashtable>) next);
@@ -65,11 +65,10 @@ public class PrecedenceStack {
             else if(next instanceof SQLTerm && curr instanceof Vector){
                 sqlTerm =(SQLTerm) next; v=(Vector) curr;
                 return ANDing(sqlTerm,v);//2nd and child
-                // theoretically 3omr ma da hayehsal bas just in case
+                // theoretically will never happen
             } else
                 return ANDing((Vector<Hashtable>) curr, (Vector) next); // 3rd and child
-                // theoretically 3omr ma da hayehsal bardo !
-                // bas just in case
+                // theoretically will never happen
         }
     }
     public Vector<Hashtable> ANDing(SQLTerm term, Vector<Hashtable> v) throws DBAppException {
@@ -121,7 +120,7 @@ public class PrecedenceStack {
         }
     }
     public Vector<Hashtable> ANDing(Vector<Hashtable> i1, Vector<Hashtable> i2){
-        //hadkhol hena mn el XOR call bas
+        //enters here from el XOR call only
         Vector<Hashtable> result = new Vector<Hashtable>();
         HashSet<Hashtable> set1=new HashSet<Hashtable>(i1);
         HashSet<Hashtable> set2=new HashSet<Hashtable>(i2);
@@ -140,7 +139,7 @@ public class PrecedenceStack {
 
         Vector<Hashtable> res = new Vector<Hashtable>();
         res.addAll(s1);
-        return res; //mmkn nkhali kolo y return iterator bas hanghayar 7abba fel code
+        return res;
     }
     public Vector<Hashtable> XORing(Vector<Hashtable> i1, Vector<Hashtable> i2) { //Set Operation
         Vector v1 = ORing(i1, i2); //UNION

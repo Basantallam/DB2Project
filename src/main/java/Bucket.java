@@ -18,7 +18,7 @@ public class Bucket implements Serializable {
     }
     public Vector<Double> getInsertCoordinates(Hashtable<String, Object> row) {
         //	vector containing min and max pages
-        //min el awel w ba3den hi
+
         Vector<Double> res = new Vector<Double>();
         double lo=-1; double hi = -1;
         Object pkValue = row.get(clusteringTable);
@@ -44,8 +44,7 @@ public class Bucket implements Serializable {
     }
     public Record insert(Hashtable<String, Object> colNameValue, Double pageID) {
         Record newRecord = new Record(colNameValue, pageID);
-        // binary search bucket should be sorted mesh ba insert w khalas
-        //  records.add(newRecord);
+
         Object clusterValue = colNameValue.get(sortedIndex);
         if (this.isFull()) {
             if (Table.GenericCompare(records.lastElement().values.get(sortedIndex), clusterValue) < 0)
@@ -140,12 +139,6 @@ public class Bucket implements Serializable {
         return  res;
     }
 
-
-    public HashSet<Double> getPageIds() {
-        HashSet<Double> res= new HashSet<>();
-        for (Record r:records)res.add(r.pageid);
-        return res;
-    }
 
     public Collection<Double> condSelect(SQLTerm term1, SQLTerm term2) {//add or w xor?
         HashSet<Double> res= new HashSet<>();

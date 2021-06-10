@@ -55,18 +55,7 @@ public class Index implements Serializable {
         }
         return res;
     }
-    private Vector<DBApp.minMax> arrangeRanges(Hashtable<String, DBApp.minMax> ranges) {
-        Set<String> set = ranges.keySet();
-        int IndexDimension = columnNames.size();
-        Vector<DBApp.minMax> arrangedRanges = new Vector<DBApp.minMax>();
 
-        for (int ptr = 0; ptr < IndexDimension; ptr++) {
-            String col = columnNames.get(ptr);
-            if (set.contains(col))
-                arrangedRanges.add(ranges.get(col));
-        }
-        return arrangedRanges;
-    }
     public static Object deepClone(Object[] org) {
         Object[] clone=new Object[org.length];
         if (org[0] instanceof Object[]) {
@@ -112,7 +101,7 @@ public class Index implements Serializable {
         return coordinates;
     }
     private int getIdxDouble(double min, double max, double value) {
-        double cellWidth = ((max - min) + 1) / 10.0; //range el cell kam raqam
+        double cellWidth = ((max - min) + 1) / 10.0;
         return (int) (Math.floor((value - min) / (cellWidth)));
     }
     private int getIdxLong(Object minimum, Object maximum, Object valueToAdd) {
@@ -128,15 +117,13 @@ public class Index implements Serializable {
             max = (long) maximum;
             value = (long) valueToAdd;
         }
-        long cellWidth = ((max - min) + 1) / 10; //range el cell kam raqam
+        long cellWidth = ((max - min) + 1) / 10; //range size of cell
         int idx = (int) ((value - min) / (cellWidth)); // O(1)
-//        if ((value- min) % (cellWidth) > 0) {
-//            idx++; //ceil //I think floor
-//        }
+
         return idx;
     }
     public Hashtable<String, Object> arrangeHashtable(Hashtable<String, Object> values) {
-        //takhod kol el record teraga3 el values eli fel Index columns bass
+        //takes every el record gives values in Index columns only
 
         Set<String> set = values.keySet();
         int IndexDimension = columnNames.size();
@@ -146,9 +133,6 @@ public class Index implements Serializable {
             String col = columnNames.get(ptr);
             if (set.contains(col)) {
                 extracted.put(col, values.get(col));
-            } else {
-                //todo aragaha?:
-//                extracted.put(col, null);
             }
         }
         return extracted;
@@ -350,7 +334,7 @@ public class Index implements Serializable {
         String indexClustCol = columnNames.get(0);
         HashSet<Double> res= new HashSet<>();
         for (Vector<BucketInfo> cell : cells) {
-            if (hashtable.containsKey(indexClustCol)) //checks if within el cells is sorted on queried col
+            if (hashtable.containsKey(indexClustCol)) //checks if within the cells is sorted on queried col
                 for (BucketInfo bi : cell) {
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
                     for (Bucket.Record r:b.records)
@@ -369,16 +353,6 @@ public class Index implements Serializable {
     }
 
 
-
-    private void filterCell(Vector<BucketInfo> cell, SQLTerm term, HashSet<Double> result) {
-        // loops on cell record by record adds records that match condition
-        for (BucketInfo bi : cell) {
-            Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
-            result.addAll(b.filterBucket(term));
-            DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id,b);
-        }
-    }
-
     public HashSet<Double> greaterThan(SQLTerm term) throws DBAppException {
         Hashtable<String, Object> hashtable = new Hashtable<>();
         hashtable.put(term._strColumnName, term._objValue);
@@ -389,7 +363,7 @@ public class Index implements Serializable {
         getAllCells(getCellsCoordinates(hashtable,operator),0, grid,cells );
         HashSet<Double> res= new HashSet<>();
         for (Vector<BucketInfo> cell : cells) {
-           //linear search within cell could've done binary search if clustering col bass risky seeka
+
                 for (BucketInfo bi : cell) {
                     Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
                     res.addAll(b.filterBucket(term));
