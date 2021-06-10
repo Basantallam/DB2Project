@@ -75,7 +75,7 @@ public class Table implements Serializable {
         Vector flag = foundpage.insert(insertedPkValue, colNameValue);
         if(!(boolean)flag.get(0))return;
         Page.Pair returned = (Page.Pair) flag.get(1);
-        if (returned == null || returned.pk != insertedPkValue) { //mesh el mafroud !(.equals) badal (!=)
+        if (returned == null || !returned.pk .equals( insertedPkValue)) { //mesh el mafroud !(.equals) badal (!=)
             indicesInsert(colNameValue, foundPageId); //insert fel indices el new record
             foundTuple.min = foundpage.records.firstElement().pk;
             foundTuple.max = foundpage.records.lastElement().pk;
