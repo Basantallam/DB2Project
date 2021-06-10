@@ -6,6 +6,7 @@ public class Page implements Serializable {
 	Double id;
 	Vector<Pair> records;
 
+
 	public String toString() {
 		return records.toString() + "";
 	}
@@ -15,23 +16,28 @@ public class Page implements Serializable {
 		this.id = id;
 
 	}
-	public Pair insert(Object pkvalue, Hashtable<String, Object> colNameValue) {
+	public Vector insert(Object pkvalue, Hashtable<String, Object> colNameValue) {
+		Vector res = new Vector();
 		Pair newPair = new Pair(pkvalue, colNameValue);
 		if (this.isFull()) {
-			if (Table.GenericCompare(records.lastElement().pk, pkvalue) < 0)
-				return newPair;
+			if (Table.GenericCompare(records.lastElement().pk, pkvalue) < 0){
+				res.add(true);res.add(newPair);
+			}
 			else {
 
 				int i = BinarySearch(pkvalue,records.size(),0); // working ???
-				records.insertElementAt(newPair, i); // full capacity+1
-				return records.remove(DBApp.capacity);
+				if(i!= records.size()&& records.get(i).pk.equals(pkvalue)){
+					res.add(false);return res;}
+				records.insertElementAt(newPair, i);
+				res.add(true); res.add(records.remove(DBApp.capacity));// full capacity+1
 			}
 		} else {
 			int i = BinarySearch(pkvalue,records.size(),0);
+			if(i!= records.size()&& records.get(i).pk.equals(pkvalue)){res.add(false);return res;}
 			records.add(i, newPair);
-			return null;
+			res.add(true);res.add(null);
 		}
-
+		return res;
 	}
 	public Vector<Hashtable<String, Object>> update(Object clusteringKeyValue, Hashtable<String, Object> columnNameValue) {
 
@@ -66,7 +72,7 @@ public class Page implements Serializable {
 		if (lo >= hi)
 			return mid;
 
-		if (Table.GenericCompare(records.get(mid).pk, searchkey) > 0 )
+		if (Table.GenericCompare(records.get(mid).pk, searchkey) >= 0 )
 			return BinarySearch(searchkey, mid, lo);
 		else
 			return BinarySearch(searchkey, hi, mid + 1);

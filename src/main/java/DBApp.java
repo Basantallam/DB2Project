@@ -16,20 +16,25 @@ public class DBApp implements DBAppInterface {
 		String path = "src/main/resources/data/";
 		File file = new File(path);
 		file.mkdir();
-//        String pathcsv = "src/main/resources/";
-//        File mata = new File(pathcsv); //todo metadata.csv dynamically
-
-		try {
-			getCapacity();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			addtoDB();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		createMeta();
+		getCapacity();
+		addtoDB();
 		fillCodes();
+	}
+
+	private void createMeta() {
+		String metaFilePath = "src/main/resources/metadata.csv";
+		File metaFile = new File(metaFilePath);
+
+		if (!metaFile.exists()) {
+			try {
+				PrintWriter pw= new PrintWriter(new File(metaFilePath));
+				pw.close();
+				pw.flush();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void fillCodes() {
@@ -40,28 +45,44 @@ public class DBApp implements DBAppInterface {
 		for (char i = 'a'  ; i <='z' ; i++) code.put(i,j++);
 	}
 
-	private void getCapacity() throws IOException {
+	private void getCapacity() {
 		Properties prop = new Properties();
 		String fileName = "src\\main\\resources\\DBApp.config";
-		FileInputStream is = new FileInputStream(fileName);
-		prop.load(is);
+		FileInputStream is = null;
+		try {
+			is = new FileInputStream(fileName);
+			prop.load(is);
 
-		capacity= Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
-		indexCapacity= Integer.parseInt(prop.getProperty("MaximumKeysCountinIndexBucket"));
+			capacity= Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
+			indexCapacity= Integer.parseInt(prop.getProperty("MaximumKeysCountinIndexBucket"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 
 	}
 
-	private void addtoDB() throws IOException {
-		FileReader fr = new FileReader("src\\main\\resources\\metadata.csv");
-		BufferedReader br = new BufferedReader(fr);
-		br.readLine();
-		while (br.ready()) {
-			String line = br.readLine();
+	private void addtoDB() {
+		FileReader fr = null;
+		try {
+			fr = new FileReader("src\\main\\resources\\metadata.csv");
+			BufferedReader br = new BufferedReader(fr);
+			br.readLine();
+			while (br.ready()) {
+				String line = br.readLine();
 
-			String[] metadata = (line).split(", ");
+				String[] metadata = (line).split(", ");
 
-			DB.add(metadata[0]);
+				DB.add(metadata[0]);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+
 	}
 
 	@Override

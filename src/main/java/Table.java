@@ -72,9 +72,10 @@ public class Table implements Serializable {
         double foundPageId = table.get(foundIdx).id;
         Page foundpage = (Page) DBApp.deserialize(tableName + "_" + foundPageId);
         tuple4 foundTuple = table.get(foundIdx);// corresponding lel page
-        Page.Pair returned = foundpage.insert(insertedPkValue, colNameValue);
-
-        if (returned == null || returned.pk != insertedPkValue) { //mesh el mafroud !(.equals) badal (!=)
+        Vector flag = foundpage.insert(insertedPkValue, colNameValue);
+        if(!(boolean)flag.get(0))return;
+        Page.Pair returned = (Page.Pair) flag.get(1);
+        if (returned == null || !returned.pk .equals( insertedPkValue)) { //mesh el mafroud !(.equals) badal (!=)
             indicesInsert(colNameValue, foundPageId); //insert fel indices el new record
             foundTuple.min = foundpage.records.firstElement().pk;
             foundTuple.max = foundpage.records.lastElement().pk;
@@ -89,7 +90,7 @@ public class Table implements Serializable {
                 if (!nxtPage.isFull()) {
                     create = false;
                     nxtPage.insert(returned.pk, returned.row);
-                    if (returned.pk == insertedPkValue)
+                    if (returned.pk.equals( insertedPkValue))
                         indicesInsert(returned.row, nxtPage.id);//insert fel indices el new record
                     else {
                         indicesUpdate(returned.row, foundPageId, nxtPage.id);  //insert fel indices bel shifted record
@@ -103,9 +104,8 @@ public class Table implements Serializable {
                 double newID = CreateID(foundIdx);
                 Page newPage = new Page(newID);
                 newPage.insert(returned.pk, returned.row);
-                if (returned.pk == insertedPkValue) indicesInsert(returned.row, newID);
+                if (returned.pk .equals( insertedPkValue)) indicesInsert(returned.row, newID);
                 else {
-                    indicesInsert(returned.row, foundPageId);
                     indicesUpdate(returned.row, foundPageId, newID);
                 }
                 tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
@@ -125,7 +125,7 @@ public class Table implements Serializable {
             //add extra condition to check id is correct?
             return mid;
         }
-        if (table.get(mid).id < targetID) {
+        if (table.get(mid).id <= targetID) {
             return BinarySearchPageID(hi, mid, targetID);
         } else {
             return BinarySearchPageID(mid - 1, lo, targetID);
@@ -199,6 +199,7 @@ public class Table implements Serializable {
     public void update(String clusteringKeyValue, Hashtable<String, Object> columnNameValue, boolean useIndex)
             throws Exception
     {
+        if (table.size()==0)return;
         Object pk = parse(clusteringKeyValue);
         int idx = 0;
         int hi = table.size() - 1; // idx
@@ -248,6 +249,7 @@ public class Table implements Serializable {
         return clusteringKeyValue;
     }
     public void delete(String pk, Hashtable<String, Object> columnNameValue, Boolean useIndex) {
+        if(table.size()==0)return;
         if (useIndex) {
             if(!pk.equals("")){
                 int lo=0; int hi = table.size()-1;
@@ -350,7 +352,7 @@ public class Table implements Serializable {
     public int BinarySearch(Object searchkey, int hi, int lo) {
         int mid = (hi + lo + 1) / 2;
         if (lo >= hi) return mid;
-        if (GenericCompare(table.get(mid).min, searchkey) < 0)
+        if (GenericCompare(table.get(mid).min, searchkey) <= 0)
             return BinarySearch(searchkey, hi, mid);
         else
             return BinarySearch(searchkey, mid - 1, lo);
@@ -529,11 +531,13 @@ public class Table implements Serializable {
     public void createCSV() throws IOException {
         String path = "src\\main\\resources\\Basant\\" + this.tableName + "_Table.csv";
         FileWriter fw = new FileWriter(path);
+        int size =0;
 
         for (int idx = 0; idx < table.size(); idx++) {
+
             tuple4 t = table.get(idx);
             Page p = (Page) DBApp.deserialize(tableName + "_" + t.id);
-            fw.write("Page "+ t.id +"\n");
+            size+=p.records.size();
             for (Page.Pair pair : p.records) {
                 String str = "";
                 Hashtable<String, Object> h = pair.row;
@@ -547,6 +551,7 @@ public class Table implements Serializable {
             }
             DBApp.serialize(tableName + "_" + t.id, p);
         }
+        fw.write("Size : "+size );
         fw.close();
     }
 

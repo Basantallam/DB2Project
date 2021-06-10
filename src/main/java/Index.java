@@ -101,7 +101,9 @@ public class Index implements Serializable {
             if (value == null) {
                 coordinates[i] = nine ? 9 : 0; //depending on bool ha7ot 0 wala 9
             } else {
+
                 int idx = (value instanceof Long || value instanceof Date) ? (getIdxLong(min, max, value))
+                        :(value instanceof Integer)? getIdxDouble((int) min, (int) max, (int) value)
                         : getIdxDouble((double) min, (double) max, (double) value);
                 coordinates[i] = idx;
             }
@@ -155,18 +157,19 @@ public class Index implements Serializable {
         int[] cellIdx = getCellCoordinates(row, false);
         Vector<BucketInfo> cell = getCell(cellIdx);
         Object searchKey = row.get(columnNames.get(0));
-        BucketInfo bi = cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
+        BucketInfo bi= cell.get(BinarySearchCell(cell, searchKey, cell.size() - 1, 0));
         Bucket b = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + bi.id);
         Hashtable<String, Object> arrangedHash = arrangeHashtable(row);
         b.updateAddress(oldId, newId, arrangedHash);
         DBApp.serialize(tableName + "_" + columnNames + "_" + bi.id, b);
     }
     public int BinarySearchCell(Vector<BucketInfo> cell, Object searchKey, int hi, int lo) {
+        if(searchKey==null)return 0;
         //binary search within one cell returns index of bucket
         int mid = (hi + lo + 1) / 2;
         if (lo >= hi)
             return mid;
-        if (Table.GenericCompare(cell.get(mid).min, searchKey) < 0)
+        if (Table.GenericCompare(cell.get(mid).min, searchKey) <= 0)
             return BinarySearchCell(cell, searchKey, hi, mid);
         else
             return BinarySearchCell(cell, searchKey, mid - 1, lo);
@@ -205,17 +208,20 @@ public class Index implements Serializable {
                 if (!nxtBucket.isFull()) {
                     create = false;
                     nxtBucket.insert(returned.values, id);
+                    cell.get(nxtIdx).min = returned.values.get(columnNames.get(0));
+                    DBApp.serialize(tableName + "_" + columnNames + "_" + cell.get(nxtIdx).id, nxtBucket);
                 }
-                cell.get(nxtIdx).min = returned.values.get(columnNames.get(0));
-                DBApp.serialize(tableName + "_" + columnNames + "_" + cell.get(nxtIdx).id, nxtBucket);
-            }
+               }
 
             if (create) {
 
                 BucketInfo newBI = new BucketInfo();
                 newBI.bucket.insert(returned.values, id);
+                Object clust =returned.values.get(columnNames.get(0));
+                newBI.min=clust;newBI.max=clust;
                 newBI.size++;
                 cell.insertElementAt(newBI, bucketInfoIdx + 1);
+
                 DBApp.serialize(tableName + "_" + columnNames + "_" + newBI.id, newBI.bucket);
             }
         }
@@ -469,6 +475,7 @@ public class Index implements Serializable {
                 Object max = ranges.get(colName).max;
                 Object value = colValues.get(colName);
                 int idx = (value instanceof Long || value instanceof Date) ? (getIdxLong(min, max, value))
+                        :(value instanceof Integer)? getIdxDouble((int) min, (int) max, (int) value)
                         : getIdxDouble((double) min, (double) max, (double) value);
                 coordinates.add(getOperation(idx,op));
             } else {
