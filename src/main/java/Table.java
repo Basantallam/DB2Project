@@ -106,7 +106,6 @@ public class Table implements Serializable {
                 newPage.insert(returned.pk, returned.row);
                 if (returned.pk .equals( insertedPkValue)) indicesInsert(returned.row, newID);
                 else {
-                    indicesInsert(returned.row, foundPageId);
                     indicesUpdate(returned.row, foundPageId, newID);
                 }
                 tuple4 newtuple = new tuple4(newID, newPage, returned.pk, returned.pk);
