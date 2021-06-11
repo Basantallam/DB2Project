@@ -184,8 +184,6 @@ public class Index implements Serializable {
         DBApp.serialize(tableName + "_" + columnNames + "_" + foundBI.id, b);
         foundBI.size++;
         if (returned != null) {
-            if(returned.values.get(columnNames.get(0)).equals("99-8510"))
-                System.out.println("");
             foundBI.size--;
             boolean create = true;
             if (cell.size() - 1 > bucketInfoIdx) {
