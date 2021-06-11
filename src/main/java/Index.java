@@ -184,6 +184,8 @@ public class Index implements Serializable {
         DBApp.serialize(tableName + "_" + columnNames + "_" + foundBI.id, b);
         foundBI.size++;
         if (returned != null) {
+            if(returned.values.get(columnNames.get(0)).equals("99-8510"))
+                System.out.println("");
             foundBI.size--;
             boolean create = true;
             if (cell.size() - 1 > bucketInfoIdx) {
@@ -191,7 +193,7 @@ public class Index implements Serializable {
                 Bucket nxtBucket = (Bucket) DBApp.deserialize(tableName + "_" + columnNames + "_" + cell.get(nxtIdx).id);
                 if (!nxtBucket.isFull()) {
                     create = false;
-                    nxtBucket.insert(returned.values, id);
+                    nxtBucket.insert(returned.values, returned.pageid);
                     cell.get(nxtIdx).min = returned.values.get(columnNames.get(0));
                     DBApp.serialize(tableName + "_" + columnNames + "_" + cell.get(nxtIdx).id, nxtBucket);
                 }
@@ -200,7 +202,7 @@ public class Index implements Serializable {
             if (create) {
 
                 BucketInfo newBI = new BucketInfo();
-                newBI.bucket.insert(returned.values, id);
+                newBI.bucket.insert(returned.values, returned.pageid);
                 Object clust =returned.values.get(columnNames.get(0));
                 newBI.min=clust;newBI.max=clust;
                 newBI.size++;
