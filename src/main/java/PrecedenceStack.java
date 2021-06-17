@@ -109,12 +109,12 @@ public class PrecedenceStack { //BONUS PART!!
         terms.add(term2._strColumnName);
         boolean clustering1=(term1._strColumnName.equals(table.clusteringCol));//todo indxPK else linear
         boolean clustering2=(term2._strColumnName.equals(table.clusteringCol));
-        Index index = table.chooseIndex(terms); //todo wa7da tania 3shan n7ot priorities law not equal ma7otoosh equal a3la priority
+        Index index = table.chooseIndex(terms); 
         if (index != null) {
             if(term1._strOperator.equals("!=") && term2._strOperator.equals("!="))
                 return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
             return table.getTableRecords(index.andSelect(term1,term2),term1,term2);
-            // ^ hena fee redundant checks shwaya 3ashan kda kda term1 aw term2 aw both were already checked gowa andSelect
+            
         } else {
             return andSQLwithoutIndex(term1, term2, clustering1, clustering2);
         }
